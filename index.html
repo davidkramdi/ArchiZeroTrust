@@ -6,15 +6,24 @@
     <title>ArchiZeroTrust – Documentation</title>
 
     <style>
+        /* ====== GLOBAL ====== */
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: "Segoe UI", Arial, sans-serif;
             background-color: #0f1116;
             color: #e5e5e5;
             display: flex;
         }
 
-        /* Sidebar */
+        h1, h2, h3 {
+            font-weight: 600;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        /* ====== SIDEBAR ====== */
         .sidebar {
             width: 260px;
             background-color: #151820;
@@ -22,7 +31,7 @@
             position: fixed;
             left: 0;
             top: 0;
-            padding: 20px;
+            padding: 25px 20px;
             overflow-y: auto;
             border-right: 1px solid #2a2f3a;
         }
@@ -30,22 +39,33 @@
         .sidebar h2 {
             margin-top: 0;
             color: #4da3ff;
-            font-size: 20px;
+            font-size: 22px;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar h3 {
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: #7bb8ff;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
         }
 
         .sidebar a {
             display: block;
             color: #c7c7c7;
-            text-decoration: none;
-            padding: 8px 0;
+            padding: 6px 0;
             font-size: 15px;
+            transition: 0.2s;
         }
 
         .sidebar a:hover {
             color: #4da3ff;
+            padding-left: 4px;
         }
 
-        /* Main content */
+        /* ====== CONTENT ====== */
         .content {
             margin-left: 260px;
             padding: 40px;
@@ -55,30 +75,44 @@
         h1 {
             color: #4da3ff;
             margin-top: 0;
+            font-size: 32px;
         }
 
-        h2 {
-            color: #7bb8ff;
-        }
-
-        code {
-            background-color: #1d212c;
-            padding: 4px 6px;
-            border-radius: 4px;
-            color: #ffdd88;
-        }
-
-        pre {
-            background-color: #1d212c;
-            padding: 12px;
-            border-radius: 6px;
-            overflow-x: auto;
-        }
-
-        .section-title {
+        h2.section-title {
             margin-top: 40px;
             padding-bottom: 6px;
             border-bottom: 1px solid #2a2f3a;
+            color: #7bb8ff;
+        }
+
+        /* ====== CODE BLOCKS ====== */
+        pre {
+            background-color: #1a1d26;
+            padding: 14px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #2a2f3a;
+        }
+
+        code {
+            color: #ffdd88;
+            font-size: 14px;
+        }
+
+        /* ====== MOBILE ====== */
+        @media (max-width: 900px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #2a2f3a;
+            }
+
+            .content {
+                margin-left: 0;
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -145,7 +179,7 @@
 
         <h2 class="section-title">📘 Exemple de section</h2>
 
-        <p>Vous pouvez mettre ici vos artefacts Claude, vos schémas, vos notes, vos labs, etc.</p>
+        <p>Vous pouvez mettre ici vos artefacts, vos schémas, vos notes, vos labs, etc.</p>
 
         <pre><code>
 # Exemple de code
@@ -156,4 +190,3 @@ show ip route
 
 </body>
 </html>
-
