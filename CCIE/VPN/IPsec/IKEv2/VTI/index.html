@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPsec IKEv2 VTI</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; }
+  .header { background: linear-gradient(135deg, #1a365d, #2b6cb0); color: white; padding: 14px 24px; }
+  .header h1 { font-size: 1.15rem; font-weight: 700; }
+  .header p { font-size: 0.78rem; opacity: 0.8; margin-top: 3px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+
+  .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  .card h2 { font-size: 0.9rem; font-weight: 700; color: #2d3748; margin-bottom: 14px; border-left: 4px solid #3182ce; padding-left: 10px; }
+  .topo { display: flex; align-items: center; justify-content: space-around; }
+  .rbox { text-align: center; }
+  .ricon { width: 72px; height: 54px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 7px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .ricon svg { width: 34px; height: 34px; fill: white; }
+  .rlabel { font-weight: 700; font-size: 0.95rem; }
+  .rips { font-size: 0.68rem; color: #718096; margin-top: 3px; line-height: 1.5; }
+  .rrole { font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; margin-top: 4px; display: inline-block; font-weight: 600; }
+  .tlink { flex: 1; padding: 0 16px; }
+  .tline { height: 3px; background: linear-gradient(90deg, #3182ce, #38a169); border-radius: 2px; }
+  .tlabel { font-size: 0.68rem; color: #a0aec0; text-align: center; margin-top: 5px; }
+  .badges { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; justify-content: center; }
+  .tbadge { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 7px; padding: 5px 12px; font-size: 0.72rem; }
+  .tbadge span { color: #a0aec0; }
+
+  .exch-wrap { display: flex; gap: 14px; }
+  .steps-col { display: flex; flex-direction: column; gap: 6px; width: 195px; flex-shrink: 0; }
+  .phase-badge { font-size: 0.62rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px; border-radius: 10px; display: inline-block; }
+  .ph-init { background: #feebc8; color: #c05621; }
+  .ph-auth { background: #c6f6d5; color: #276749; }
+  .sbtn { background: #f7fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 11px; cursor: pointer; text-align: left; transition: all 0.18s; width: 100%; }
+  .sbtn:hover { background: #ebf8ff; border-color: #90cdf4; }
+  .sbtn.active-init { background: #fffaf0; border-color: #ed8936; box-shadow: 0 0 0 2px rgba(237,137,54,0.2); border-left: 4px solid #ed8936; }
+  .sbtn.active-auth { background: #f0fff4; border-color: #48bb78; box-shadow: 0 0 0 2px rgba(72,187,120,0.2); border-left: 4px solid #48bb78; }
+  .sbtn.inactive-init { border-left: 4px solid #fbd38d; }
+  .sbtn.inactive-auth { border-left: 4px solid #9ae6b4; }
+  .snum { font-size: 0.62rem; font-weight: 700; color: #a0aec0; }
+  .sname { font-size: 0.8rem; font-weight: 700; color: #2d3748; margin: 2px 0; }
+  .sdir { font-size: 0.68rem; color: #718096; }
+  .result-box { margin-top: 4px; background: #f0fff4; border: 1px solid #c6f6d5; border-radius: 8px; padding: 9px 11px; }
+  .result-box div:first-child { font-size: 0.7rem; font-weight: 700; color: #276749; }
+  .result-box div:last-child { font-size: 0.67rem; color: #4a5568; margin-top: 3px; line-height: 1.6; }
+
+  .detail-col { flex: 1; min-width: 0; }
+  .detail-top { background: #f7fafc; border-radius: 9px; padding: 13px; margin-bottom: 10px; }
+  .det-phase { font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  .det-title { font-size: 0.95rem; font-weight: 700; margin: 3px 0; }
+  .det-dir { font-size: 0.72rem; color: #718096; margin-bottom: 10px; }
+  .arrow-row { display: flex; align-items: center; gap: 8px; }
+  .alabel { font-size: 0.72rem; font-weight: 700; width: 30px; text-align: center; }
+  .aline { flex: 1; height: 2px; position: relative; }
+  .aline.r { background: linear-gradient(90deg, #3182ce 80%, transparent); }
+  .aline.r::after { content: '▶'; position: absolute; right: -2px; top: -9px; font-size: 13px; color: #3182ce; }
+  .aline.l { background: linear-gradient(270deg, #48bb78 80%, transparent); }
+  .aline.l::after { content: '◀'; position: absolute; left: -2px; top: -9px; font-size: 13px; color: #48bb78; }
+
+  .pbox { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 11px 14px; margin-bottom: 8px; }
+  .pbox h4 { font-size: 0.78rem; font-weight: 700; margin-bottom: 7px; }
+  .ptags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .ptag { font-size: 0.68rem; padding: 3px 9px; border-radius: 10px; font-weight: 600; cursor: default; }
+  .pt-crypto { background: #ebf8ff; color: #2b6cb0; }
+  .pt-auth { background: #f0fff4; color: #276749; }
+  .pt-id { background: #faf5ff; color: #553c9a; }
+  .pt-traffic { background: #fffaf0; color: #c05621; }
+  .pdetail { border-top: 1px solid #f0f0f0; padding-top: 7px; }
+  .prow { font-size: 0.7rem; padding: 3px 0; border-bottom: 1px solid #fafafa; }
+  .prow strong { color: #2d3748; }
+  .prow span { color: #718096; }
+
+  .cfg-ref { border-radius: 8px; padding: 9px 13px; margin-bottom: 7px; border-left: 4px solid; }
+  .cfg-ref .cr-label { font-size: 0.68rem; font-weight: 700; color: #4a5568; margin-bottom: 2px; }
+  .cfg-ref .cr-val { font-size: 0.72rem; color: #2d3748; }
+  .note-box { background: #fffbea; border-radius: 8px; padding: 9px 13px; font-size: 0.72rem; color: #744210; }
+
+  .configs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .cfg-card h2 { font-size: 0.9rem; }
+  .rbadge { font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .rb-i { background: #ebf8ff; color: #2b6cb0; }
+  .rb-r { background: #f0fff4; color: #276749; }
+  pre { font-family: 'Courier New', monospace; font-size: 0.68rem; line-height: 1.65; overflow-x: auto; background: #1a202c; color: #e2e8f0; padding: 13px; border-radius: 8px; }
+  .hp { color: #fbd38d; }
+  .ha { color: #9ae6b4; }
+  .hc { color: #90cdf4; }
+  .hv { color: #f6ad55; }
+  .hcmt { color: #4a5568; font-style: italic; }
+
+  .legend { background: white; border-radius: 12px; padding: 12px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+  .legend h3 { font-size: 0.78rem; font-weight: 700; color: #4a5568; }
+  .li { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: #4a5568; }
+  .ld { width: 11px; height: 11px; border-radius: 3px; }
+
+  @media (max-width: 700px) {
+    .exch-wrap { flex-direction: column; }
+    .steps-col { width: 100%; flex-direction: row; flex-wrap: wrap; }
+    .configs { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🔐 IPsec IKEv2 — Tunnel VTI (Route-Based)</h1>
+  <p>Échanges R1 ↔ R2 · Configuration Cisco IOS · Préparation ENARSI</p>
+</div>
+<div class="container">
+
+  <!-- TOPOLOGY -->
+  <div class="card">
+    <h2>Topologie</h2>
+    <div class="topo">
+      <div class="rbox">
+        <div class="ricon" style="background:linear-gradient(135deg,#2b6cb0,#3182ce);">
+          <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM6 10h2v2H6zm0 4h2v2H6zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h4v6h-4z"/></svg>
+        </div>
+        <div class="rlabel">R1</div>
+        <div class="rips">G0/0: 10.0.0.1/30<br>Tunnel0: 172.16.0.1/30<br>LAN: 192.168.1.0/24</div>
+        <div class="rrole" style="background:#ebf8ff;color:#2b6cb0;">Initiateur</div>
+      </div>
+      <div class="tlink">
+        <div class="tline"></div>
+        <div class="tlabel">Internet / WAN · 10.0.0.0/30</div>
+        <div style="text-align:center;margin-top:5px;font-size:0.65rem;color:#90cdf4;font-weight:600;">═══ Tunnel IPsec ESP ═══</div>
+      </div>
+      <div class="rbox">
+        <div class="ricon" style="background:linear-gradient(135deg,#276749,#38a169);">
+          <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM6 10h2v2H6zm0 4h2v2H6zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h4v6h-4z"/></svg>
+        </div>
+        <div class="rlabel">R2</div>
+        <div class="rips">G0/0: 10.0.0.2/30<br>Tunnel0: 172.16.0.2/30<br>LAN: 192.168.2.0/24</div>
+        <div class="rrole" style="background:#f0fff4;color:#276749;">Répondeur</div>
+      </div>
+    </div>
+    <div class="badges">
+      <div class="tbadge"><span>Mode: </span><strong>VTI route-based</strong></div>
+      <div class="tbadge"><span>Auth: </span><strong>Pre-Shared Key</strong></div>
+      <div class="tbadge"><span>IKE: </span><strong>AES-256 + SHA-256 + DH14</strong></div>
+      <div class="tbadge"><span>IPsec: </span><strong>ESP AES-256 + SHA-256</strong></div>
+      <div class="tbadge"><span>Msgs IKEv2: </span><strong>4 messages (2 échanges)</strong></div>
+    </div>
+  </div>
+
+  <!-- EXCHANGE -->
+  <div class="card">
+    <h2>Échanges IKEv2 — Clique sur un message pour voir les détails</h2>
+    <div class="exch-wrap">
+      <div class="steps-col">
+        <span class="phase-badge ph-init">Phase 1 — IKE_SA_INIT</span>
+        <button class="sbtn inactive-init" id="btn0" onclick="show(0)">
+          <div class="snum">MSG 1 · R1 → R2</div>
+          <div class="sname">IKE_SA_INIT Req</div>
+          <div class="sdir">En clair 🔓</div>
+        </button>
+        <button class="sbtn inactive-init" id="btn1" onclick="show(1)">
+          <div class="snum">MSG 2 · R2 → R1</div>
+          <div class="sname">IKE_SA_INIT Resp</div>
+          <div class="sdir">En clair 🔓</div>
+        </button>
+        <span class="phase-badge ph-auth" style="margin-top:6px;">Phase 2 — IKE_AUTH</span>
+        <button class="sbtn inactive-auth" id="btn2" onclick="show(2)">
+          <div class="snum">MSG 3 · R1 → R2</div>
+          <div class="sname">IKE_AUTH Request</div>
+          <div class="sdir">Chiffré 🔒</div>
+        </button>
+        <button class="sbtn inactive-auth" id="btn3" onclick="show(3)">
+          <div class="snum">MSG 4 · R2 → R1</div>
+          <div class="sname">IKE_AUTH Response</div>
+          <div class="sdir">Chiffré 🔒</div>
+        </button>
+        <div class="result-box">
+          <div>✅ Tunnel UP</div>
+          <div>IKE SA établi<br>Child SA / IPsec SA établi<br>Interface Tunnel0 UP/UP</div>
+        </div>
+      </div>
+
+      <div class="detail-col" id="detail"></div>
+    </div>
+  </div>
+
+  <!-- CONFIGS -->
+  <div class="configs">
+    <div class="card cfg-card">
+      <h2>Config R1 &nbsp;<span class="rbadge rb-i">Initiateur</span></h2>
+      <pre><span class="hcmt">! ── 1. IKEv2 Proposal ─────────────────────</span>
+<span class="hp">crypto ikev2 proposal PROP-IKEv2
+ encryption aes-cbc-256
+ integrity sha256
+ group 14</span>
+<span class="hcmt">
+! ── 2. IKEv2 Policy ────────────────────────</span>
+<span class="hp">crypto ikev2 policy POL-IKEv2
+ proposal PROP-IKEv2</span>
+<span class="hcmt">
+! ── 3. Keyring (PSK) ───────────────────────</span>
+<span class="ha">crypto ikev2 keyring KR-IKEv2
+ peer R2
+  address 10.0.0.2
+  pre-shared-key MySecret123</span>
+<span class="hcmt">
+! ── 4. IKEv2 Profile ───────────────────────</span>
+<span class="ha">crypto ikev2 profile PROF-IKEv2
+ match identity remote address 10.0.0.2 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local KR-IKEv2</span>
+<span class="hcmt">
+! ── 5. IPsec Transform-Set (Child SA) ──────</span>
+<span class="hc">crypto ipsec transform-set TS-ESP esp-aes 256 esp-sha256-hmac
+ mode tunnel</span>
+<span class="hcmt">
+! ── 6. IPsec Profile ───────────────────────</span>
+<span class="hc">crypto ipsec profile IPSEC-PROF
+ set transform-set TS-ESP
+ set ikev2-profile PROF-IKEv2</span>
+<span class="hcmt">
+! ── 7. Interface VTI ───────────────────────</span>
+<span class="hv">interface Tunnel0
+ ip address 172.16.0.1 255.255.255.252
+ tunnel source GigabitEthernet0/0
+ tunnel destination 10.0.0.2
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile IPSEC-PROF</span>
+<span class="hcmt">
+! ── 8. Route statique ──────────────────────</span>
+<span class="hv">ip route 192.168.2.0 255.255.255.0 Tunnel0</span></pre>
+    </div>
+    <div class="card cfg-card">
+      <h2>Config R2 &nbsp;<span class="rbadge rb-r">Répondeur</span></h2>
+      <pre><span class="hcmt">! ── 1. IKEv2 Proposal ─────────────────────</span>
+<span class="hp">crypto ikev2 proposal PROP-IKEv2
+ encryption aes-cbc-256
+ integrity sha256
+ group 14</span>
+<span class="hcmt">
+! ── 2. IKEv2 Policy ────────────────────────</span>
+<span class="hp">crypto ikev2 policy POL-IKEv2
+ proposal PROP-IKEv2</span>
+<span class="hcmt">
+! ── 3. Keyring (PSK) ───────────────────────</span>
+<span class="ha">crypto ikev2 keyring KR-IKEv2
+ peer R1
+  address 10.0.0.1
+  pre-shared-key MySecret123</span>
+<span class="hcmt">
+! ── 4. IKEv2 Profile ───────────────────────</span>
+<span class="ha">crypto ikev2 profile PROF-IKEv2
+ match identity remote address 10.0.0.1 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local KR-IKEv2</span>
+<span class="hcmt">
+! ── 5. IPsec Transform-Set (Child SA) ──────</span>
+<span class="hc">crypto ipsec transform-set TS-ESP esp-aes 256 esp-sha256-hmac
+ mode tunnel</span>
+<span class="hcmt">
+! ── 6. IPsec Profile ───────────────────────</span>
+<span class="hc">crypto ipsec profile IPSEC-PROF
+ set transform-set TS-ESP
+ set ikev2-profile PROF-IKEv2</span>
+<span class="hcmt">
+! ── 7. Interface VTI ───────────────────────</span>
+<span class="hv">interface Tunnel0
+ ip address 172.16.0.2 255.255.255.252
+ tunnel source GigabitEthernet0/0
+ tunnel destination 10.0.0.1
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile IPSEC-PROF</span>
+<span class="hcmt">
+! ── 8. Route statique ──────────────────────</span>
+<span class="hv">ip route 192.168.1.0 255.255.255.0 Tunnel0</span></pre>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <h3>Légende :</h3>
+    <div class="li"><div class="ld" style="background:#fbd38d;"></div>IKE_SA_INIT → proposal / policy</div>
+    <div class="li"><div class="ld" style="background:#9ae6b4;"></div>IKE_AUTH → keyring / ikev2 profile</div>
+    <div class="li"><div class="ld" style="background:#90cdf4;"></div>Child SA → transform-set / ipsec profile</div>
+    <div class="li"><div class="ld" style="background:#f6ad55;"></div>VTI → interface Tunnel + route</div>
+  </div>
+</div>
+
+<script>
+const D = [
+  {
+    phase:'IKE_SA_INIT', col:'#ed8936', bgRef:'#fef3e2',
+    msg:'MSG 1 — IKE_SA_INIT Request', dir:'R1 → R2', arrow:'r',
+    payloads:[
+      {t:'SAi1',d:'Propositions d\'algorithmes pour l\'IKE SA (AES-256, SHA-256, DH14)',c:'pt-crypto'},
+      {t:'KEi', d:'Clé publique Diffie-Hellman de R1 (groupe 14, 2048-bit)',c:'pt-crypto'},
+      {t:'Ni',  d:'Nonce aléatoire de R1 — assure la fraîcheur et l\'anti-replay',c:'pt-crypto'},
+    ],
+    cfgRef:'<span style="color:#fbd38d;font-weight:700;">crypto ikev2 proposal</span> + <span style="color:#fbd38d;font-weight:700;">crypto ikev2 policy</span>',
+    cfgBorder:'#fbd38d',
+    note:'Tout en clair (UDP 500). R1 propose ses algorithmes et initie l\'échange Diffie-Hellman. Aucun secret n\'est encore partagé.'
+  },
+  {
+    phase:'IKE_SA_INIT', col:'#ed8936', bgRef:'#fef3e2',
+    msg:'MSG 2 — IKE_SA_INIT Response', dir:'R2 → R1', arrow:'l',
+    payloads:[
+      {t:'SAr1',d:'Algorithme IKE SA sélectionné par R2 parmi les propositions de R1',c:'pt-crypto'},
+      {t:'KEr', d:'Clé publique Diffie-Hellman de R2 → permet le calcul du secret partagé',c:'pt-crypto'},
+      {t:'Nr',  d:'Nonce aléatoire de R2',c:'pt-crypto'},
+    ],
+    cfgRef:'<span style="color:#fbd38d;font-weight:700;">crypto ikev2 proposal</span> + <span style="color:#fbd38d;font-weight:700;">crypto ikev2 policy</span>',
+    cfgBorder:'#fbd38d',
+    note:'✅ Après ce message : les deux routeurs calculent SKEYSEED (secret Diffie-Hellman). Les clés de session IKE SA sont dérivées → les 2 messages suivants sont chiffrés !'
+  },
+  {
+    phase:'IKE_AUTH', col:'#48bb78', bgRef:'#f0fff4',
+    msg:'MSG 3 — IKE_AUTH Request', dir:'R1 → R2', arrow:'r',
+    payloads:[
+      {t:'IDi 🔒',  d:'Identité de R1 (adresse IP 10.0.0.1) — chiffré',c:'pt-id'},
+      {t:'AUTH 🔒', d:'Preuve d\'authenticité : HMAC calculé avec la PSK',c:'pt-auth'},
+      {t:'SAi2 🔒', d:'Propositions Child SA : ESP AES-256 + SHA-256',c:'pt-crypto'},
+      {t:'TSi 🔒',  d:'Traffic Selector initiateur (any ↔ any pour VTI)',c:'pt-traffic'},
+      {t:'TSr 🔒',  d:'Traffic Selector répondeur',c:'pt-traffic'},
+    ],
+    cfgRef:'<span style="color:#9ae6b4;font-weight:700;">crypto ikev2 keyring</span> + <span style="color:#9ae6b4;font-weight:700;">crypto ikev2 profile</span> + <span style="color:#90cdf4;font-weight:700;">crypto ipsec transform-set</span>',
+    cfgBorder:'#9ae6b4',
+    note:'🔒 Tout chiffré avec les clés IKE SA. R1 s\'authentifie via PSK et propose la Child SA (les paramètres ESP pour le tunnel de données).'
+  },
+  {
+    phase:'IKE_AUTH', col:'#48bb78', bgRef:'#f0fff4',
+    msg:'MSG 4 — IKE_AUTH Response', dir:'R2 → R1', arrow:'l',
+    payloads:[
+      {t:'IDr 🔒',    d:'Identité de R2 (adresse IP 10.0.0.2)',c:'pt-id'},
+      {t:'AUTH 🔒',   d:'Preuve d\'authenticité de R2 via PSK — R1 vérifie',c:'pt-auth'},
+      {t:'SAr2 🔒',   d:'Child SA acceptée : ESP AES-256 + SHA-256',c:'pt-crypto'},
+      {t:'TSi/TSr 🔒',d:'Traffic Selectors confirmés',c:'pt-traffic'},
+    ],
+    cfgRef:'<span style="color:#9ae6b4;font-weight:700;">crypto ikev2 keyring</span> + <span style="color:#9ae6b4;font-weight:700;">crypto ikev2 profile</span> + <span style="color:#90cdf4;font-weight:700;">crypto ipsec profile</span>',
+    cfgBorder:'#9ae6b4',
+    note:'✅ IKE SA + Child SA établis en seulement 4 messages ! Le tunnel VTI est UP. Les paquets IP transitent maintenant chiffrés via ESP entre 10.0.0.1 et 10.0.0.2.'
+  }
+];
+
+function show(i) {
+  ['btn0','btn1','btn2','btn3'].forEach((id,j) => {
+    const b = document.getElementById(id);
+    if (j === i) {
+      b.className = 'sbtn ' + (j < 2 ? 'active-init' : 'active-auth');
+    } else {
+      b.className = 'sbtn ' + (j < 2 ? 'inactive-init' : 'inactive-auth');
+    }
+  });
+
+  const s = D[i];
+  const arrowHtml = s.arrow === 'r'
+    ? `<div class="arrow-row"><div class="alabel" style="color:#2b6cb0;">R1</div><div class="aline r"></div><div class="alabel" style="color:#276749;">R2</div></div>`
+    : `<div class="arrow-row"><div class="alabel" style="color:#2b6cb0;">R1</div><div class="aline l"></div><div class="alabel" style="color:#276749;">R2</div></div>`;
+
+  const tags = s.payloads.map(p => `<span class="ptag ${p.c}">${p.t}</span>`).join('');
+  const rows = s.payloads.map(p => `<div class="prow"><strong>${p.t}</strong> — <span>${p.d}</span></div>`).join('');
+
+  document.getElementById('detail').innerHTML = `
+    <div class="detail-top">
+      <div class="det-phase" style="color:${s.col};">${s.phase}</div>
+      <div class="det-title">${s.msg}</div>
+      <div class="det-dir">${s.dir}</div>
+      ${arrowHtml}
+    </div>
+    <div class="pbox">
+      <h4 style="color:${s.col};">Payloads transportés</h4>
+      <div class="ptags">${tags}</div>
+      <div class="pdetail">${rows}</div>
+    </div>
+    <div class="cfg-ref" style="background:${s.bgRef};border-color:${s.cfgBorder};">
+      <div class="cr-label">📋 Éléments de config correspondants</div>
+      <div class="cr-val">${s.cfgRef}</div>
+    </div>
+    <div class="note-box">💡 ${s.note}</div>
+  `;
+}
+show(0);
+</script>
+</body>
+</html>
