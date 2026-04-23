@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAT Palo Alto — DNAT Explication</title>
+<style>
+@import url('[https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap](https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap)');
+
+:root {
+  --bg: #0f1117;
+  --panel: #1a1d27;
+  --border: #2a2d3a;
+  --accent: #ff6b35;
+  --blue: #4a9eff;
+  --green: #3ddc84;
+  --red: #ff4757;
+  --yellow: #ffd32a;
+  --text: #e8eaf0;
+  --muted: #8b8fa8;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  padding: 30px 20px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 30px;
+}
+
+/* SCENARIO */
+.scenario {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  max-width: 780px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.scenario h2 {
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 14px;
+}
+
+.actors {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.actor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 100px;
+}
+
+.actor-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  border: 2px solid;
+}
+
+.actor-icon.user { background: #1e2a4a; border-color: var(--blue); }
+.actor-icon.fw { background: #2a1e1e; border-color: var(--accent); }
+.actor-icon.server { background: #1e2a1e; border-color: var(--green); }
+
+.actor-label { font-size: 0.78rem; font-weight: 700; }
+
+.actor-ip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.actor-ip span {
+  display: inline-block;
+  background: #ffffff10;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin: 1px 0;
+}
+
+.arrow-between {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 0.5;
+}
+
+.arrow-line {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--accent));
+  position: relative;
+}
+
+.arrow-line::after {
+  content: '▶';
+  position: absolute;
+  right: -6px;
+  top: -8px;
+  font-size: 0.7rem;
+  color: var(--accent);
+}
+
+.arrow-label {
+  font-size: 0.65rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* STEPS */
+.steps {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.step {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+  cursor: pointer;
+}
+
+.step:hover { border-color: var(--accent); }
+.step.active { border-color: var(--accent); }
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+}
+
+.step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.step-num.s1 { background: #1e2a4a; color: var(--blue); }
+.step-num.s2 { background: #2a2a1e; color: var(--yellow); }
+.step-num.s3 { background: #2a1e1e; color: var(--red); }
+.step-num.s4 { background: #1e2a1e; color: var(--green); }
+
+.step-title {
+  flex: 1;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.step-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.badge-blue { background: #1e2a4a; color: var(--blue); }
+.badge-yellow { background: #2a2a1e; color: var(--yellow); }
+.badge-red { background: #2a1e1e; color: var(--red); }
+.badge-green { background: #1e2a1e; color: var(--green); }
+
+.step-chevron {
+  color: var(--muted);
+  font-size: 0.8rem;
+  transition: transform 0.3s;
+}
+
+.step.active .step-chevron { transform: rotate(180deg); }
+
+.step-body {
+  display: none;
+  padding: 0 18px 18px 18px;
+  border-top: 1px solid var(--border);
+}
+
+.step.active .step-body { display: block; }
+
+.packet-visual {
+  margin: 14px 0;
+  background: #ffffff06;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.packet-visual-title {
+  font-size: 0.65rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+}
+
+.packet-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+}
+
+.packet-row .label {
+  color: var(--muted);
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.ip-tag {
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-weight: 700;
+}
+
+.ip-user { background: #1e2a4a; color: var(--blue); }
+.ip-pub { background: #2a1e1e; color: var(--accent); }
+.ip-priv { background: #1e2a1e; color: var(--green); }
+.ip-changed { background: #2a2a1e; color: var(--yellow); }
+
+.arrow-down {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 4px 0;
+}
+
+.explanation {
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: #c8cad8;
+  margin-top: 10px;
+}
+
+.explanation strong { color: var(--text); }
+
+.highlight-box {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.highlight-box.warn { background: #2a2a1e; border-left: 3px solid var(--yellow); color: var(--yellow); }
+.highlight-box.info { background: #1e2a4a; border-left: 3px solid var(--blue); color: #a0c4ff; }
+.highlight-box.success { background: #1e2a1e; border-left: 3px solid var(--green); color: #a0ffb0; }
+.highlight-box.danger { background: #2a1e1e; border-left: 3px solid var(--red); color: #ffa0a0; }
+
+/* RULE BOX */
+.rule-box {
+  margin-top: 10px;
+  background: #ffffff06;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+}
+
+.rule-box .rule-title {
+  color: var(--muted);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+
+.rule-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.rule-ok { color: var(--green); }
+.rule-bad { color: var(--red); }
+.rule-label { color: var(--muted); width: 30px; }
+
+/* RETENIR */
+.retenir {
+  max-width: 780px;
+  margin: 20px auto 0;
+  background: linear-gradient(135deg, #1a1d27, #1e2030);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+.retenir h3 {
+  color: var(--accent);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 10px;
+}
+
+.retenir p {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: #c8cad8;
+}
+
+.retenir strong { color: var(--accent); }
+</style>
+</head>
+<body>
+<h1>DNAT sur Palo Alto</h1>
+<p class="subtitle">Pourquoi la Security Policy utilise l'IP publique et non l'IP privée</p>
+
+<!-- SCENARIO -->
+<div class="scenario">
+  <h2>📌 Le scénario</h2>
+  <div class="actors">
+    <div class="actor">
+      <div class="actor-icon user">💻</div>
+      <div class="actor-label" style="color:var(--blue)">User Internet</div>
+      <div class="actor-ip"><span>1.2.3.4</span></div>
+    </div>
+
+    <div class="arrow-between">
+      <div class="arrow-line"></div>
+      <div class="arrow-label">requête HTTP</div>
+    </div>
+
+    <div class="actor">
+      <div class="actor-icon fw">🔥</div>
+      <div class="actor-label" style="color:var(--accent)">Palo Alto FW</div>
+      <div class="actor-ip">
+        <span>203.0.113.1</span>
+        <span style="font-size:0.6rem;color:var(--muted)">IP publique</span>
+      </div>
+    </div>
+
+    <div class="arrow-between">
+      <div class="arrow-line"></div>
+      <div class="arrow-label">après DNAT</div>
+    </div>
+
+    <div class="actor">
+      <div class="actor-icon server">🖥️</div>
+      <div class="actor-label" style="color:var(--green)">Serveur Web</div>
+      <div class="actor-ip">
+        <span>192.168.1.50</span>
+        <span style="font-size:0.6rem;color:var(--muted)">IP privée interne</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="steps">
+  <!-- STEP 1 -->
+  <div class="step active" onclick="toggle(this)">
+    <div class="step-header">
+      <div class="step-num s1">1</div>
+      <div class="step-title">Forwarding Lookup</div>
+      <span class="step-badge badge-blue">Route</span>
+      <span class="step-chevron">▼</span>
+    </div>
+    <div class="step-body">
+      <div class="packet-visual">
+        <div class="packet-visual-title">📦 Paquet à ce stade</div>
+        <div class="packet-row"><span class="label">SRC :</span><span class="ip-tag ip-user">1.2.3.4</span></div>
+        <div class="packet-row"><span class="label">DST :</span><span class="ip-tag ip-pub">203.0.113.1</span></div>
+      </div>
+      <div class="explanation">
+        Le firewall reçoit le paquet. Il cherche dans sa <strong>table de routage</strong> comment atteindre <strong>203.0.113.1</strong> — son IP publique sur l'interface <em>untrust</em>.
+      </div>
+      <div class="highlight-box info">
+        ℹ️ Le paquet n'est pas encore modifié. Le firewall sait juste par quelle interface il est arrivé.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step" onclick="toggle(this)">
+    <div class="step-header">
+      <div class="step-num s2">2</div>
+      <div class="step-title">NAT Policy Lookup</div>
+      <span class="step-badge badge-yellow">DNAT détecté</span>
+      <span class="step-chevron">▼</span>
+    </div>
+    <div class="step-body">
+      <div class="packet-visual">
+        <div class="packet-visual-title">📦 Paquet à ce stade</div>
+        <div class="packet-row"><span class="label">SRC :</span><span class="ip-tag ip-user">1.2.3.4</span></div>
+        <div class="packet-row"><span class="label">DST :</span><span class="ip-tag ip-pub">203.0.113.1</span></div>
+        <div class="arrow-down">⬇ DNAT identifié mais PAS encore appliqué</div>
+        <div class="packet-row"><span class="label">futur DST :</span><span class="ip-tag ip-priv">192.168.1.50</span><span style="color:var(--muted);font-size:0.7rem;margin-left:6px">(en attente)</span></div>
+      </div>
+      <div class="explanation">
+        Le firewall trouve une règle NAT : <strong>203.0.113.1 → 192.168.1.50</strong>.<br><br>
+        Il <strong>mémorise</strong> cette traduction mais ne l'applique <strong>pas encore</strong>.<br><br>
+        <strong>192.168.1.50</strong> c'est ton serveur web interne — l'utilisateur ne connaît que l'IP publique, mais derrière c'est ce serveur qui va répondre.
+      </div>
+      <div class="highlight-box warn">
+        ⚠️ Le paquet voyage toujours avec DST = 203.0.113.1 à cette étape !
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step" onclick="toggle(this)">
+    <div class="step-header">
+      <div class="step-num s3">3</div>
+      <div class="step-title">Security Policy Lookup</div>
+      <span class="step-badge badge-red">Décision Allow/Deny</span>
+      <span class="step-chevron">▼</span>
+    </div>
+    <div class="step-body">
+      <div class="packet-visual">
+        <div class="packet-visual-title">📦 Ce que voit la Security Policy</div>
+        <div class="packet-row"><span class="label">SRC :</span><span class="ip-tag ip-user">1.2.3.4</span></div>
+        <div class="packet-row"><span class="label">DST :</span><span class="ip-tag ip-pub">203.0.113.1</span><span style="color:var(--accent);font-size:0.7rem;margin-left:8px">← IP publique !</span></div>
+      </div>
+      <div class="explanation">
+        La Security Policy vérifie le paquet <strong>avant</strong> que le DNAT soit appliqué.<br><br>
+        Elle voit donc <strong>203.0.113.1</strong> comme destination — pas 192.168.1.50.
+      </div>
+
+      <div class="rule-box">
+        <div class="rule-title">Comment écrire la règle ?</div>
+        <div class="rule-row rule-bad"><span class="rule-label">❌</span> DST = <span style="color:var(--green);margin-left:6px">192.168.1.50</span><span style="color:var(--muted);margin-left:8px">← IP privée → NE MATCHERA PAS</span></div>
+        <div class="rule-row rule-ok"><span class="rule-label">✅</span> DST = <span style="color:var(--accent);margin-left:6px">203.0.113.1</span><span style="color:var(--muted);margin-left:8px">← IP publique → CORRECT</span></div>
+      </div>
+
+      <div class="highlight-box danger">
+        🔴 C'est l'erreur classique du débutant : écrire la règle avec l'IP privée du serveur. La règle ne matche jamais et le trafic est bloqué !
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step" onclick="toggle(this)">
+    <div class="step-header">
+      <div class="step-num s4">4</div>
+      <div class="step-title">Session créée — NAT appliqué</div>
+      <span class="step-badge badge-green">Paquet transmis</span>
+      <span class="step-chevron">▼</span>
+    </div>
+    <div class="step-body">
+      <div class="packet-visual">
+        <div class="packet-visual-title">📦 Paquet APRÈS la session</div>
+        <div class="packet-row"><span class="label">SRC :</span><span class="ip-tag ip-user">1.2.3.4</span></div>
+        <div class="packet-row"><span class="label">DST :</span><span class="ip-tag ip-changed">192.168.1.50</span><span style="color:var(--green);font-size:0.7rem;margin-left:8px">← DNAT appliqué !</span></div>
+      </div>
+      <div class="explanation">
+        La Security Policy a autorisé le trafic. La session est créée.<br><br>
+        Maintenant le DNAT est <strong>réellement appliqué</strong> : la destination devient <strong>192.168.1.50</strong> et le paquet est envoyé au serveur web interne.
+      </div>
+      <div class="highlight-box success">
+        ✅ Le serveur web 192.168.1.50 reçoit le paquet et peut répondre à l'utilisateur.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RETENIR -->
+<div class="retenir">
+  <h3>⚡ À retenir absolument</h3>
+  <p>
+    Sur Palo Alto, la <strong>Security Policy s'applique sur les adresses AVANT NAT</strong>.<br><br>
+    Pour un serveur interne <strong>192.168.1.50</strong> exposé via l'IP publique <strong>203.0.113.1</strong>,
+    tu dois écrire ta règle avec <strong>DST = 203.0.113.1</strong> (l'IP publique), pas l'IP privée.
+  </p>
+</div>
+
+<script>
+function toggle(el) {
+  const wasActive = el.classList.contains('active');
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  if (!wasActive) el.classList.add('active');
+}
+</script>
+</body>
+</html>
