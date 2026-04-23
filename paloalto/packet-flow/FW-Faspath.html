@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FW Fastpath</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+:root {
+--bg: #0f1117;
+--panel: #1a1d27;
+--border: #2a2d3a;
+--accent: #ff6b35;
+--blue: #4a9eff;
+--green: #3ddc84;
+--red: #ff4757;
+--yellow: #ffd32a;
+--purple: #a78bfa;
+--cyan: #00d2ff;
+--text: #e8eaf0;
+--muted: #8b8fa8;
+}
+
+- { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+background: var(--bg);
+color: var(--text);
+font-family: 'Syne', sans-serif;
+min-height: 100vh;
+padding: 30px 20px;
+}
+
+h1 {
+text-align: center;
+font-size: 1.6rem;
+font-weight: 800;
+color: var(--cyan);
+margin-bottom: 6px;
+}
+.subtitle {
+text-align: center;
+color: var(--muted);
+font-size: 0.85rem;
+font-family: 'JetBrains Mono', monospace;
+margin-bottom: 30px;
+}
+
+/* TABS */
+.tabs {
+display: flex;
+gap: 8px;
+max-width: 820px;
+margin: 0 auto 20px;
+flex-wrap: wrap;
+}
+.tab {
+padding: 8px 16px;
+border-radius: 8px;
+border: 1px solid var(--border);
+background: var(--panel);
+color: var(--muted);
+font-family: 'JetBrains Mono', monospace;
+font-size: 0.75rem;
+cursor: pointer;
+transition: all 0.2s;
+font-weight: 700;
+}
+.tab:hover { border-color: var(--cyan); color: var(--text); }
+.tab.active { background: var(--cyan); color: #0f1117; border-color: var(--cyan); }
+
+.tab-content { display: none; max-width: 820px; margin: 0 auto; }
+.tab-content.active { display: block; }
+
+.card {
+background: var(--panel);
+border: 1px solid var(--border);
+border-radius: 12px;
+padding: 20px;
+margin-bottom: 16px;
+}
+.card h2 {
+font-size: 1rem;
+font-weight: 800;
+margin-bottom: 14px;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+/* SLOWPATH vs FASTPATH */
+.comparison {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 14px;
+margin-bottom: 16px;
+}
+.comp-box {
+padding: 16px;
+border-radius: 10px;
+border: 1px solid;
+}
+.comp-box.slow { background: #2a1e1e; border-color: var(--accent); }
+.comp-box.fast { background: #1e2a2a; border-color: var(--cyan); }
+.comp-title {
+font-weight: 800;
+font-size: 0.9rem;
+margin-bottom: 10px;
+}
+.comp-box.slow .comp-title { color: var(--accent); }
+.comp-box.fast .comp-title { color: var(--cyan); }
+.comp-item {
+font-size: 0.78rem;
+color: #c8cad8;
+line-height: 1.8;
+font-family: 'JetBrains Mono', monospace;
+}
+
+/* PIPELINE */
+.pipeline {
+display: flex;
+flex-direction: column;
+gap: 6px;
+}
+.pipe-step {
+display: flex;
+align-items: flex-start;
+gap: 12px;
+padding: 12px 14px;
+background: #ffffff06;
+border-radius: 8px;
+border-left: 3px solid var(--border);
+cursor: pointer;
+transition: all 0.2s;
+}
+.pipe-step:hover { background: #ffffff0e; border-left-color: var(--cyan); }
+.pipe-step.active { background: #1e2a2a; border-left-color: var(--cyan); }
+
+.pipe-num {
+width: 28px;
+height: 28px;
+border-radius: 6px;
+background: #ffffff0a;
+display: flex;
+align-items: center;
+justify-content: center;
+font-family: 'JetBrains Mono', monospace;
+font-size: 0.75rem;
+font-weight: 700;
+color: var(--cyan);
+flex-shrink: 0;
+}
+.pipe-content { flex: 1; }
+.pipe-title {
+font-weight: 700;
+font-size: 0.88rem;
+margin-bottom: 2px;
+}
+.pipe-short { font-size: 0.75rem; color: var(--muted); }
+.pipe-detail {
+display: none;
+margin-top: 10px;
+padding: 10px;
+background: #ffffff08;
+border-radius: 6px;
+font-size: 0.8rem;
+line-height: 1.7;
+color: #c8cad8;
+}
+.pipe-step.active .pipe-detail { display: block; }
+
+.pipe-arrow {
+text-align: center;
+color: var(--cyan);
+font-size: 0.7rem;
+opacity: 0.5;
+margin: 2px 0;
+}
+
+/* SESSION TABLE */
+.session-table {
+width: 100%;
+border-collapse: collapse;
+font-size: 0.75rem;
+font-family: 'JetBrains Mono', monospace;
+}
+.session-table th {
+background: #ffffff0a;
+padding: 8px 10px;
+text-align: left;
+color: var(--muted);
+font-size: 0.62rem;
+text-transform: uppercase;
+letter-spacing: 1px;
+border-bottom: 1px solid var(--border);
+}
+.session-table td {
+padding: 9px 10px;
+border-bottom: 1px solid #ffffff06;
+vertical-align: middle;
+}
+.session-table tr { cursor: pointer; transition: background 0.15s; }
+.session-table tr:hover td { background: #ffffff06; }
+.session-table tr.selected td { background: #1e2a2a; }
+
+.state-tag {
+display: inline-block;
+padding: 2px 8px;
+border-radius: 4px;
+font-size: 0.65rem;
+font-weight: 700;
+}
+.state-active { background: #1e2a1e; color: var(--green); }
+.state-closing { background: #2a2a1e; color: var(--yellow); }
+.state-discard { background: #2a1e1e; color: var(--red); }
+
+.session-detail {
+display: none;
+margin-top: 14px;
+padding: 14px;
+background: #ffffff06;
+border-radius: 8px;
+border: 1px solid var(--border);
+}
+.session-detail.show { display: block; }
+.detail-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+margin-top: 10px;
+}
+.detail-item { font-size: 0.78rem; }
+.detail-label {
+font-family: 'JetBrains Mono', monospace;
+font-size: 0.65rem;
+color: var(--muted);
+text-transform: uppercase;
+letter-spacing: 1px;
+margin-bottom: 3px;
+}
+.detail-value {
+font-family: 'JetBrains Mono', monospace;
+font-size: 0.78rem;
+color: var(--text);
+}
+
+/* CLI */
+.cli-block {
+background: #0a0c12;
+border: 1px solid var(--border);
+border-radius: 8px;
+padding: 14px;
+margin: 10px 0;
+font-family: 'JetBrains Mono', monospace;
+font-size: 0.75rem;
+line-height: 1.8;
+}
+.cli-prompt { color: var(--green); }
+.cli-cmd { color: var(--cyan); }
+.cli-comment { color: var(--muted); }
+.cli-output { color: #c8cad8; }
+.cli-highlight { color: var(--yellow); }
+
+/* DEPANNAGE STEPS */
+.dep-step {
+padding: 14px;
+background: #ffffff06;
+border-radius: 8px;
+border-left: 3px solid var(--border);
+margin-bottom: 10px;
+cursor: pointer;
+transition: all 0.2s;
+}
+.dep-step:hover { background: #ffffff0a; }
+.dep-step.open { border-left-color: var(--cyan); background: #1e2a2a; }
+.dep-step-header {
+display: flex;
+align-items: center;
+gap: 10px;
+font-weight: 700;
+font-size: 0.88rem;
+}
+.dep-step-num {
+width: 24px;
+height: 24px;
+border-radius: 5px;
+background: var(--cyan);
+color: #0f1117;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 0.72rem;
+font-weight: 800;
+flex-shrink: 0;
+}
+.dep-step-body {
+display: none;
+margin-top: 10px;
+font-size: 0.8rem;
+line-height: 1.7;
+color: #c8cad8;
+}
+.dep-step.open .dep-step-body { display: block; }
+
+.highlight-box {
+margin-top: 12px;
+padding: 12px 14px;
+border-radius: 8px;
+font-size: 0.82rem;
+line-height: 1.6;
+}
+.highlight-box.warn { background: #2a2a1e; border-left: 3px solid var(--yellow); color: var(--yellow); }
+.highlight-box.info { background: #1e2a4a; border-left: 3px solid var(--blue); color: #a0c4ff; }
+.highlight-box.success { background: #1e2a1e; border-left: 3px solid var(--green); color: #a0ffb0; }
+
+/* SESSION SIMULATOR */
+.sim-btn {
+padding: 9px 18px;
+background: var(--cyan);
+border: none;
+border-radius: 8px;
+color: #0f1117;
+font-family: 'Syne', sans-serif;
+font-weight: 800;
+font-size: 0.85rem;
+cursor: pointer;
+transition: opacity 0.2s;
+margin-right: 8px;
+margin-top: 10px;
+}
+.sim-btn:hover { opacity: 0.85; }
+.sim-btn.danger { background: var(--red); color: white; }
+.sim-btn.warn { background: var(--yellow); color: #0f1117; }
+
+.packet-flow {
+display: flex;
+align-items: center;
+gap: 8px;
+margin: 14px 0;
+flex-wrap: wrap;
+}
+.pf-box {
+padding: 8px 12px;
+border-radius: 6px;
+font-family: 'JetBrains Mono', monospace;
+font-size: 0.72rem;
+font-weight: 700;
+border: 1px solid;
+transition: all 0.4s;
+}
+.pf-box.user { background: #1e2a4a; border-color: var(--blue); color: var(--blue); }
+.pf-box.fw { background: #1e2a2a; border-color: var(--cyan); color: var(--cyan); }
+.pf-box.server { background: #1e2a1e; border-color: var(--green); color: var(--green); }
+.pf-box.blocked { background: #2a1e1e; border-color: var(--red); color: var(--red); }
+.pf-arrow { color: var(--muted); font-size: 0.8rem; }
+
+.flow-log {
+margin-top: 10px;
+background: #0a0c12;
+border: 1px solid var(--border);
+border-radius: 8px;
+padding: 12px 14px;
+font-family: 'JetBrains Mono', monospace;
+font-size: 0.72rem;
+line-height: 1.8;
+min-height: 80px;
+max-height: 160px;
+overflow-y: auto;
+}
+.log-new { color: var(--cyan); }
+.log-fast { color: var(--green); }
+.log-deny { color: var(--red); }
+.log-info { color: var(--muted); }
+
+@media (max-width: 600px) {
+.comparison { grid-template-columns: 1fr; }
+.detail-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<h1>FW Fastpath — Palo Alto</h1>
+<p class="subtitle">Comprendre les sessions et le traitement rapide des paquets</p>
+
+<!-- TABS -->
+<div class="tabs">
+<div class="tab active" onclick="showTab('concept')">1 — Concept</div>
+<div class="tab" onclick="showTab('pipeline')">2 — Pipeline Fastpath</div>
+<div class="tab" onclick="showTab('sessions')">3 — Sessions</div>
+<div class="tab" onclick="showTab('depannage')">4 — Dépannage</div>
+</div>
+
+<!-- TAB 1 : CONCEPT -->
+<div class="tab-content active" id="tab-concept">
+<div class="card">
+<h2>⚡ Slowpath vs Fastpath</h2>
+<div class="comparison">
+<div class="comp-box slow">
+<div class="comp-title">🐢 Slowpath</div>
+<div class="comp-item">
+→ Nouveau flux<br>
+→ Forwarding lookup<br>
+→ NAT lookup<br>
+→ Security Policy<br>
+→ App-ID<br>
+→ Création de session<br>
+<br>
+<span style="color:var(--accent)">Coûteux en ressources</span>
+</div>
+</div>
+<div class="comp-box fast">
+<div class="comp-title">⚡ Fastpath</div>
+<div class="comp-item">
+→ Session déjà connue<br>
+→ Lookup session table<br>
+→ NAT appliqué<br>
+→ SSL decrypt si besoin<br>
+→ Content inspection<br>
+→ Transmit<br>
+<br>
+<span style="color:var(--cyan)">Très rapide, optimisé</span>
+</div>
+</div>
+</div>
+
+```
+<div style="font-size:0.85rem;line-height:1.8;color:#c8cad8;margin-bottom:14px">
+  La <strong>session table</strong> est le cœur du Fastpath. C'est une table en mémoire qui contient tous les flux actifs autorisés par le Slowpath.
+</div>
+
+<!-- ANIMATION SIMULATEUR -->
+<div style="background:#ffffff06;border-radius:10px;padding:16px;">
+  <div style="font-size:0.75rem;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Simulateur de flux</div>
+
+  <div class="packet-flow" id="packetFlow">
+    <div class="pf-box user">👤 User<br>192.168.1.10</div>
+    <div class="pf-arrow">→</div>
+    <div class="pf-box fw" id="fwBox">🔥 Firewall</div>
+    <div class="pf-arrow">→</div>
+    <div class="pf-box server">🖥 Serveur<br>8.8.8.8</div>
+  </div>
+
+  <div class="flow-log" id="flowLog">
+    <span class="log-info">// Clique sur un bouton pour simuler un flux...</span>
+  </div>
+
+  <div>
+    <button class="sim-btn" onclick="simFlow('new')">▶ Nouveau flux (Slowpath)</button>
+    <button class="sim-btn" onclick="simFlow('existing')">⚡ Flux existant (Fastpath)</button>
+    <button class="sim-btn danger" onclick="simFlow('blocked')">🔴 Flux bloqué</button>
+    <button class="sim-btn warn" onclick="simFlow('expired')">⏱ Session expirée</button>
+  </div>
+</div>
+```
+
+</div>
+
+<div class="card">
+<h2>🕐 Durée de vie d'une session</h2>
+<div style="font-size:0.83rem;line-height:1.8;color:#c8cad8;margin-bottom:12px">
+Chaque session a un <strong>timer</strong>. Si aucun paquet ne passe pendant ce délai, la session est supprimée.
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">
+<div style="display:grid;grid-template-columns:180px 100px 1fr;gap:10px;padding:8px 12px;background:#ffffff06;border-radius:6px;align-items:center">
+<span style="color:var(--cyan)">TCP (établi)</span>
+<span style="color:var(--yellow)">3600 sec</span>
+<span style="color:var(--muted)">Session HTTP/HTTPS active</span>
+</div>
+<div style="display:grid;grid-template-columns:180px 100px 1fr;gap:10px;padding:8px 12px;background:#ffffff06;border-radius:6px;align-items:center">
+<span style="color:var(--cyan)">TCP (demi-fermé)</span>
+<span style="color:var(--yellow)">120 sec</span>
+<span style="color:var(--muted)">FIN envoyé mais pas ACK</span>
+</div>
+<div style="display:grid;grid-template-columns:180px 100px 1fr;gap:10px;padding:8px 12px;background:#ffffff06;border-radius:6px;align-items:center">
+<span style="color:var(--cyan)">UDP</span>
+<span style="color:var(--yellow)">30 sec</span>
+<span style="color:var(--muted)">DNS, NTP, etc.</span>
+</div>
+<div style="display:grid;grid-template-columns:180px 100px 1fr;gap:10px;padding:8px 12px;background:#ffffff06;border-radius:6px;align-items:center">
+<span style="color:var(--cyan)">ICMP</span>
+<span style="color:var(--yellow)">6 sec</span>
+<span style="color:var(--muted)">Ping</span>
+</div>
+</div>
+<div class="highlight-box warn" style="margin-top:12px">
+⚠️ Si un user se plaint que sa connexion "coupe" régulièrement → timer de session trop court ou application silencieuse (pas de keepalive).
+</div>
+</div>
+</div>
+
+<!-- TAB 2 : PIPELINE -->
+<div class="tab-content" id="tab-pipeline">
+<div class="card">
+<h2>🔄 Les étapes du Fastpath</h2>
+<p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px">Clique sur chaque étape pour le détail</p>
+
+```
+<div class="pipeline">
+
+  <div class="pipe-step" onclick="togglePipe(this)">
+    <div class="pipe-num">1</div>
+    <div class="pipe-content">
+      <div class="pipe-title">Firewall Session Lookup</div>
+      <div class="pipe-short">Le firewall cherche si une session existe pour ce flux</div>
+      <div class="pipe-detail">
+        Le firewall compare le paquet entrant avec sa <strong>session table</strong>.<br>
+        Il cherche un match sur : <strong>IP src, IP dst, port src, port dst, protocole, interface</strong>.<br><br>
+        ✅ Match trouvé → Fastpath, traitement rapide<br>
+        ❌ Pas de match → Slowpath, nouvelle analyse complète<br><br>
+        <strong>CLI :</strong><br>
+        <code style="background:#ffffff10;padding:2px 8px;border-radius:4px;font-size:0.72rem">show session all filter source 192.168.1.10</code>
+      </div>
+    </div>
+  </div>
+  <div class="pipe-arrow">↓</div>
+
+  <div class="pipe-step" onclick="togglePipe(this)">
+    <div class="pipe-num">2</div>
+    <div class="pipe-content">
+      <div class="pipe-title">L2-L4 Firewall Processing</div>
+      <div class="pipe-short">Vérifie l'état de la session, applique le NAT</div>
+      <div class="pipe-detail">
+        Trois actions à cette étape :<br><br>
+        1. <strong>Vérification d'état</strong> : la session est-elle encore en état actif ? (pas en closing, discard...)<br>
+        2. <strong>Mise à jour du timer</strong> : chaque paquet remet le compteur à zéro<br>
+        3. <strong>Application du NAT</strong> : la traduction d'adresse mémorisée lors du Slowpath est appliquée<br><br>
+        Si la session n'est plus en état actif → paquet <strong>discard</strong>.
+      </div>
+    </div>
+  </div>
+  <div class="pipe-arrow">↓</div>
+
+  <div class="pipe-step" onclick="togglePipe(this)">
+    <div class="pipe-num">3</div>
+    <div class="pipe-content">
+      <div class="pipe-title">SSL Proxy : decrypt si applicable</div>
+      <div class="pipe-short">Déchiffrement SSL/TLS si une Decryption Policy s'applique</div>
+      <div class="pipe-detail">
+        Si le trafic est HTTPS et qu'une <strong>Decryption Policy</strong> matche, le firewall déchiffre le contenu.<br><br>
+        Cela permet d'inspecter le contenu réel des flux chiffrés (antivirus, URL filtering, IPS...).<br><br>
+        ⚠️ Le déchiffrement consomme des ressources CPU — à surveiller sur les firewalls chargés.<br><br>
+        On verra la Decryption Policy en détail dans un module dédié.
+      </div>
+    </div>
+  </div>
+  <div class="pipe-arrow">↓</div>
+
+  <div class="pipe-step" onclick="togglePipe(this)">
+    <div class="pipe-num">4</div>
+    <div class="pipe-content">
+      <div class="pipe-title">Session App identified ?</div>
+      <div class="pipe-short">L'application du flux est-elle déjà identifiée ?</div>
+      <div class="pipe-detail">
+        Palo Alto utilise l'<strong>App-ID</strong> pour identifier l'application réelle du flux.<br><br>
+        ✅ <strong>Oui</strong> → on passe directement à la vérification Content Inspection<br>
+        ❌ <strong>Non</strong> → le flux part vers le module <strong>Application Identification</strong> pour analyse (on verra ça dans le bloc 3)<br><br>
+        💡 Sur les premières secondes d'un flux, l'application peut ne pas encore être identifiée — c'est normal.
+      </div>
+    </div>
+  </div>
+  <div class="pipe-arrow">↓</div>
+
+  <div class="pipe-step" onclick="togglePipe(this)">
+    <div class="pipe-num">5</div>
+    <div class="pipe-content">
+      <div class="pipe-title">Content Inspection applicable ?</div>
+      <div class="pipe-short">Faut-il inspecter le contenu du paquet ?</div>
+      <div class="pipe-detail">
+        Si un <strong>Security Profile</strong> est attaché à la règle qui a autorisé le flux (antivirus, IPS, URL filtering...), le contenu est inspecté.<br><br>
+        ✅ <strong>Non</strong> → le paquet est transmis directement (Forwarding/Egress)<br>
+        ✅ <strong>Oui</strong> → passage par le module <strong>Content Inspection SP3/CTD</strong><br><br>
+        On verra Content Inspection dans le bloc 5.
+      </div>
+    </div>
+  </div>
+
+</div>
+```
+
+</div>
+</div>
+
+<!-- TAB 3 : SESSIONS -->
+<div class="tab-content" id="tab-sessions">
+<div class="card">
+<h2>📋 Session Table — Exemple</h2>
+<p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px">Clique sur une session pour voir le détail</p>
+
+```
+<table class="session-table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Src IP:Port</th>
+      <th>Dst IP:Port</th>
+      <th>Proto</th>
+      <th>App</th>
+      <th>État</th>
+      <th>Règle</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr onclick="showSessionDetail(this, 1)">
+      <td>10042</td>
+      <td>192.168.1.10:54231</td>
+      <td>142.250.74.46:443</td>
+      <td>TCP</td>
+      <td>ssl</td>
+      <td><span class="state-tag state-active">ACTIVE</span></td>
+      <td>Allow-web</td>
+    </tr>
+    <tr onclick="showSessionDetail(this, 2)">
+      <td>10043</td>
+      <td>192.168.1.15:61022</td>
+      <td>8.8.8.8:53</td>
+      <td>UDP</td>
+      <td>dns</td>
+      <td><span class="state-tag state-active">ACTIVE</span></td>
+      <td>Allow-DNS</td>
+    </tr>
+    <tr onclick="showSessionDetail(this, 3)">
+      <td>10044</td>
+      <td>192.168.1.20:49812</td>
+      <td>203.0.113.5:80</td>
+      <td>TCP</td>
+      <td>web-browsing</td>
+      <td><span class="state-tag state-closing">CLOSING</span></td>
+      <td>Allow-web</td>
+    </tr>
+    <tr onclick="showSessionDetail(this, 4)">
+      <td>10045</td>
+      <td>192.168.1.30:55100</td>
+      <td>1.2.3.4:4444</td>
+      <td>TCP</td>
+      <td>unknown</td>
+      <td><span class="state-tag state-discard">DISCARD</span></td>
+      <td>Deny-all</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="session-detail" id="sessionDetail"></div>
+
+<div class="highlight-box info" style="margin-top:14px">
+  ℹ️ <strong>DISCARD</strong> ≠ session inexistante — Palo Alto crée quand même une entrée en session table pour les flux bloqués, afin d'éviter de re-analyser chaque paquet d'un flux déjà refusé.
+</div>
+```
+
+</div>
+
+<div class="card">
+<h2>💻 Commandes CLI — Sessions</h2>
+<div class="cli-block">
+<div><span class="cli-comment">// Voir toutes les sessions actives</span></div>
+<div><span class="cli-prompt">admin@PA> </span><span class="cli-cmd">show session all</span></div>
+<br>
+<div><span class="cli-comment">// Filtrer par IP source</span></div>
+<div><span class="cli-prompt">admin@PA> </span><span class="cli-cmd">show session all filter source 192.168.1.10</span></div>
+<br>
+<div><span class="cli-comment">// Voir le détail d'une session (remplace 10042 par l'ID)</span></div>
+<div><span class="cli-prompt">admin@PA> </span><span class="cli-cmd">show session id 10042</span></div>
+<br>
+<div><span class="cli-comment">// Effacer une session bloquée (utile pour dépannage)</span></div>
+<div><span class="cli-prompt">admin@PA> </span><span class="cli-cmd">clear session id 10042</span></div>
+<br>
+<div><span class="cli-comment">// Voir les stats de la session table</span></div>
+<div><span class="cli-prompt">admin@PA> </span><span class="cli-cmd">show session info</span></div>
+</div>
+</div>
+</div>
+
+<!-- TAB 4 : DEPANNAGE -->
+<div class="tab-content" id="tab-depannage">
+<div class="card">
+<h2>🔧 Dépannage — Problèmes liés aux sessions</h2>
+
+```
+<div class="dep-step" onclick="toggleDep(this)">
+  <div class="dep-step-header">
+    <div class="dep-step-num">1</div>
+    Un user avait accès, maintenant plus rien subitement
+  </div>
+  <div class="dep-step-body">
+    <strong>Cause probable</strong> : session expirée ou corrompue.<br><br>
+    <strong>Vérification :</strong>
+    <div class="cli-block">
+      <div><span class="cli-prompt">admin@PA> </span><span class="cli-cmd">show session all filter source 192.168.1.10</span></div>
+      <div><span class="cli-output">→ Si aucune session → le Slowpath va recréer une nouvelle session au prochain paquet</span></div>
+      <div><span class="cli-output">→ Si session en état DISCARD → <span class="cli-highlight">clear session id &lt;ID&gt;</span></span></div>
+    </div>
+    <div class="highlight-box success">✅ Souvent, forcer la reconnexion du client suffit — une nouvelle session Slowpath sera créée.</div>
+  </div>
+</div>
+
+<div class="dep-step" onclick="toggleDep(this)">
+  <div class="dep-step-header">
+    <div class="dep-step-num">2</div>
+    Connexion qui "coupe" toutes les X minutes
+  </div>
+  <div class="dep-step-body">
+    <strong>Cause probable</strong> : timer de session trop court pour une application silencieuse (pas de keepalive).<br><br>
+    <strong>Vérification :</strong>
+    <div class="cli-block">
+      <div><span class="cli-prompt">admin@PA> </span><span class="cli-cmd">show session id &lt;ID&gt;</span></div>
+      <div><span class="cli-output">→ Regarde le champ <span class="cli-highlight">timeout</span> — combien de secondes restantes ?</span></div>
+    </div>
+    <strong>Solution</strong> : augmenter le timer dans <strong>Network > Virtual Router > Protocol > Session Timer</strong> ou configurer un keepalive au niveau applicatif.
+  </div>
+</div>
+
+<div class="dep-step" onclick="toggleDep(this)">
+  <div class="dep-step-header">
+    <div class="dep-step-num">3</div>
+    Pas de log dans Monitor > Traffic pour un flux
+  </div>
+  <div class="dep-step-body">
+    <strong>Cause probable</strong> : le paquet ne passe même pas par le Slowpath — problème en amont.<br><br>
+    <strong>Checklist :</strong><br><br>
+    → Le paquet arrive-t-il sur le firewall ? Vérifier avec <code style="background:#ffffff10;padding:1px 6px;border-radius:3px">show interface &lt;eth1/1&gt;</code><br>
+    → La route existe-t-elle ? <code style="background:#ffffff10;padding:1px 6px;border-radius:3px">test routing fib-lookup virtual-router default ip &lt;DST&gt;</code><br>
+    → La zone est-elle correcte ? <strong>Network > Interfaces</strong><br><br>
+    <div class="highlight-box warn">⚠️ Sans log = le problème est avant la Security Policy. Commencer par le routing et les zones.</div>
+  </div>
+</div>
+
+<div class="dep-step" onclick="toggleDep(this)">
+  <div class="dep-step-header">
+    <div class="dep-step-num">4</div>
+    Session table pleine — firewall sous charge
+  </div>
+  <div class="dep-step-body">
+    <strong>Vérification :</strong>
+    <div class="cli-block">
+      <div><span class="cli-prompt">admin@PA> </span><span class="cli-cmd">show session info</span></div>
+      <div><span class="cli-output">→ Regarde <span class="cli-highlight">Number of sessions supported</span> vs <span class="cli-highlight">Active sessions</span></span></div>
+    </div>
+    Si la table est proche du maximum → risque de refus de nouvelles connexions même pour du trafic légitime.<br><br>
+    <strong>Action</strong> : réduire les timers, nettoyer les vieilles sessions avec <code style="background:#ffffff10;padding:1px 6px;border-radius:3px">clear session all</code> (⚠️ coupe tout le trafic temporairement).
+  </div>
+</div>
+```
+
+</div>
+</div>
+
+<script>
+function showTab(name) {
+document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+document.getElementById('tab-' + name).classList.add('active');
+event.target.classList.add('active');
+}
+
+function togglePipe(el) {
+const wasActive = el.classList.contains('active');
+document.querySelectorAll('.pipe-step').forEach(s => s.classList.remove('active'));
+if (!wasActive) el.classList.add('active');
+}
+
+function toggleDep(el) {
+const wasOpen = el.classList.contains('open');
+document.querySelectorAll('.dep-step').forEach(s => s.classList.remove('open'));
+if (!wasOpen) el.classList.add('open');
+}
+
+const sessionDetails = {
+1: { id: 10042, src: '192.168.1.10:54231', dst: '142.250.74.46:443', app: 'ssl', rule: 'Allow-web', state: 'ACTIVE', nat: 'SNAT → 203.0.113.1:32145', timeout: '3487 sec', bytes: '145,230', vsys: 'vsys1' },
+2: { id: 10043, src: '192.168.1.15:61022', dst: '8.8.8.8:53', app: 'dns', rule: 'Allow-DNS', state: 'ACTIVE', nat: 'Aucun', timeout: '12 sec', bytes: '512', vsys: 'vsys1' },
+3: { id: 10044, src: '192.168.1.20:49812', dst: '203.0.113.5:80', app: 'web-browsing', rule: 'Allow-web', state: 'CLOSING', nat: 'SNAT → 203.0.113.1:41233', timeout: '45 sec', bytes: '28,400', vsys: 'vsys1' },
+4: { id: 10045, src: '192.168.1.30:55100', dst: '1.2.3.4:4444', app: 'unknown', rule: 'Deny-all', state: 'DISCARD', nat: 'N/A', timeout: '30 sec', bytes: '0', vsys: 'vsys1' },
+};
+
+function showSessionDetail(row, id) {
+document.querySelectorAll('.session-table tr').forEach(r => r.classList.remove('selected'));
+row.classList.add('selected');
+const s = sessionDetails[id];
+const d = document.getElementById('sessionDetail');
+d.className = 'session-detail show';
+const stateColor = s.state === 'ACTIVE' ? 'var(--green)' : s.state === 'CLOSING' ? 'var(--yellow)' : 'var(--red)';
+d.innerHTML =       `<div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Détail session #${s.id}</div>       <div class="detail-grid">         <div class="detail-item"><div class="detail-label">Source</div><div class="detail-value">${s.src}</div></div>         <div class="detail-item"><div class="detail-label">Destination</div><div class="detail-value">${s.dst}</div></div>         <div class="detail-item"><div class="detail-label">Application</div><div class="detail-value" style="color:var(--purple)">${s.app}</div></div>         <div class="detail-item"><div class="detail-label">Règle matchée</div><div class="detail-value" style="color:var(--cyan)">${s.rule}</div></div>         <div class="detail-item"><div class="detail-label">État</div><div class="detail-value" style="color:${stateColor}">${s.state}</div></div>         <div class="detail-item"><div class="detail-label">NAT appliqué</div><div class="detail-value">${s.nat}</div></div>         <div class="detail-item"><div class="detail-label">Timeout restant</div><div class="detail-value" style="color:var(--yellow)">${s.timeout}</div></div>         <div class="detail-item"><div class="detail-label">Bytes transférés</div><div class="detail-value">${s.bytes}</div></div>       </div>       ${s.state === 'DISCARD' ? '<div style="margin-top:10px;padding:10px 12px;background:#2a1e1e;border-radius:6px;color:var(--red);font-size:0.78rem;border-left:3px solid var(--red)">🔴 Ce flux est bloqué. Pour le débloquer : <code>clear session id ' + s.id + '</code> puis vérifier la Security Policy.</div>' : ''}`    ;
+}
+
+// FLOW SIMULATOR
+const flowScenarios = {
+new: [
+{ cls: 'log-info', text: '// Nouveau paquet reçu : 192.168.1.10 → 8.8.8.8:443' },
+{ cls: 'log-info', text: '→ Session lookup... aucune session trouvée' },
+{ cls: 'log-new', text: '→ SLOWPATH déclenché' },
+{ cls: 'log-new', text: '→ Forwarding lookup : route via ethernet1/1 ✓' },
+{ cls: 'log-new', text: '→ NAT lookup : SNAT appliqué → 203.0.113.1' },
+{ cls: 'log-new', text: '→ Security Policy : règle "Allow-web" matche ✓' },
+{ cls: 'log-new', text: '→ Session #10046 créée et installée' },
+{ cls: 'log-fast', text: '✅ Paquet transmis — prochains paquets via FASTPATH' },
+],
+existing: [
+{ cls: 'log-info', text: '// Paquet reçu : 192.168.1.10 → 8.8.8.8:443' },
+{ cls: 'log-fast', text: '→ Session lookup... session #10046 trouvée ✓' },
+{ cls: 'log-fast', text: '→ FASTPATH déclenché ⚡' },
+{ cls: 'log-fast', text: '→ Session état : ACTIVE ✓' },
+{ cls: 'log-fast', text: '→ Timer remis à zéro (3600 sec)' },
+{ cls: 'log-fast', text: '→ NAT appliqué depuis session ✓' },
+{ cls: 'log-fast', text: '✅ Paquet transmis instantanément' },
+],
+blocked: [
+{ cls: 'log-info', text: '// Paquet reçu : 192.168.1.30 → 1.2.3.4:4444' },
+{ cls: 'log-info', text: '→ Session lookup... aucune session' },
+{ cls: 'log-new', text: '→ SLOWPATH déclenché' },
+{ cls: 'log-new', text: '→ Forwarding lookup : route trouvée ✓' },
+{ cls: 'log-new', text: '→ NAT lookup : aucune règle NAT' },
+{ cls: 'log-deny', text: '→ Security Policy : "Deny-all" matche' },
+{ cls: 'log-deny', text: '→ Session #10047 créée en état DISCARD' },
+{ cls: 'log-deny', text: '🔴 Paquet bloqué — log généré dans Monitor > Traffic' },
+],
+expired: [
+{ cls: 'log-info', text: '// Paquet reçu : 192.168.1.10 → 142.250.74.46:443' },
+{ cls: 'log-info', text: '→ Session lookup... session #10040 trouvée' },
+{ cls: 'log-fast', text: '→ FASTPATH déclenché ⚡' },
+{ cls: 'log-deny', text: '→ Vérification état : session EXPIRED (timeout dépassé)' },
+{ cls: 'log-deny', text: '→ Paquet discard — session supprimée' },
+{ cls: 'log-new', text: '→ Nouveau SLOWPATH pour recréer la session' },
+{ cls: 'log-fast', text: '✅ Nouvelle session créée — connexion rétablie' },
+],
+};
+
+function simFlow(type) {
+const log = document.getElementById('flowLog');
+log.innerHTML = '';
+const steps = flowScenarios[type];
+let i = 0;
+function addStep() {
+if (i >= steps.length) return;
+const s = steps[i];
+const div = document.createElement('div');
+div.className = s.cls;
+div.textContent = s.text;
+log.appendChild(div);
+log.scrollTop = log.scrollHeight;
+i++;
+setTimeout(addStep, 350);
+}
+addStep();
+}
+</script>
+</body>
+</html>
