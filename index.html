@@ -1,192 +1,151 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArchiZeroTrust – Documentation</title>
+<!-- ===== SIDEBAR DYNAMIQUE ===== -->
+<style>
+    /* Container */
+    .sidebar {
+        width: 260px;
+        background-color: #151820;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        padding: 25px 20px;
+        overflow-y: auto;
+        border-right: 1px solid #2a2f3a;
+        font-family: "Segoe UI", Arial, sans-serif;
+    }
 
-    <style>
-        /* ====== GLOBAL ====== */
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background-color: #0f1116;
-            color: #e5e5e5;
-            display: flex;
-        }
+    .sidebar h2 {
+        margin-top: 0;
+        color: #4da3ff;
+        font-size: 22px;
+        letter-spacing: 0.5px;
+    }
 
-        h1, h2, h3 {
-            font-weight: 600;
-        }
+    /* ===== DETAILS / SUMMARY ===== */
+    details {
+        margin-bottom: 12px;
+        border-radius: 6px;
+        background-color: #1a1d26;
+        border: 1px solid #2a2f3a;
+        transition: 0.3s;
+    }
 
-        a {
-            text-decoration: none;
-        }
+    details[open] {
+        background-color: #20242f;
+        border-color: #4da3ff;
+    }
 
-        /* ====== SIDEBAR ====== */
-        .sidebar {
-            width: 260px;
-            background-color: #151820;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 25px 20px;
-            overflow-y: auto;
-            border-right: 1px solid #2a2f3a;
-        }
+    summary {
+        cursor: pointer;
+        padding: 10px 12px;
+        color: #7bb8ff;
+        font-size: 15px;
+        font-weight: 600;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-        .sidebar h2 {
-            margin-top: 0;
-            color: #4da3ff;
-            font-size: 22px;
-            letter-spacing: 0.5px;
-        }
+    /* Flèche animée */
+    summary::after {
+        content: "▸";
+        transition: transform 0.25s ease;
+        font-size: 14px;
+        color: #4da3ff;
+    }
 
-        .sidebar h3 {
-            margin-top: 25px;
-            margin-bottom: 10px;
-            color: #7bb8ff;
-            font-size: 15px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-        }
+    details[open] summary::after {
+        transform: rotate(90deg);
+    }
 
-        .sidebar a {
-            display: block;
-            color: #c7c7c7;
-            padding: 6px 0;
-            font-size: 15px;
-            transition: 0.2s;
-        }
+    /* Liens internes */
+    .sidebar a {
+        display: block;
+        padding: 6px 16px;
+        color: #c7c7c7;
+        font-size: 14px;
+        text-decoration: none;
+        transition: 0.2s;
+    }
 
-        .sidebar a:hover {
-            color: #4da3ff;
-            padding-left: 4px;
-        }
+    .sidebar a:hover {
+        color: #4da3ff;
+        padding-left: 22px;
+    }
+</style>
 
-        /* ====== CONTENT ====== */
-        .content {
-            margin-left: 260px;
-            padding: 40px;
-            max-width: 900px;
-        }
+<div class="sidebar">
+    <h2>ArchiZeroTrust</h2>
 
-        h1 {
-            color: #4da3ff;
-            margin-top: 0;
-            font-size: 32px;
-        }
+    <a href="/ArchiZeroTrust/">🏠 Accueil</a>
 
-        h2.section-title {
-            margin-top: 40px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid #2a2f3a;
-            color: #7bb8ff;
-        }
-
-        /* ====== CODE BLOCKS ====== */
-        pre {
-            background-color: #1a1d26;
-            padding: 14px;
-            border-radius: 6px;
-            overflow-x: auto;
-            border: 1px solid #2a2f3a;
-        }
-
-        code {
-            color: #ffdd88;
-            font-size: 14px;
-        }
-
-        /* ====== MOBILE ====== */
-        @media (max-width: 900px) {
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
-                border-right: none;
-                border-bottom: 1px solid #2a2f3a;
-            }
-
-            .content {
-                margin-left: 0;
-                padding: 20px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <h2>ArchiZeroTrust</h2>
-
-        <a href="/ArchiZeroTrust/">🏠 Accueil</a>
-
-        <h3>CCIE</h3>
+    <!-- CCIE -->
+    <details>
+        <summary>CCIE</summary>
         <a href="/ArchiZeroTrust/ccie/routing/ospf/">OSPF</a>
         <a href="/ArchiZeroTrust/ccie/routing/bgp/">BGP</a>
         <a href="/ArchiZeroTrust/ccie/switching/">Switching</a>
+    </details>
 
-        <h3>ISE</h3>
+    <!-- ISE -->
+    <details>
+        <summary>ISE</summary>
         <a href="/ArchiZeroTrust/ise/authentication/">Authentication</a>
         <a href="/ArchiZeroTrust/ise/authorization/">Authorization</a>
         <a href="/ArchiZeroTrust/ise/pxgrid/">pxGrid</a>
+    </details>
 
-        <h3>Infoblox</h3>
+    <!-- Infoblox -->
+    <details>
+        <summary>Infoblox</summary>
         <a href="/ArchiZeroTrust/infoblox/dns/">DNS</a>
         <a href="/ArchiZeroTrust/infoblox/dhcp/">DHCP</a>
         <a href="/ArchiZeroTrust/infoblox/ipam/">IPAM</a>
+    </details>
 
-        <h3>Palo Alto</h3>
+    <!-- Palo Alto -->
+    <details>
+        <summary>Palo Alto</summary>
         <a href="/ArchiZeroTrust/paloalto/policies/">Policies</a>
         <a href="/ArchiZeroTrust/paloalto/app-id/">App-ID</a>
         <a href="/ArchiZeroTrust/paloalto/user-id/">User-ID</a>
+    </details>
 
-        <h3>Microsoft SC-300</h3>
+    <!-- Microsoft SC-300 -->
+    <details>
+        <summary>Microsoft SC‑300</summary>
         <a href="/ArchiZeroTrust/microsoft-identity-sc300/identity/">Identity</a>
         <a href="/ArchiZeroTrust/microsoft-identity-sc300/conditional-access/">Conditional Access</a>
+    </details>
 
-        <h3>DevNet</h3>
+    <!-- DevNet -->
+    <details>
+        <summary>DevNet</summary>
         <a href="/ArchiZeroTrust/devnet/python/">Python</a>
         <a href="/ArchiZeroTrust/devnet/restconf/">RESTCONF</a>
         <a href="/ArchiZeroTrust/devnet/netconf/">NETCONF</a>
+    </details>
 
-        <h3>Datacenter</h3>
+    <!-- Datacenter -->
+    <details>
+        <summary>Datacenter</summary>
         <a href="/ArchiZeroTrust/datacenter/aci/">ACI</a>
         <a href="/ArchiZeroTrust/datacenter/vxlan-evpn/">VXLAN/EVPN</a>
+    </details>
 
-        <h3>Checkpoint</h3>
+    <!-- Checkpoint -->
+    <details>
+        <summary>Checkpoint</summary>
         <a href="/ArchiZeroTrust/checkpoint/policies/">Policies</a>
         <a href="/ArchiZeroTrust/checkpoint/vpn/">VPN</a>
+    </details>
 
-        <h3>Zero Trust</h3>
+    <!-- Zero Trust -->
+    <details>
+        <summary>Zero Trust</summary>
         <a href="/ArchiZeroTrust/zero-trust/principles/">Principes</a>
         <a href="/ArchiZeroTrust/zero-trust/identity/">Identity</a>
         <a href="/ArchiZeroTrust/zero-trust/network-segmentation/">Segmentation</a>
-    </div>
-
-    <!-- Main content -->
-    <div class="content">
-        <h1>Bienvenue dans ArchiZeroTrust</h1>
-
-        <p>
-            Ceci est votre base de connaissance personnelle pour tout ce qui touche à 
-            l’architecture réseau, la sécurité, Zero Trust, CCIE, ISE, Palo Alto, Infoblox, DevNet, Datacenter, Checkpoint et Microsoft SC‑300.
-        </p>
-
-        <h2 class="section-title">📘 Exemple de section</h2>
-
-        <p>Vous pouvez mettre ici vos artefacts, vos schémas, vos notes, vos labs, etc.</p>
-
-        <pre><code>
-# Exemple de code
-show ip route
-        </code></pre>
-
-    </div>
-
-</body>
-</html>
+    </details>
+</div>
