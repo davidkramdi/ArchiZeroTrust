@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Policy</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --panel: #1a1d27;
+    --border: #2a2d3a;
+    --accent: #ff6b35;
+    --blue: #4a9eff;
+    --green: #3ddc84;
+    --red: #ff4757;
+    --yellow: #ffd32a;
+    --purple: #a78bfa;
+    --text: #e8eaf0;
+    --muted: #8b8fa8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 30px 20px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 30px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    max-width: 820px;
+    margin: 0 auto 20px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 700;
+  }
+  .tab:hover { border-color: var(--accent); color: var(--text); }
+  .tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  .tab-content { display: none; max-width: 820px; margin: 0 auto; }
+  .tab-content.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 1rem;
+    font-weight: 800;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* CRITERES TABLE */
+  .criteria-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .criteria-row {
+    display: grid;
+    grid-template-columns: 160px 1fr 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 14px;
+    background: #ffffff06;
+    border-radius: 8px;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .criteria-row:hover { background: #ffffff0e; }
+  .criteria-row.c-zone { border-color: var(--blue); }
+  .criteria-row.c-ip { border-color: var(--green); }
+  .criteria-row.c-app { border-color: var(--purple); }
+  .criteria-row.c-action { border-color: var(--accent); }
+
+  .criteria-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .criteria-desc { font-size: 0.8rem; color: #c8cad8; }
+  .criteria-example {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .criteria-detail {
+    display: none;
+    grid-column: 1 / -1;
+    padding: 10px 12px;
+    background: #ffffff08;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: #c8cad8;
+    margin-top: 4px;
+  }
+  .criteria-row.open .criteria-detail { display: block; }
+
+  /* RULE TABLE */
+  .rule-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .rule-table th {
+    background: #ffffff0a;
+    padding: 8px 10px;
+    text-align: left;
+    color: var(--muted);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+  }
+  .rule-table td {
+    padding: 10px 10px;
+    border-bottom: 1px solid #ffffff08;
+    vertical-align: middle;
+  }
+  .rule-table tr { transition: background 0.15s; cursor: pointer; }
+  .rule-table tr:hover td { background: #ffffff06; }
+  .rule-table tr.highlighted td { background: #ff6b3515; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+  .tag-allow { background: #1e2a1e; color: var(--green); }
+  .tag-deny { background: #2a1e1e; color: var(--red); }
+  .tag-trust { background: #1e2a4a; color: var(--blue); }
+  .tag-untrust { background: #2a1e2a; color: var(--purple); }
+  .tag-dmz { background: #2a2a1e; color: var(--yellow); }
+  .tag-any { background: #ffffff0a; color: var(--muted); }
+
+  /* FLOW SIMULATOR */
+  .sim-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .sim-field label {
+    display: block;
+    font-size: 0.65rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  .sim-field select, .sim-field input {
+    width: 100%;
+    background: #ffffff08;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .sim-field select:focus, .sim-field input:focus { border-color: var(--accent); }
+  .sim-field select option { background: #1a1d27; }
+
+  .sim-btn {
+    grid-column: 1 / -1;
+    padding: 10px;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .sim-btn:hover { opacity: 0.85; }
+
+  /* RESULT */
+  .sim-result {
+    display: none;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .sim-result.show { display: block; }
+
+  .result-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .result-header.allow { background: #1e2a1e; border: 1px solid var(--green); border-radius: 10px 10px 0 0; }
+  .result-header.deny { background: #2a1e1e; border: 1px solid var(--red); border-radius: 10px 10px 0 0; }
+
+  .result-icon { font-size: 1.4rem; }
+  .result-title { font-weight: 800; font-size: 1rem; }
+  .result-title.allow { color: var(--green); }
+  .result-title.deny { color: var(--red); }
+
+  .result-body {
+    padding: 14px 18px;
+    background: #ffffff06;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: #c8cad8;
+  }
+
+  .result-steps {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .result-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #ffffff06;
+  }
+  .result-step.match { background: #1e2a1e; color: var(--green); }
+  .result-step.no-match { color: var(--muted); }
+  .result-step.implicit { background: #2a1e1e; color: var(--red); }
+
+  /* TIPS */
+  .tips-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .tip-card {
+    padding: 14px;
+    border-radius: 8px;
+    border-left: 3px solid;
+  }
+  .tip-card.warn { background: #2a2a1e; border-color: var(--yellow); }
+  .tip-card.danger { background: #2a1e1e; border-color: var(--red); }
+  .tip-card.info { background: #1e2a4a; border-color: var(--blue); }
+  .tip-card.success { background: #1e2a1e; border-color: var(--green); }
+
+  .tip-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .tip-card.warn .tip-title { color: var(--yellow); }
+  .tip-card.danger .tip-title { color: var(--red); }
+  .tip-card.info .tip-title { color: var(--blue); }
+  .tip-card.success .tip-title { color: var(--green); }
+
+  .tip-body { font-size: 0.78rem; line-height: 1.6; color: #c8cad8; }
+
+  /* HIGHLIGHT */
+  .highlight-box {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .highlight-box.warn { background: #2a2a1e; border-left: 3px solid var(--yellow); color: var(--yellow); }
+  .highlight-box.info { background: #1e2a4a; border-left: 3px solid var(--blue); color: #a0c4ff; }
+
+  @media (max-width: 600px) {
+    .sim-form { grid-template-columns: 1fr; }
+    .tips-grid { grid-template-columns: 1fr; }
+    .criteria-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Security Policy — Palo Alto</h1>
+<p class="subtitle">Comprendre, lire et dépanner les règles de sécurité</p>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('criteres')">1 — Les 5 critères</div>
+  <div class="tab" onclick="showTab('regles')">2 — Lire les règles</div>
+  <div class="tab" onclick="showTab('simulateur')">3 — Simulateur</div>
+  <div class="tab" onclick="showTab('depannage')">4 — Dépannage</div>
+</div>
+
+<!-- TAB 1 : CRITERES -->
+<div class="tab-content active" id="tab-criteres">
+  <div class="card">
+    <h2>🎯 Les 5 critères d'une règle Security Policy</h2>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px">Clique sur chaque critère pour en savoir plus</p>
+    <div class="criteria-grid">
+
+      <div class="criteria-row c-zone" onclick="toggleCriteria(this)">
+        <div class="criteria-name" style="color:var(--blue)">Source Zone</div>
+        <div class="criteria-desc">D'où vient le trafic ?</div>
+        <div class="criteria-example">trust, untrust, dmz</div>
+        <div class="criteria-detail">
+          La zone source est déterminée par l'<strong>interface d'entrée</strong> du paquet.<br>
+          Exemple : un user sur le LAN arrive par <code>ethernet1/2</code> attachée à la zone <code>trust</code>.<br><br>
+          ⚠️ Si tu ne sais pas quelle zone utiliser → <strong>Network > Interfaces</strong> pour voir quelle zone est attachée à chaque interface.
+        </div>
+      </div>
+
+      <div class="criteria-row c-ip" onclick="toggleCriteria(this)">
+        <div class="criteria-name" style="color:var(--green)">Source IP</div>
+        <div class="criteria-desc">Qui envoie le trafic ?</div>
+        <div class="criteria-example">192.168.1.0/24, any</div>
+        <div class="criteria-detail">
+          Tu peux spécifier une IP, un sous-réseau, ou un <strong>Address Object</strong> (objet nommé).<br>
+          Bonne pratique : utiliser des <strong>Address Objects</strong> plutôt que des IPs brutes pour faciliter la maintenance.<br><br>
+          <code>any</code> = toutes les IPs sources sans restriction.
+        </div>
+      </div>
+
+      <div class="criteria-row c-zone" onclick="toggleCriteria(this)">
+        <div class="criteria-name" style="color:var(--blue)">Destination Zone</div>
+        <div class="criteria-desc">Où va le trafic ?</div>
+        <div class="criteria-example">untrust, dmz</div>
+        <div class="criteria-detail">
+          La zone destination est déterminée par le <strong>Forwarding Lookup</strong> (étape 1 du Slowpath).<br>
+          C'est la zone de l'interface de <strong>sortie</strong> vers la destination.<br><br>
+          ⚠️ Rappel : pour un DNAT, la zone destination dans la règle doit correspondre à l'IP <strong>publique</strong> (avant NAT).
+        </div>
+      </div>
+
+      <div class="criteria-row c-ip" onclick="toggleCriteria(this)">
+        <div class="criteria-name" style="color:var(--green)">Destination IP</div>
+        <div class="criteria-desc">Vers quelle IP ?</div>
+        <div class="criteria-example">203.0.113.1, any</div>
+        <div class="criteria-detail">
+          Même logique que la Source IP — IP, sous-réseau ou Address Object.<br><br>
+          ⚠️ <strong>Règle d'or</strong> : toujours utiliser l'IP <strong>avant NAT</strong>.<br>
+          → Pour un serveur nAtté : mettre l'IP publique, pas l'IP privée interne.
+        </div>
+      </div>
+
+      <div class="criteria-row c-app" onclick="toggleCriteria(this)">
+        <div class="criteria-name" style="color:var(--purple)">Application</div>
+        <div class="criteria-desc">Quel service/app ?</div>
+        <div class="criteria-example">web-browsing, ssl, dns</div>
+        <div class="criteria-detail">
+          C'est la grande force de Palo Alto : l'<strong>App-ID</strong>.<br>
+          Au lieu de dire "autorise tcp/80", tu dis "autorise <code>web-browsing</code>".<br><br>
+          Palo Alto identifie l'application réelle même si elle change de port.<br><br>
+          💡 Pour débuter : tu peux utiliser <code>any</code> mais c'est une mauvaise pratique en production — on verra App-ID en détail dans le bloc 3.
+        </div>
+      </div>
+
+      <div class="criteria-row c-action" onclick="toggleCriteria(this)">
+        <div class="criteria-name" style="color:var(--accent)">Action</div>
+        <div class="criteria-desc">Autoriser ou bloquer ?</div>
+        <div class="criteria-example">allow, deny, drop</div>
+        <div class="criteria-detail">
+          <strong>Allow</strong> : le trafic est autorisé et transmis.<br>
+          <strong>Deny</strong> : le trafic est bloqué et un <em>TCP Reset</em> est envoyé à l'expéditeur.<br>
+          <strong>Drop</strong> : le trafic est bloqué silencieusement, sans notification.<br><br>
+          💡 Pour le dépannage : <code>deny</code> est plus visible dans les logs qu'un <code>drop</code>.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2 : REGLES -->
+<div class="tab-content" id="tab-regles">
+  <div class="card">
+    <h2>📋 Exemple de table de règles</h2>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px">
+      Palo Alto lit les règles <strong>de haut en bas</strong> et s'arrête à la première qui matche — clique sur une règle pour voir ce qu'elle fait.
+    </p>
+    <table class="rule-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nom</th>
+          <th>Src Zone</th>
+          <th>Src IP</th>
+          <th>Dst Zone</th>
+          <th>Dst IP</th>
+          <th>App</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="ruleTableBody">
+        <tr onclick="explainRule(this, 1)">
+          <td>1</td>
+          <td>Block-malware</td>
+          <td><span class="tag tag-trust">trust</span></td>
+          <td>any</td>
+          <td><span class="tag tag-untrust">untrust</span></td>
+          <td>blacklist</td>
+          <td>any</td>
+          <td><span class="tag tag-deny">deny</span></td>
+        </tr>
+        <tr onclick="explainRule(this, 2)">
+          <td>2</td>
+          <td>Allow-web</td>
+          <td><span class="tag tag-trust">trust</span></td>
+          <td>any</td>
+          <td><span class="tag tag-untrust">untrust</span></td>
+          <td>any</td>
+          <td>web-browsing, ssl</td>
+          <td><span class="tag tag-allow">allow</span></td>
+        </tr>
+        <tr onclick="explainRule(this, 3)">
+          <td>3</td>
+          <td>Allow-DNS</td>
+          <td><span class="tag tag-trust">trust</span></td>
+          <td>any</td>
+          <td><span class="tag tag-dmz">dmz</span></td>
+          <td>10.0.0.53</td>
+          <td>dns</td>
+          <td><span class="tag tag-allow">allow</span></td>
+        </tr>
+        <tr onclick="explainRule(this, 4)">
+          <td>4</td>
+          <td>Deny-all</td>
+          <td><span class="tag tag-any">any</span></td>
+          <td>any</td>
+          <td><span class="tag tag-any">any</span></td>
+          <td>any</td>
+          <td>any</td>
+          <td><span class="tag tag-deny">deny</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div id="ruleExplain" style="display:none;margin-top:14px;padding:14px;background:#ffffff06;border-radius:8px;font-size:0.83rem;line-height:1.7;color:#c8cad8;border-left:3px solid var(--accent)"></div>
+
+    <div class="highlight-box warn" style="margin-top:16px">
+      ⚠️ <strong>Règle implicite</strong> : Palo Alto ajoute automatiquement une règle <strong>deny all</strong> en bas de liste — tout ce qui ne matche aucune règle est bloqué silencieusement.
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3 : SIMULATEUR -->
+<div class="tab-content" id="tab-simulateur">
+  <div class="card">
+    <h2>🧪 Simulateur — Quel trafic est autorisé ?</h2>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px">Simule un flux et vois quelle règle matche (basé sur la table d'exemple)</p>
+
+    <div class="sim-form">
+      <div class="sim-field">
+        <label>Zone Source</label>
+        <select id="simSrcZone">
+          <option value="trust">trust</option>
+          <option value="untrust">untrust</option>
+          <option value="dmz">dmz</option>
+        </select>
+      </div>
+      <div class="sim-field">
+        <label>Zone Destination</label>
+        <select id="simDstZone">
+          <option value="untrust">untrust</option>
+          <option value="trust">trust</option>
+          <option value="dmz">dmz</option>
+        </select>
+      </div>
+      <div class="sim-field">
+        <label>Application</label>
+        <select id="simApp">
+          <option value="web-browsing">web-browsing</option>
+          <option value="ssl">ssl</option>
+          <option value="dns">dns</option>
+          <option value="ftp">ftp</option>
+          <option value="smtp">smtp</option>
+        </select>
+      </div>
+      <button class="sim-btn" onclick="simulate()">▶ Simuler le flux</button>
+    </div>
+
+    <div class="sim-result" id="simResult"></div>
+  </div>
+</div>
+
+<!-- TAB 4 : DEPANNAGE -->
+<div class="tab-content" id="tab-depannage">
+  <div class="card">
+    <h2>🔧 Dépanner un user bloqué — Méthode</h2>
+
+    <div style="font-size:0.85rem;line-height:1.8;color:#c8cad8;margin-bottom:16px">
+      Un user ne peut pas accéder à un service ? Voici la méthode pas à pas.
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+
+      <div style="padding:14px;background:#ffffff06;border-radius:8px;border-left:3px solid var(--blue)">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--blue);margin-bottom:6px">ÉTAPE 1 — Regarder les logs</div>
+        <div style="font-size:0.82rem;line-height:1.6;color:#c8cad8">
+          <strong>Monitor > Logs > Traffic</strong><br>
+          Filtre : <code style="background:#ffffff10;padding:1px 6px;border-radius:3px">addr.src in 192.168.1.10</code><br><br>
+          Cherche la colonne <strong>Action</strong> : <span style="color:var(--green)">allow</span> ou <span style="color:var(--red)">deny</span> ?<br>
+          Cherche la colonne <strong>Rule</strong> : quelle règle a matché ?
+        </div>
+      </div>
+
+      <div style="padding:14px;background:#ffffff06;border-radius:8px;border-left:3px solid var(--yellow)">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--yellow);margin-bottom:6px">ÉTAPE 2 — Si deny → identifier pourquoi</div>
+        <div style="font-size:0.82rem;line-height:1.6;color:#c8cad8">
+          → Règle <strong>Deny-all</strong> a matché ? Aucune règle allow n'existe pour ce flux.<br>
+          → Une règle <strong>deny explicite</strong> a matché ? Le trafic est volontairement bloqué.<br>
+          → <strong>Pas de log du tout</strong> ? Le problème est en amont (route manquante, zone incorrecte).
+        </div>
+      </div>
+
+      <div style="padding:14px;background:#ffffff06;border-radius:8px;border-left:3px solid var(--purple)">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--purple);margin-bottom:6px">ÉTAPE 3 — Tester en CLI</div>
+        <div style="font-size:0.82rem;line-height:1.6;color:#c8cad8">
+          <code style="display:block;background:#ffffff08;padding:8px 10px;border-radius:6px;margin:6px 0;font-size:0.75rem">
+            test security-policy-match source 192.168.1.10 destination 8.8.8.8 protocol 6 destination-port 443
+          </code>
+          Cette commande te dit <strong>exactement quelle règle</strong> Palo Alto va appliquer pour ce flux — sans envoyer de vrai trafic.
+        </div>
+      </div>
+
+      <div style="padding:14px;background:#ffffff06;border-radius:8px;border-left:3px solid var(--accent)">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--accent);margin-bottom:6px">ÉTAPE 4 — Vérifier les zones</div>
+        <div style="font-size:0.82rem;line-height:1.6;color:#c8cad8">
+          Si les zones dans les logs ne correspondent pas à ce que tu attends :<br>
+          <strong>Network > Interfaces</strong> → vérifie quelle zone est attachée à chaque interface.<br><br>
+          Erreur classique : règle écrite <code>trust → untrust</code> mais le trafic arrive sur une interface en zone <code>dmz</code>.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="tips-grid">
+      <div class="tip-card danger">
+        <div class="tip-title">❌ Erreur classique #1</div>
+        <div class="tip-body">Écrire la règle avec l'IP privée du serveur au lieu de l'IP publique (voir leçon NAT).</div>
+      </div>
+      <div class="tip-card danger">
+        <div class="tip-title">❌ Erreur classique #2</div>
+        <div class="tip-body">Mauvaise zone dans la règle — toujours vérifier quelle zone est attachée à l'interface d'entrée/sortie.</div>
+      </div>
+      <div class="tip-card warn">
+        <div class="tip-title">⚠️ Piège App-ID</div>
+        <div class="tip-body">Une règle allow tcp/443 peut bloquer une app si App-ID identifie une application non autorisée sur ce port.</div>
+      </div>
+      <div class="tip-card success">
+        <div class="tip-title">✅ Bonne pratique</div>
+        <div class="tip-body">Toujours activer le logging sur les règles deny pour voir ce qui est bloqué dans Monitor > Logs > Traffic.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  function toggleCriteria(el) {
+    const wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.criteria-row').forEach(r => r.classList.remove('open'));
+    if (!wasOpen) el.classList.add('open');
+  }
+
+  const ruleExplanations = {
+    1: "🔴 <strong>Block-malware</strong> : Bloque tout trafic depuis la zone <em>trust</em> vers des IPs de la liste noire (blacklist), quelle que soit l'application. Cette règle est en tête de liste pour être prioritaire.",
+    2: "🟢 <strong>Allow-web</strong> : Autorise la navigation web (HTTP et HTTPS) depuis le réseau interne vers internet. L'application <em>web-browsing</em> correspond au HTTP, <em>ssl</em> au HTTPS.",
+    3: "🟢 <strong>Allow-DNS</strong> : Autorise les requêtes DNS uniquement vers le serveur DNS interne (10.0.0.53) en DMZ. Les requêtes DNS vers d'autres IPs seront bloquées.",
+    4: "🔴 <strong>Deny-all</strong> : Règle de sécurité finale — tout ce qui n'a pas matché les règles précédentes est bloqué. C'est une bonne pratique de l'avoir explicitement pour avoir des logs."
+  };
+
+  function explainRule(row, num) {
+    document.querySelectorAll('.rule-table tr').forEach(r => r.classList.remove('highlighted'));
+    row.classList.add('highlighted');
+    const box = document.getElementById('ruleExplain');
+    box.style.display = 'block';
+    box.innerHTML = ruleExplanations[num];
+  }
+
+  // Rules for simulator
+  const rules = [
+    { id: 1, name: 'Block-malware', srcZone: 'trust', dstZone: 'untrust', dstIP: 'blacklist', app: 'any', action: 'deny' },
+    { id: 2, name: 'Allow-web', srcZone: 'trust', dstZone: 'untrust', app: ['web-browsing', 'ssl'], action: 'allow' },
+    { id: 3, name: 'Allow-DNS', srcZone: 'trust', dstZone: 'dmz', app: ['dns'], action: 'allow' },
+    { id: 4, name: 'Deny-all', srcZone: 'any', dstZone: 'any', app: 'any', action: 'deny' },
+  ];
+
+  function simulate() {
+    const srcZone = document.getElementById('simSrcZone').value;
+    const dstZone = document.getElementById('simDstZone').value;
+    const app = document.getElementById('simApp').value;
+
+    let matchedRule = null;
+    let steps = [];
+
+    for (let r of rules) {
+      const zoneMatch = (r.srcZone === 'any' || r.srcZone === srcZone) && (r.dstZone === 'any' || r.dstZone === dstZone);
+      const appMatch = r.app === 'any' || (Array.isArray(r.app) && r.app.includes(app));
+      const isBlacklist = r.dstIP === 'blacklist';
+
+      if (isBlacklist) {
+        steps.push({ rule: r, match: false, reason: 'dst IP ne fait pas partie de la blacklist' });
+        continue;
+      }
+
+      if (zoneMatch && appMatch) {
+        matchedRule = r;
+        steps.push({ rule: r, match: true });
+        break;
+      } else {
+        let reason = [];
+        if (!zoneMatch) reason.push('zones ne correspondent pas');
+        if (!appMatch) reason.push('application ne correspond pas');
+        steps.push({ rule: r, match: false, reason: reason.join(', ') });
+      }
+    }
+
+    if (!matchedRule) {
+      matchedRule = { name: 'Implicit Deny', action: 'deny' };
+    }
+
+    const isAllow = matchedRule.action === 'allow';
+    const resultDiv = document.getElementById('simResult');
+    resultDiv.className = 'sim-result show';
+
+    let stepsHTML = steps.map(s => {
+      if (s.match) {
+        return `<div class="result-step match">✅ Règle ${s.rule.id} — <strong>${s.rule.name}</strong> → MATCH → action : ${s.rule.action}</div>`;
+      } else {
+        return `<div class="result-step no-match">⏭ Règle ${s.rule.id} — ${s.rule.name} → pas de match (${s.reason || ''})</div>`;
+      }
+    }).join('');
+
+    if (!steps.find(s => s.match)) {
+      stepsHTML += `<div class="result-step implicit">🔴 Aucune règle matchée → Implicit Deny appliqué</div>`;
+    }
+
+    resultDiv.innerHTML = `
+      <div class="result-header ${isAllow ? 'allow' : 'deny'}">
+        <div class="result-icon">${isAllow ? '✅' : '🔴'}</div>
+        <div>
+          <div class="result-title ${isAllow ? 'allow' : 'deny'}">${isAllow ? 'TRAFIC AUTORISÉ' : 'TRAFIC BLOQUÉ'}</div>
+          <div style="font-size:0.75rem;font-family:'JetBrains Mono',monospace;color:var(--muted)">Règle : ${matchedRule.name}</div>
+        </div>
+      </div>
+      <div class="result-body">
+        <strong>Flux testé :</strong> ${srcZone} → ${dstZone} | app: ${app}<br><br>
+        <strong>Parcours des règles :</strong>
+        <div class="result-steps">${stepsHTML}</div>
+      </div>
+    `;
+  }
+</script>
+</body>
+</html>
