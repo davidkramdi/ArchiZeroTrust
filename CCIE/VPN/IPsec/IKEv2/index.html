@@ -1,25 +1,92 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>IKEv2</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IKEv2 – IPsec – ArchiZeroTrust</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0a0e1a; --card:#131929; --hover:#1a2236; --border:#1f2d4a;
+      --accent:#3b82f6; --accent2:#06b6d4; --text:#e2e8f0; --muted:#94a3b8; --dim:#4b6080; --radius:10px;
+    }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+    .topbar { background:rgba(10,14,26,0.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--border); padding:14px 40px; display:flex; align-items:center; gap:8px; font-size:13px; color:var(--dim); position:sticky; top:0; z-index:10; }
+    .topbar a { color:var(--muted); text-decoration:none; transition:color .2s; }
+    .topbar a:hover { color:var(--accent); }
+    .topbar .sep { color:var(--border); }
+    .topbar .current { color:var(--text); font-weight:500; }
+    .hero { padding:56px 40px 40px; max-width:900px; margin:0 auto; }
+    .hero-tag { display:inline-flex; align-items:center; gap:6px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.2); color:var(--accent); font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; padding:4px 12px; border-radius:20px; margin-bottom:18px; font-family:'JetBrains Mono',monospace; }
+    .hero h1 { font-size:38px; font-weight:700; letter-spacing:-0.8px; line-height:1.15; background:linear-gradient(135deg,#e2e8f0,#94a3b8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:14px; }
+    .hero p { font-size:15px; color:var(--muted); line-height:1.7; max-width:620px; }
+    .content { max-width:900px; margin:0 auto; padding:0 40px 80px; }
+    .section-label { font-size:11px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--dim); margin-bottom:14px; font-family:'JetBrains Mono',monospace; }
+    .card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; margin-bottom:48px; }
+    .nav-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:22px; text-decoration:none; display:flex; align-items:center; gap:14px; transition:all .2s; position:relative; overflow:hidden; }
+    .nav-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:linear-gradient(180deg,var(--accent),var(--accent2)); opacity:0; transition:opacity .2s; }
+    .nav-card:hover { background:var(--hover); border-color:#253550; transform:translateX(3px); box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+    .nav-card:hover::before { opacity:1; }
+    .nav-card-icon { width:44px; height:44px; border-radius:8px; background:rgba(59,130,246,0.1); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .nav-card-body { flex:1; }
+    .nav-card-title { font-size:14px; font-weight:600; color:var(--text); margin-bottom:4px; }
+    .nav-card-sub { font-size:12px; color:var(--dim); }
+    .nav-card-arrow { font-size:16px; color:var(--dim); transition:color .2s,transform .2s; }
+    .nav-card:hover .nav-card-arrow { color:var(--accent); transform:translateX(3px); }
+    .badge { font-size:10px; font-weight:600; padding:2px 7px; border-radius:10px; background:rgba(75,96,128,0.2); border:1px solid var(--border); color:var(--dim); font-family:'JetBrains Mono',monospace; }
+    @media (max-width:600px) { .hero,.content { padding-left:20px; padding-right:20px; } .hero h1 { font-size:26px; } .card-grid { grid-template-columns:1fr; } }
+  </style>
 </head>
-
 <body>
-
-<h1>IKEv2 — Internet Key Exchange Version 2</h1>
-
-<p>Main components and design topics for IKEv2.</p>
-
-<hr>
-
-<h2>Topics</h2>
-
-<ul>
-    <li><a href="VTI/index.html">VTI — Virtual Tunnel Interface</a></li>
-    <li><a href="NAT-T/index.html">NAT Traversal</a></li>
-    <li><a href="Certificates/index.html">Certificates</a></li>
-    <li><a href="Troubleshooting/index.html">Troubleshooting</a></li>
-</ul>
-
+  <div class="topbar">
+    <a href="../../../../index.html">🏛️ ArchiZeroTrust</a><span class="sep">›</span>
+    <a href="../../../index.html">CCIE</a><span class="sep">›</span>
+    <a href="../../index.html">VPN</a><span class="sep">›</span>
+    <a href="../index.html">IPsec</a><span class="sep">›</span>
+    <span class="current">IKEv2</span>
+  </div>
+  <div class="hero">
+    <div class="hero-tag">🔑 IKEv2</div>
+    <h1>Internet Key Exchange Version 2</h1>
+    <p>Protocole de négociation des SA IPsec. 4 messages, 2 échanges, authentification PSK ou certificats. Remplace IKEv1 (plus rapide, plus sûr, built-in NAT-T).</p>
+  </div>
+  <div class="content">
+    <div class="section-label">Labs disponibles</div>
+    <div class="card-grid">
+      <a href="VTI/index.html" class="nav-card">
+        <div class="nav-card-icon">🚇</div>
+        <div class="nav-card-body">
+          <div class="nav-card-title">VTI — Virtual Tunnel Interface</div>
+          <div class="nav-card-sub">Tunnel route-based R1 ↔ R2, échanges IKEv2 interactifs</div>
+        </div>
+        <span class="nav-card-arrow">→</span>
+      </a>
+      <a href="#" class="nav-card" style="opacity:.6;pointer-events:none;">
+        <div class="nav-card-icon">🌐</div>
+        <div class="nav-card-body">
+          <div class="nav-card-title">NAT Traversal <span class="badge">bientôt</span></div>
+          <div class="nav-card-sub">IKEv2 derrière NAT, UDP 4500</div>
+        </div>
+        <span class="nav-card-arrow">→</span>
+      </a>
+      <a href="#" class="nav-card" style="opacity:.6;pointer-events:none;">
+        <div class="nav-card-icon">📜</div>
+        <div class="nav-card-body">
+          <div class="nav-card-title">Certificats PKI <span class="badge">bientôt</span></div>
+          <div class="nav-card-sub">Auth X.509, CA locale, enrollment</div>
+        </div>
+        <span class="nav-card-arrow">→</span>
+      </a>
+      <a href="#" class="nav-card" style="opacity:.6;pointer-events:none;">
+        <div class="nav-card-icon">🔧</div>
+        <div class="nav-card-body">
+          <div class="nav-card-title">Troubleshooting <span class="badge">bientôt</span></div>
+          <div class="nav-card-sub">debug crypto ikev2, analyse des erreurs</div>
+        </div>
+        <span class="nav-card-arrow">→</span>
+      </a>
+    </div>
+  </div>
 </body>
 </html>
