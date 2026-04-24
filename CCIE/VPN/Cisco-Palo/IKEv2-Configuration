@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPsec IKEv2 — Cisco IOS ↔ Palo Alto</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; }
+.header { background: linear-gradient(135deg, #1a365d 0%, #7b341e 100%); color: white; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.header h1 { font-size: 1.05rem; font-weight: 700; }
+.header p { font-size: 0.73rem; opacity: 0.8; margin-top: 2px; }
+.logos { display: flex; gap: 8px; align-items: center; font-size: 0.75rem; font-weight: 700; }
+.lc { background: #1652f0; padding: 4px 10px; border-radius: 5px; }
+.lp { background: #fa4616; padding: 4px 10px; border-radius: 5px; }
+.container { max-width: 1100px; margin: 0 auto; padding: 14px; }
+.card { background: white; border-radius: 11px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.ctitle { font-size: 0.86rem; font-weight: 700; color: #2d3748; margin-bottom: 12px; padding-left: 9px; border-left: 4px solid; }
+
+/* Topology */
+.topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.dbox { text-align: center; }
+.dicon { border-radius: 10px; padding: 10px 14px; display: inline-flex; flex-direction: column; align-items: center; }
+.dname { font-weight: 700; font-size: 0.9rem; margin-top: 5px; }
+.dips { font-size: 0.63rem; color: #718096; margin-top: 2px; line-height: 1.55; }
+.drole { font-size: 0.6rem; padding: 2px 7px; border-radius: 8px; margin-top: 3px; display: inline-block; font-weight: 600; }
+.lsec { flex: 1; padding: 0 10px; }
+.lline { height: 3px; border-radius: 2px; background: linear-gradient(90deg, #3182ce, #fa4616); }
+.llbl { font-size: 0.63rem; color: #a0aec0; text-align: center; margin-top: 4px; }
+.ltun { font-size: 0.61rem; color: #90cdf4; font-weight: 600; text-align: center; margin-top: 3px; }
+.badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; justify-content: center; }
+.badge { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 10px; font-size: 0.68rem; }
+.badge span { color: #a0aec0; }
+
+/* Tabs */
+.tabs { display: flex; gap: 3px; margin-bottom: 14px; background: white; padding: 5px; border-radius: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.tab { flex: 1; padding: 7px 8px; border: none; background: transparent; cursor: pointer; border-radius: 6px; font-size: 0.74rem; font-weight: 600; color: #718096; transition: all 0.16s; }
+.tab:hover { background: #f0f4f8; color: #2d3748; }
+.tab.act { background: #ebf8ff; color: #2b6cb0; }
+.tc { display: none; }
+.tc.act { display: block; }
+
+/* Mapping */
+.mgrid { display: grid; grid-template-columns: 1fr 28px 1fr; gap: 6px; align-items: start; }
+.mhdr { text-align: center; font-size: 0.72rem; font-weight: 700; padding: 5px; border-radius: 6px; margin-bottom: 5px; }
+.mblk { border: 1.5px solid #e2e8f0; border-radius: 7px; padding: 8px 10px; cursor: pointer; transition: all 0.16s; margin-bottom: 5px; }
+.mblk:hover { background: #f8fdff; border-color: #90cdf4; }
+.mnum { font-size: 0.58rem; font-weight: 700; color: #a0aec0; }
+.mname { font-size: 0.77rem; font-weight: 700; margin: 2px 0; color: #2d3748; }
+.msub { font-size: 0.64rem; color: #718096; }
+.connc { display: flex; flex-direction: column; gap: 5px; padding-top: 28px; }
+.conn { height: 50px; display: flex; align-items: center; }
+.cln { width: 100%; height: 2px; }
+.dpanel { background: #f7fafc; border-radius: 9px; padding: 12px; margin-top: 11px; border-left: 4px solid #ccc; }
+.dpanel h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 8px; }
+.dnote { font-size: 0.7rem; color: #744210; background: #fffbea; padding: 7px 10px; border-radius: 6px; margin-bottom: 8px; }
+.dgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dblk { background: white; border-radius: 7px; padding: 10px; border: 1px solid #e2e8f0; }
+.dblk h4 { font-size: 0.7rem; font-weight: 700; margin-bottom: 6px; }
+.dblk pre { font-family: 'Courier New', monospace; font-size: 0.65rem; line-height: 1.6; overflow-x: auto; background: #1a202c; color: #e2e8f0; padding: 9px; border-radius: 6px; white-space: pre-wrap; }
+.ptag { font-size: 0.62rem; background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 6px; font-weight: 600; display: inline-block; margin-bottom: 5px; }
+
+/* Pre general */
+pre { font-family: 'Courier New', monospace; font-size: 0.66rem; line-height: 1.65; overflow-x: auto; background: #1a202c; color: #e2e8f0; padding: 13px; border-radius: 8px; white-space: pre-wrap; }
+.hp { color: #fbd38d; }
+.hg { color: #9ae6b4; }
+.hc { color: #90cdf4; }
+.ht { color: #f6ad55; }
+.hz { color: #fc8181; }
+.hcmt { color: #4a5568; font-style: italic; }
+
+/* Subtabs */
+.stabs { display: flex; gap: 3px; margin-bottom: 10px; }
+.stab { padding: 5px 11px; border: 1px solid #e2e8f0; background: #f7fafc; cursor: pointer; border-radius: 5px; font-size: 0.7rem; font-weight: 600; color: #718096; transition: all 0.14s; }
+.stab.act { background: #fef3c7; border-color: #f6ad55; color: #92400e; }
+.stc { display: none; }
+.stc.act { display: block; }
+
+/* PA GUI steps */
+.past { display: flex; gap: 9px; margin-bottom: 10px; }
+.pasn { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; flex-shrink: 0; color: white; margin-top: 1px; }
+.pasp { font-size: 0.63rem; font-family: 'Courier New', monospace; background: #1a202c; color: #fbd38d; padding: 2px 7px; border-radius: 4px; display: inline-block; margin-bottom: 4px; }
+.past-title { font-size: 0.78rem; font-weight: 700; color: #2d3748; margin-bottom: 2px; }
+.past-params { font-size: 0.68rem; color: #4a5568; line-height: 1.65; }
+.past-params span { color: #2b6cb0; font-weight: 600; }
+.warn { background: #fff5f5; border: 1px solid #feb2b2; border-radius: 6px; padding: 7px 10px; font-size: 0.68rem; color: #c53030; margin-top: 6px; }
+
+/* Verif */
+.vgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.vlbl { font-size: 0.73rem; font-weight: 700; color: #2d3748; margin-bottom: 5px; }
+.vcmd { font-family: 'Courier New', monospace; font-size: 0.68rem; background: #1a202c; color: #9ae6b4; padding: 10px 12px; border-radius: 7px; line-height: 1.85; }
+.vstates { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 12px; }
+.vstate { border-radius: 7px; padding: 9px; font-size: 0.69rem; }
+.tshoot { background: #fffbea; border: 1px solid #feebc8; border-radius: 8px; padding: 11px; margin-top: 12px; font-size: 0.69rem; }
+.tshoot strong { color: #744210; }
+.tshoot .tr { margin-bottom: 5px; }
+
+@media (max-width: 680px) {
+  .mgrid { grid-template-columns: 1fr; }
+  .connc { display: none; }
+  .dgrid, .vgrid, .vstates { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>🔐 IPsec IKEv2 — Cisco IOS ↔ Palo Alto</h1>
+    <p>Tunnel VTI · Pre-Shared Key · ENARSI + Client</p>
+  </div>
+  <div class="logos">
+    <span class="lc">CISCO IOS</span>
+    <span>↔</span>
+    <span class="lp">PALO ALTO</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- TOPOLOGY -->
+  <div class="card">
+    <div class="ctitle" style="border-color:#3182ce;">Topologie</div>
+    <div class="topo">
+      <div class="dbox">
+        <div class="dicon" style="background:#ebf8ff;">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="#2b6cb0"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM6 10h2v2H6zm0 4h2v2H6zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h4v6h-4z"/></svg>
+          <div class="dname" style="color:#2b6cb0;">R1 — Cisco IOS</div>
+          <div class="dips">G0/0: 10.0.0.1/30<br>Tunnel0: 172.16.0.1/30<br>LAN: 192.168.1.0/24</div>
+          <div class="drole" style="background:#ebf8ff;color:#2b6cb0;">Initiateur IKEv2</div>
+        </div>
+      </div>
+      <div class="lsec">
+        <div class="lline"></div>
+        <div class="llbl">Internet · 10.0.0.0/30 · UDP 500/4500</div>
+        <div class="ltun">══════ Tunnel IPsec ESP ══════</div>
+      </div>
+      <div class="dbox">
+        <div class="dicon" style="background:#fff5f0;">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="#c4390a"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+          <div class="dname" style="color:#c4390a;">FW — Palo Alto</div>
+          <div class="dips">eth1/1 (Untrust): 10.0.0.2/30<br>tunnel.1: 172.16.0.2/30<br>eth1/2 (Trust): 192.168.2.1/24</div>
+          <div class="drole" style="background:#fff5f0;color:#c4390a;">Répondeur IKEv2</div>
+        </div>
+      </div>
+    </div>
+    <div class="badges">
+      <div class="badge"><span>Mode: </span><strong>VTI route-based</strong></div>
+      <div class="badge"><span>Auth: </span><strong>Pre-Shared Key</strong></div>
+      <div class="badge"><span>IKE: </span><strong>AES-256 + SHA-256 + DH14</strong></div>
+      <div class="badge"><span>ESP: </span><strong>AES-256 + SHA-256</strong></div>
+      <div class="badge"><span>PSK: </span><strong>MySecret123</strong></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab act" onclick="swt(this,'t-map')">🔀 Mapping Cisco ↔ PA</button>
+    <button class="tab" onclick="swt(this,'t-cisco')">🔵 Config Cisco IOS</button>
+    <button class="tab" onclick="swt(this,'t-palo')">🔴 Config Palo Alto</button>
+    <button class="tab" onclick="swt(this,'t-verif')">✅ Vérification</button>
+  </div>
+
+  <!-- MAPPING -->
+  <div class="tc act" id="t-map">
+    <div class="card">
+      <div class="ctitle" style="border-color:#805ad5;">Équivalences Cisco IOS ↔ Palo Alto — clique sur un objet</div>
+      <div class="mgrid">
+        <div>
+          <div class="mhdr" style="background:#ebf8ff;color:#2b6cb0;">Cisco IOS (CLI)</div>
+          <div id="c-col"></div>
+        </div>
+        <div class="connc" id="conn-col"></div>
+        <div>
+          <div class="mhdr" style="background:#fff5f0;color:#c4390a;">Palo Alto PAN-OS</div>
+          <div id="p-col"></div>
+        </div>
+      </div>
+      <div id="map-detail"></div>
+    </div>
+  </div>
+
+  <!-- CISCO CONFIG -->
+  <div class="tc" id="t-cisco">
+    <div class="card">
+      <div class="ctitle" style="border-color:#3182ce;">Config complète R1 — Cisco IOS CLI</div>
+      <pre><span class="hcmt">! ══════════════════════════════════════════════
+! R1 — IPsec IKEv2 VTI vers Palo Alto
+! ══════════════════════════════════════════════</span>
+
+<span class="hcmt">! 1. IKEv2 Proposal ── algorithmes IKE SA ──────</span>
+<span class="hp">crypto ikev2 proposal PROP-IKEv2
+ encryption aes-cbc-256
+ integrity sha256
+ group 14</span>
+
+<span class="hcmt">! 2. IKEv2 Policy ─────────────────────────────</span>
+<span class="hp">crypto ikev2 policy POL-IKEv2
+ proposal PROP-IKEv2</span>
+
+<span class="hcmt">! 3. Keyring — Pre-Shared Key ─────────────────</span>
+<span class="hg">crypto ikev2 keyring KR-PA
+ peer PALO-ALTO
+  address 10.0.0.2
+  pre-shared-key MySecret123</span>
+
+<span class="hcmt">! 4. IKEv2 Profile ────────────────────────────</span>
+<span class="hg">crypto ikev2 profile PROF-IKEv2
+ match identity remote address 10.0.0.2 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local KR-PA</span>
+
+<span class="hcmt">! 5. IPsec Transform-Set ── Child SA (ESP) ─────</span>
+<span class="hc">crypto ipsec transform-set TS-ESP esp-aes 256 esp-sha256-hmac
+ mode tunnel</span>
+
+<span class="hcmt">! 6. IPsec Profile ────────────────────────────</span>
+<span class="hc">crypto ipsec profile IPSEC-PROF
+ set transform-set TS-ESP
+ set ikev2-profile PROF-IKEv2</span>
+
+<span class="hcmt">! 7. Interface VTI ────────────────────────────</span>
+<span class="ht">interface Tunnel0
+ ip address 172.16.0.1 255.255.255.252
+ tunnel source GigabitEthernet0/0
+ tunnel destination 10.0.0.2
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile IPSEC-PROF</span>
+
+<span class="hcmt">! 8. Route vers le LAN Palo Alto ──────────────</span>
+<span class="ht">ip route 192.168.2.0 255.255.255.0 Tunnel0</span></pre>
+    </div>
+  </div>
+
+  <!-- PALO ALTO CONFIG -->
+  <div class="tc" id="t-palo">
+    <div class="card">
+      <div class="ctitle" style="border-color:#c4390a;">Config Palo Alto — PAN-OS</div>
+      <div class="stabs">
+        <button class="stab act" onclick="sws(this,'sg')">🖥️ GUI (WebUI)</button>
+        <button class="stab" onclick="sws(this,'sc')">💻 CLI</button>
+      </div>
+
+      <div class="stc act" id="sg">
+
+        <div class="past">
+          <div class="pasn" style="background:#6b46c1;">1</div>
+          <div>
+            <div class="pasp">Network › Interfaces › Tunnel › Add</div>
+            <div class="past-title">Créer l'interface Tunnel</div>
+            <div class="past-params">
+              Interface Name : <span>tunnel.1</span><br>
+              ▸ IPv4 tab → Add : <span>172.16.0.2/30</span><br>
+              ▸ Advanced tab → Zone : <span>VPN</span> (créer si absente)<br>
+              ▸ Virtual Router : <span>default</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="past">
+          <div class="pasn" style="background:#d97706;">2</div>
+          <div>
+            <div class="pasp">Network › Network Profiles › IKE Crypto › Add</div>
+            <div class="past-title">IKE Crypto Profile &nbsp;<small style="color:#a0aec0;">(= crypto ikev2 proposal)</small></div>
+            <div class="past-params">
+              Name : <span>PROF-IKE-CISCO</span><br>
+              DH Group : <span>group14</span><br>
+              Authentication : <span>sha256</span><br>
+              Encryption : <span>aes-256-cbc</span><br>
+              Key Lifetime : <span>8 hours</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="past">
+          <div class="pasn" style="background:#0987a0;">3</div>
+          <div>
+            <div class="pasp">Network › Network Profiles › IPsec Crypto › Add</div>
+            <div class="past-title">IPsec Crypto Profile &nbsp;<small style="color:#a0aec0;">(= crypto ipsec transform-set)</small></div>
+            <div class="past-params">
+              Name : <span>PROF-IPSEC-CISCO</span><br>
+              IPsec Protocol : <span>ESP</span><br>
+              Encryption : <span>aes-256-cbc</span><br>
+              Authentication : <span>sha256</span><br>
+              DH Group (PFS) : <span>group14</span><br>
+              Lifetime : <span>1 hour</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="past">
+          <div class="pasn" style="background:#276749;">4</div>
+          <div>
+            <div class="pasp">Network › IKE Gateways › Add</div>
+            <div class="past-title">IKE Gateway &nbsp;<small style="color:#a0aec0;">(= keyring + ikev2 profile)</small></div>
+            <div class="past-params">
+              Name : <span>GW-CISCO-R1</span><br>
+              <strong>▸ General tab :</strong><br>
+              &nbsp;&nbsp;Version : <span>IKEv2 only mode</span><br>
+              &nbsp;&nbsp;Interface : <span>ethernet1/1</span><br>
+              &nbsp;&nbsp;Local IP : <span>10.0.0.2/30</span><br>
+              &nbsp;&nbsp;Peer IP : <span>10.0.0.1</span><br>
+              &nbsp;&nbsp;Auth : Pre-Shared Key → <span>MySecret123</span><br>
+              <strong>▸ Advanced Options tab :</strong><br>
+              &nbsp;&nbsp;IKE Crypto Profile : <span>PROF-IKE-CISCO</span><br>
+              &nbsp;&nbsp;Liveness Check (DPD) : <span>activer</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="past">
+          <div class="pasn" style="background:#2b6cb0;">5</div>
+          <div>
+            <div class="pasp">Network › IPsec Tunnels › Add</div>
+            <div class="past-title">IPsec Tunnel &nbsp;<small style="color:#a0aec0;">(= crypto ipsec profile + tunnel protection)</small></div>
+            <div class="past-params">
+              Name : <span>TUNNEL-CISCO-R1</span><br>
+              ▸ General tab :<br>
+              &nbsp;&nbsp;Tunnel Interface : <span>tunnel.1</span><br>
+              &nbsp;&nbsp;Type : <span>Auto Key</span><br>
+              &nbsp;&nbsp;IKE Gateway : <span>GW-CISCO-R1</span><br>
+              &nbsp;&nbsp;IPsec Crypto Profile : <span>PROF-IPSEC-CISCO</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="past">
+          <div class="pasn" style="background:#c53030;">6</div>
+          <div>
+            <div class="pasp">Policies › Security › Add</div>
+            <div class="past-title">Security Policy &nbsp;<small style="color:#a0aec0;">(PAS d'équivalent Cisco VTI — OBLIGATOIRE sur PA)</small></div>
+            <div class="past-params">
+              <strong>Règle 1 :</strong> Source Zone <span>Trust</span> → Dest Zone <span>VPN</span> → Action <span>Allow</span><br>
+              <strong>Règle 2 :</strong> Source Zone <span>VPN</span> → Dest Zone <span>Trust</span> → Action <span>Allow</span>
+            </div>
+            <div class="warn">⚠️ Palo Alto est zone-based. Sans ces 2 règles : tunnel UP mais tout le trafic est bloqué silencieusement. C'est le piège classique pour les gens qui viennent de Cisco !</div>
+          </div>
+        </div>
+
+        <div class="past">
+          <div class="pasn" style="background:#b7791f;">7</div>
+          <div>
+            <div class="pasp">Network › Virtual Routers › default › Static Routes › Add</div>
+            <div class="past-title">Route statique &nbsp;<small style="color:#a0aec0;">(= ip route)</small></div>
+            <div class="past-params">
+              Name : <span>TO-CISCO-LAN</span><br>
+              Destination : <span>192.168.1.0/24</span><br>
+              Interface : <span>tunnel.1</span><br>
+              Next Hop : <span>None</span> (tunnel point-to-point)
+            </div>
+          </div>
+        </div>
+
+        <div class="past">
+          <div class="pasn" style="background:#1a202c;">8</div>
+          <div>
+            <div class="pasp">Commit (bouton en haut à droite de l'interface)</div>
+            <div class="past-title">Commit ── OBLIGATOIRE</div>
+            <div class="past-params">Sur Palo Alto, <strong>aucune config n'est active</strong> tant que tu n'as pas fait Commit. Tout est en "candidate config".</div>
+            <div class="warn">⚠️ Différence fondamentale vs Cisco : sur IOS chaque commande est appliquée immédiatement. Sur PAN-OS, tu travailles sur une config candidate et c'est le Commit qui l'active atomiquement.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="stc" id="sc">
+        <pre><span class="hcmt"># ══════════════════════════════════════════════
+# PALO ALTO CLI — IPsec IKEv2 vers Cisco R1
+# Entrer en mode config : > configure
+# ══════════════════════════════════════════════</span>
+
+<span class="hcmt"># 1. Interface Tunnel ──────────────────────────</span>
+<span class="ht">set network interface tunnel units tunnel.1 ip 172.16.0.2/30
+set network interface tunnel units tunnel.1 comment "VPN-CISCO-R1"
+set zone VPN network layer3 [ tunnel.1 ]</span>
+
+<span class="hcmt">
+# 2. IKE Crypto Profile ────────────────────────</span>
+<span class="hp">set network ike crypto-profiles ike-crypto-profiles PROF-IKE-CISCO dh-group group14
+set network ike crypto-profiles ike-crypto-profiles PROF-IKE-CISCO hash [ sha256 ]
+set network ike crypto-profiles ike-crypto-profiles PROF-IKE-CISCO encryption [ aes-256-cbc ]
+set network ike crypto-profiles ike-crypto-profiles PROF-IKE-CISCO lifetime hours 8</span>
+
+<span class="hcmt">
+# 3. IPsec Crypto Profile ──────────────────────</span>
+<span class="hc">set network ike crypto-profiles ipsec-crypto-profiles PROF-IPSEC-CISCO esp encryption [ aes-256-cbc ]
+set network ike crypto-profiles ipsec-crypto-profiles PROF-IPSEC-CISCO esp authentication [ sha256 ]
+set network ike crypto-profiles ipsec-crypto-profiles PROF-IPSEC-CISCO dh-group group14
+set network ike crypto-profiles ipsec-crypto-profiles PROF-IPSEC-CISCO lifetime hours 1</span>
+
+<span class="hcmt">
+# 4. IKE Gateway ───────────────────────────────</span>
+<span class="hg">set network ike gateway GW-CISCO-R1 authentication pre-shared-key key MySecret123
+set network ike gateway GW-CISCO-R1 protocol ikev2 ike-crypto-profile PROF-IKE-CISCO
+set network ike gateway GW-CISCO-R1 protocol ikev2 dpd enable yes
+set network ike gateway GW-CISCO-R1 protocol-common nat-traversal enable no
+set network ike gateway GW-CISCO-R1 local-address interface ethernet1/1
+set network ike gateway GW-CISCO-R1 local-address ip 10.0.0.2/30
+set network ike gateway GW-CISCO-R1 peer-address ip 10.0.0.1</span>
+
+<span class="hcmt">
+# 5. IPsec Tunnel ──────────────────────────────</span>
+<span class="hc">set network tunnel ipsec TUNNEL-CISCO-R1 tunnel-interface tunnel.1
+set network tunnel ipsec TUNNEL-CISCO-R1 ike gateway GW-CISCO-R1
+set network tunnel ipsec TUNNEL-CISCO-R1 ike ipsec-crypto-profile PROF-IPSEC-CISCO
+set network tunnel ipsec TUNNEL-CISCO-R1 disabled no</span>
+
+<span class="hcmt">
+# 6. Security Policy ───────────────────────────</span>
+<span class="hz">set rulebase security rules ALLOW-TRUST-VPN from [ Trust ]
+set rulebase security rules ALLOW-TRUST-VPN to [ VPN ]
+set rulebase security rules ALLOW-TRUST-VPN source any
+set rulebase security rules ALLOW-TRUST-VPN destination any
+set rulebase security rules ALLOW-TRUST-VPN action allow
+
+set rulebase security rules ALLOW-VPN-TRUST from [ VPN ]
+set rulebase security rules ALLOW-VPN-TRUST to [ Trust ]
+set rulebase security rules ALLOW-VPN-TRUST source any
+set rulebase security rules ALLOW-VPN-TRUST destination any
+set rulebase security rules ALLOW-VPN-TRUST action allow</span>
+
+<span class="hcmt">
+# 7. Route statique ────────────────────────────</span>
+<span class="ht">set network virtual-router default routing-table ip static-route TO-CISCO-LAN destination 192.168.1.0/24
+set network virtual-router default routing-table ip static-route TO-CISCO-LAN interface tunnel.1
+set network virtual-router default routing-table ip static-route TO-CISCO-LAN nexthop next-vr default</span>
+
+<span class="hcmt">
+# 8. Commit ────────────────────────────────────</span>
+<span class="hz">commit</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- VERIFICATION -->
+  <div class="tc" id="t-verif">
+    <div class="card">
+      <div class="ctitle" style="border-color:#38a169;">Vérification & Troubleshooting</div>
+      <div class="vgrid">
+        <div>
+          <div class="vlbl">🔵 Cisco IOS</div>
+          <div class="vcmd">show crypto ikev2 sa
+show crypto ikev2 sa detail
+show crypto ipsec sa
+show interface Tunnel0
+show ip route | i 192.168.2
+
+ping 172.16.0.2 source 172.16.0.1
+ping 192.168.2.1 source 192.168.1.1
+
+debug crypto ikev2
+debug crypto ipsec
+no debug all</div>
+        </div>
+        <div>
+          <div class="vlbl">🔴 Palo Alto CLI</div>
+          <div class="vcmd">show vpn ike-sa gateway GW-CISCO-R1
+show vpn ipsec-sa tunnel TUNNEL-CISCO-R1
+show vpn flow name TUNNEL-CISCO-R1
+show interface tunnel.1
+show routing route
+
+test vpn ike-sa gateway GW-CISCO-R1
+test vpn ipsec-sa tunnel TUNNEL-CISCO-R1
+
+tail follow yes mp-log ikemgr.log
+tail follow yes mp-log ipsecmgr.log</div>
+        </div>
+      </div>
+
+      <div class="vstates">
+        <div class="vstate" style="background:#f0fff4;border:1px solid #c6f6d5;">
+          <strong style="color:#276749;font-size:0.73rem;">✅ Cisco — Tunnel UP</strong><br><br>
+          <span style="font-size:0.68rem;font-family:'Courier New',monospace;background:#e6fffa;padding:1px 5px;border-radius:3px;">show crypto ikev2 sa</span><br>
+          <span style="font-size:0.68rem;color:#4a5568;">→ State: <strong>READY</strong></span><br><br>
+          <span style="font-size:0.68rem;font-family:'Courier New',monospace;background:#e6fffa;padding:1px 5px;border-radius:3px;">show crypto ipsec sa</span><br>
+          <span style="font-size:0.68rem;color:#4a5568;">→ #pkts encaps/decaps &gt; 0</span><br><br>
+          <span style="font-size:0.68rem;font-family:'Courier New',monospace;background:#e6fffa;padding:1px 5px;border-radius:3px;">show interface Tunnel0</span><br>
+          <span style="font-size:0.68rem;color:#4a5568;">→ Tunnel0 is <strong>up</strong>, line protocol is <strong>up</strong></span>
+        </div>
+        <div class="vstate" style="background:#fff5f0;border:1px solid #fed7c7;">
+          <strong style="color:#c4390a;font-size:0.73rem;">✅ Palo Alto — Tunnel UP</strong><br><br>
+          <span style="font-size:0.68rem;font-family:'Courier New',monospace;background:#fff0eb;padding:1px 5px;border-radius:3px;">show vpn ike-sa</span><br>
+          <span style="font-size:0.68rem;color:#4a5568;">→ IKEv2 Phase-1 SA: <strong>active</strong></span><br><br>
+          <span style="font-size:0.68rem;font-family:'Courier New',monospace;background:#fff0eb;padding:1px 5px;border-radius:3px;">show vpn ipsec-sa</span><br>
+          <span style="font-size:0.68rem;color:#4a5568;">→ GW: <strong>active</strong>, State: <strong>active</strong></span><br><br>
+          <span style="font-size:0.68rem;font-family:'Courier New',monospace;background:#fff0eb;padding:1px 5px;border-radius:3px;">GUI : Network › IPsec Tunnels</span><br>
+          <span style="font-size:0.68rem;color:#4a5568;">→ Icône verte sur TUNNEL-CISCO-R1</span>
+        </div>
+      </div>
+
+      <div class="tshoot">
+        <strong>🔧 Troubleshooting rapide</strong><br><br>
+        <div class="tr"><strong>Phase 1 échoue (IKE_SA_INIT) :</strong> Algos incompatibles (proposal vs IKE Crypto Profile) — UDP 500 bloqué — mauvaises adresses IP peers</div>
+        <div class="tr"><strong>Phase 2 échoue (IKE_AUTH) :</strong> PSK différente des deux côtés — problème d'identité (local/remote ID) — mauvais profil IPsec</div>
+        <div class="tr"><strong>Tunnel UP mais ping impossible :</strong> ⚠️ Sur Palo Alto : Security Policy manquante (Trust↔VPN) — Sur Cisco : route absente ou mauvaise interface source</div>
+        <div class="tr"><strong>Tunnel monte puis tombe :</strong> Lifetimes incompatibles — DPD/keepalive — MTU (essayer MTU 1400 sur Tunnel0 côté Cisco)</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function swt(btn, tid) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('act'));
+  document.querySelectorAll('.tc').forEach(t => t.classList.remove('act'));
+  btn.classList.add('act');
+  document.getElementById(tid).classList.add('act');
+}
+function sws(btn, tid) {
+  btn.closest('.card').querySelectorAll('.stab').forEach(t => t.classList.remove('act'));
+  btn.closest('.card').querySelectorAll('.stc').forEach(t => t.classList.remove('act'));
+  btn.classList.add('act');
+  document.getElementById(tid).classList.add('act');
+}
+
+const M = [
+  { col:'#d97706',
+    cn:'crypto ikev2 proposal', cs:'Algorithmes IKE SA',
+    pn:'IKE Crypto Profile',   ps:'Network > Network Profiles > IKE Crypto',
+    note:'Même rôle : définit les algorithmes de chiffrement, d\'intégrité et le groupe DH pour l\'IKE SA (Phase 1). Nommé différemment, même fonction.',
+    cc:`crypto ikev2 proposal PROP-IKEv2\n encryption aes-cbc-256\n integrity sha256\n group 14`,
+    pc:`Name: PROF-IKE-CISCO\nDH Group: group14\nAuthentication: sha256\nEncryption: aes-256-cbc\nLifetime: 8 hours`,
+    pp:'Network › Network Profiles › IKE Crypto › Add' },
+  { col:'#276749',
+    cn:'crypto ikev2 keyring', cs:'Pre-Shared Key + adresse peer',
+    pn:'IKE Gateway (auth)',    ps:'Network > IKE Gateways > General tab',
+    note:'Sur Palo Alto, la PSK et l\'adresse du peer sont dans l\'IKE Gateway directement. Pas d\'objet "keyring" séparé comme sur Cisco.',
+    cc:`crypto ikev2 keyring KR-PA\n peer PALO-ALTO\n  address 10.0.0.2\n  pre-shared-key MySecret123`,
+    pc:`IKE Gateway: GW-CISCO-R1\nAuthentication: Pre-Shared Key\nKey: MySecret123\nPeer IP Address: 10.0.0.1`,
+    pp:'Network › IKE Gateways › Add › General tab' },
+  { col:'#2b6cb0',
+    cn:'crypto ikev2 profile', cs:'Match identity + méthode auth',
+    pn:'IKE Gateway (options)',  ps:'Network > IKE Gateways > Advanced Options',
+    note:'Le crypto ikev2 profile Cisco (match identity, auth, keyring) est entièrement intégré dans l\'IKE Gateway Palo Alto. Un seul objet remplace ces 2 éléments Cisco.',
+    cc:`crypto ikev2 profile PROF-IKEv2\n match identity remote address 10.0.0.2 255.255.255.255\n authentication remote pre-share\n authentication local pre-share\n keyring local KR-PA`,
+    pc:`IKE Gateway: GW-CISCO-R1\nVersion: IKEv2 only\nInterface: ethernet1/1\nLocal IP: 10.0.0.2/30\nIKE Crypto Profile: PROF-IKE-CISCO\nDPD: enabled`,
+    pp:'Network › IKE Gateways › Add › Advanced Options' },
+  { col:'#0987a0',
+    cn:'crypto ipsec transform-set', cs:'Algorithmes Child SA (ESP)',
+    pn:'IPsec Crypto Profile',       ps:'Network > Network Profiles > IPsec Crypto',
+    note:'Même rôle : définit les algorithmes ESP pour la Child SA. Sur Palo Alto le PFS (groupe DH) est aussi dans ce profil.',
+    cc:`crypto ipsec transform-set TS-ESP\n  esp-aes 256 esp-sha256-hmac\n mode tunnel`,
+    pc:`Name: PROF-IPSEC-CISCO\nProtocol: ESP\nEncryption: aes-256-cbc\nAuth: sha256\nDH Group (PFS): group14\nLifetime: 1 hour`,
+    pp:'Network › Network Profiles › IPsec Crypto › Add' },
+  { col:'#553c9a',
+    cn:'crypto ipsec profile', cs:'Lie transform-set + ikev2 profile',
+    pn:'IPsec Tunnel',          ps:'Network > IPsec Tunnels',
+    note:'Le crypto ipsec profile Cisco est l\'équivalent de l\'IPsec Tunnel Palo Alto : il associe les profils crypto avec le gateway et l\'interface.',
+    cc:`crypto ipsec profile IPSEC-PROF\n set transform-set TS-ESP\n set ikev2-profile PROF-IKEv2`,
+    pc:`Name: TUNNEL-CISCO-R1\nTunnel Interface: tunnel.1\nType: Auto Key\nIKE Gateway: GW-CISCO-R1\nIPsec Crypto Profile: PROF-IPSEC-CISCO`,
+    pp:'Network › IPsec Tunnels › Add' },
+  { col:'#c4390a',
+    cn:'interface Tunnel0 + tunnel protection', cs:'VTI + applique le profil IPsec',
+    pn:'Tunnel Interface + IPsec Tunnel',       ps:'Network > Interfaces > Tunnel + Network > IPsec Tunnels',
+    note:'Sur Cisco, l\'interface Tunnel applique le profil directement. Sur Palo Alto c\'est séparé : tunnel.1 est l\'interface logique, l\'IPsec Tunnel fait le lien avec le gateway.',
+    cc:`interface Tunnel0\n ip address 172.16.0.1 255.255.255.252\n tunnel source GigabitEthernet0/0\n tunnel destination 10.0.0.2\n tunnel mode ipsec ipv4\n tunnel protection ipsec profile IPSEC-PROF`,
+    pc:`Interface tunnel.1:\n  IP: 172.16.0.2/30\n  Zone: VPN\n\nIPsec Tunnel TUNNEL-CISCO-R1\n  lie tunnel.1 ↔ GW-CISCO-R1`,
+    pp:'Network › Interfaces › Tunnel + Network › IPsec Tunnels' },
+  { col:'#c53030',
+    cn:'(pas d\'équivalent — VTI est routé)', cs:'Cisco VTI = pas de zone-policy par défaut',
+    pn:'Security Policy ⚠️',                  ps:'Policies > Security — OBLIGATOIRE',
+    note:'⚠️ DIFFÉRENCE MAJEURE : Palo Alto est zone-based. Sans règle de sécurité Trust↔VPN, le tunnel est UP mais tout le trafic est BLOQUÉ. C\'est le piège classique pour les gens qui viennent de Cisco !',
+    cc:`! Pas nécessaire sur Cisco VTI\n! Le trafic routé via Tunnel0\n! passe sans policy supplémentaire\n! (sauf ZBFW activé)`,
+    pc:`Règle 1: Trust → VPN (Allow)\nRègle 2: VPN → Trust (Allow)\n\nSans ces règles :\n→ Tunnel UP mais trafic BLOQUÉ !`,
+    pp:'Policies › Security › Add (2 règles minimum)' },
+  { col:'#b7791f',
+    cn:'ip route 192.168.2.0/24 Tunnel0', cs:'Route statique via VTI',
+    pn:'Static Route',                    ps:'Network > Virtual Routers > default > Static Routes',
+    note:'Même concept de route statique. Sur Palo Alto elle est dans un "Virtual Router" (default par défaut). Le next-hop est l\'interface tunnel.1 directement.',
+    cc:`ip route 192.168.2.0 255.255.255.0 Tunnel0`,
+    pc:`Name: TO-CISCO-LAN\nDestination: 192.168.1.0/24\nInterface: tunnel.1\nNext Hop: None (P2P)`,
+    pp:'Network › Virtual Routers › default › Static Routes › Add' }
+];
+
+function buildMap() {
+  const cc = document.getElementById('c-col');
+  const pc = document.getElementById('p-col');
+  const co = document.getElementById('conn-col');
+  M.forEach((m, i) => {
+    const cb = document.createElement('div');
+    cb.className = 'mblk'; cb.id = 'cb'+i;
+    cb.innerHTML = `<div class="mnum">CISCO ${i+1}</div><div class="mname">${m.cn}</div><div class="msub">${m.cs}</div>`;
+    cb.onclick = () => showM(i);
+    cc.appendChild(cb);
+
+    const pb = document.createElement('div');
+    pb.className = 'mblk'; pb.id = 'pb'+i;
+    pb.innerHTML = `<div class="mnum" style="color:${m.col}">PA ${i+1}</div><div class="mname">${m.pn}</div><div class="msub">${m.ps}</div>`;
+    pb.onclick = () => showM(i);
+    pc.appendChild(pb);
+
+    const conn = document.createElement('div');
+    conn.className = 'conn';
+    conn.innerHTML = `<div class="cln" style="background:${m.col}"></div>`;
+    co.appendChild(conn);
+  });
+}
+
+function showM(i) {
+  M.forEach((_, j) => {
+    document.getElementById('cb'+j).style.cssText = '';
+    document.getElementById('pb'+j).style.cssText = '';
+  });
+  const m = M[i];
+  document.getElementById('cb'+i).style.cssText = `background:#f0f4ff;border-color:${m.col};`;
+  document.getElementById('pb'+i).style.cssText = `background:#fff8f0;border-color:${m.col};`;
+  document.getElementById('map-detail').innerHTML = `
+    <div class="dpanel" style="border-color:${m.col};">
+      <h3 style="color:${m.col};">${m.cn} &nbsp;↔&nbsp; ${m.pn}</h3>
+      <div class="dnote">${m.note}</div>
+      <div class="dgrid">
+        <div class="dblk">
+          <h4 style="color:#2b6cb0;">🔵 Cisco IOS</h4>
+          <pre>${m.cc}</pre>
+        </div>
+        <div class="dblk">
+          <h4 style="color:#c4390a;">🔴 Palo Alto</h4>
+          <div class="ptag">📍 ${m.pp}</div>
+          <pre>${m.pc}</pre>
+        </div>
+      </div>
+    </div>`;
+}
+
+buildMap();
+showM(0);
+</script>
+</body>
+</html>
