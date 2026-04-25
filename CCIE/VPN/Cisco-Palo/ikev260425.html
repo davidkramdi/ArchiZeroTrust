@@ -7,45 +7,7 @@
 <style>
 :root { color-scheme: light; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; transition: background 0.2s, color 0.2s; }
-
-/* ── DARK MODE ─────────────────────────────────── */
-body.dark { background: #0d1117; color: #e2e8f0; }
-body.dark .card { background: #161b22; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-body.dark .ctitle { color: #e2e8f0; }
-body.dark .tabs { background: #161b22; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-body.dark .tab { color: #a0aec0; }
-body.dark .tab:hover { background: #21262d; color: #e2e8f0; }
-body.dark .tab.act { background: #1c3a5e; color: #90cdf4; }
-body.dark .mblk { border-color: #30363d; }
-body.dark .mblk:hover { background: #1c2a3a; border-color: #90cdf4; }
-body.dark .mname { color: #e2e8f0; }
-body.dark .msub { color: #8b949e; }
-body.dark .mnum { color: #6e7681; }
-body.dark .mhdr { filter: brightness(0.85); }
-body.dark .dpanel { background: #21262d; }
-body.dark .dpanel h3 { }
-body.dark .dnote { background: #2d2a1a; color: #f6e05e; border-color: #4a3f1a; }
-body.dark .dblk { background: #0d1117; border-color: #30363d; }
-body.dark .dblk h4 { }
-body.dark .badge { background: #21262d; border-color: #30363d; color: #e2e8f0; }
-body.dark .badge span { color: #6e7681; }
-body.dark .dips { color: #8b949e; }
-body.dark .llbl { color: #6e7681; }
-body.dark .stab { background: #21262d; border-color: #30363d; color: #8b949e; }
-body.dark .stab.act { background: #2d2a1a; border-color: #d97706; color: #fbbf24; }
-body.dark .vlbl { color: #e2e8f0; }
-body.dark .tshoot { background: #2d2a1a; border-color: #4a3f1a; }
-body.dark .tshoot strong { color: #fbbf24; }
-body.dark .warn { background: #2d1515; border-color: #742020; color: #fc8181; }
-body.dark .past-title { color: #e2e8f0; }
-body.dark .past-params { color: #8b949e; }
-body.dark .past-params span { color: #90cdf4; }
-body.dark .ptag { background: #2d2a1a; color: #fbbf24; }
-
-/* Toggle button */
-.dk-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: background 0.15s; white-space: nowrap; }
-.dk-btn:hover { background: rgba(255,255,255,0.25); }
+body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; }
 .header { background: linear-gradient(135deg, #1a365d 0%, #7b341e 100%); color: white; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .header h1 { font-size: 1.05rem; font-weight: 700; }
 .header p { font-size: 0.73rem; opacity: 0.8; margin-top: 2px; }
@@ -147,13 +109,10 @@ pre { font-family: 'Courier New', monospace; font-size: 0.66rem; line-height: 1.
     <h1>🔐 IPsec IKEv2 — Cisco IOS ↔ Palo Alto</h1>
     <p>Tunnel VTI · Pre-Shared Key · ENARSI + Client</p>
   </div>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <div class="logos">
-      <span class="lc">CISCO IOS</span>
-      <span>↔</span>
-      <span class="lp">PALO ALTO</span>
-    </div>
-    <button class="dk-btn" id="dkbtn" onclick="toggleDark()">🌙 Dark</button>
+  <div class="logos">
+    <span class="lc">CISCO IOS</span>
+    <span>↔</span>
+    <span class="lp">PALO ALTO</span>
   </div>
 </div>
 
@@ -675,16 +634,6 @@ function showM(i) {
 
 buildMap();
 showM(0);
-
-function toggleDark() {
-  const d = document.body.classList.toggle('dark');
-  document.getElementById('dkbtn').textContent = d ? '☀️ Light' : '🌙 Dark';
-  localStorage.setItem('dk', d ? '1' : '0');
-}
-if (localStorage.getItem('dk') === '1') {
-  document.body.classList.add('dark');
-  document.getElementById('dkbtn').textContent = '☀️ Light';
-}
 </script>
 </body>
 </html>
