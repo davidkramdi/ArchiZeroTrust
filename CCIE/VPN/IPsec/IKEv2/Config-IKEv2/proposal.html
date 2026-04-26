@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKEv2 Proposal — ENARSI</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; transition: background 0.2s, color 0.2s; }
+
+/* ── DARK MODE ─────────────────────────────── */
+body.dark { background: #0d1117; color: #e2e8f0; }
+body.dark .card { background: #161b22; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+body.dark .ctitle { color: #e2e8f0; }
+body.dark .tabs { background: #161b22; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+body.dark .tab { color: #a0aec0; }
+body.dark .tab:hover { background: #21262d; color: #e2e8f0; }
+body.dark .tab.act { background: #1c3a5e; color: #90cdf4; }
+body.dark .tc-box { background: #21262d; border-color: #30363d; }
+body.dark .tc-box h4 { color: #e2e8f0; }
+body.dark .note { background: #2d2a1a; border-color: #4a3f1a; color: #fde68a; }
+body.dark .warn { background: #2d1515; border-color: #742020; color: #fc8181; }
+body.dark .ok { background: #1a2d1a; border-color: #276227; color: #9ae6b4; }
+body.dark .badge { background: #21262d; border-color: #30363d; color: #e2e8f0; }
+body.dark .badge span { color: #6e7681; }
+body.dark .rule-item { border-color: #30363d; }
+body.dark .rule-item:hover { background: #1c2a3a; }
+body.dark .rule-num { background: #1c3a5e; color: #90cdf4; }
+body.dark .rule-text { color: #e2e8f0; }
+body.dark .rule-sub { color: #8b949e; }
+body.dark .diff-grid { border-color: #30363d; }
+body.dark .diff-hdr { filter: brightness(0.8); }
+body.dark .diff-cell { border-color: #30363d; background: #0d1117; }
+body.dark .diff-cell:hover { background: #1c2a3a; }
+body.dark table th { background: #21262d; color: #e2e8f0; }
+body.dark table td { border-color: #30363d; color: #c9d1d9; }
+body.dark table tr:hover td { background: #1c2a3a; }
+body.dark .step { border-color: #30363d; }
+body.dark .step:hover { background: #1c2a3a; }
+body.dark .step-title { color: #e2e8f0; }
+body.dark .step-sub { color: #8b949e; }
+.dk-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: background 0.15s; }
+.dk-btn:hover { background: rgba(255,255,255,0.25); }
+
+/* ── LAYOUT ─────────────────────────────────── */
+.header { background: linear-gradient(135deg, #1a365d 0%, #2c7a4b 100%); color: white; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.header h1 { font-size: 1.05rem; font-weight: 700; }
+.header p { font-size: 0.73rem; opacity: 0.8; margin-top: 2px; }
+.container { max-width: 1000px; margin: 0 auto; padding: 14px; }
+.card { background: white; border-radius: 11px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.ctitle { font-size: 0.88rem; font-weight: 700; color: #2d3748; margin-bottom: 14px; padding-left: 9px; border-left: 4px solid; }
+
+/* ── TABS ───────────────────────────────────── */
+.tabs { display: flex; gap: 3px; margin-bottom: 14px; background: white; padding: 5px; border-radius: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); flex-wrap: wrap; }
+.tab { flex: 1; min-width: 120px; padding: 7px 8px; border: none; background: transparent; cursor: pointer; border-radius: 6px; font-size: 0.74rem; font-weight: 600; color: #718096; transition: all 0.16s; }
+.tab:hover { background: #f0f4f8; color: #2d3748; }
+.tab.act { background: #ebf8ff; color: #2b6cb0; }
+.tc { display: none; }
+.tc.act { display: block; }
+
+/* ── CODE ───────────────────────────────────── */
+pre { font-family: 'Courier New', monospace; font-size: 0.67rem; line-height: 1.7; overflow-x: auto; background: #1a202c; color: #e2e8f0; padding: 13px; border-radius: 8px; white-space: pre; margin-bottom: 10px; }
+.hp { color: #fbd38d; }   /* commandes */
+.hg { color: #9ae6b4; }   /* valeurs/résultats */
+.hc { color: #90cdf4; }   /* keywords */
+.hz { color: #fc8181; }   /* erreurs/warnings */
+.ht { color: #f6ad55; }   /* titres/sections */
+.hcmt { color: #4a5568; font-style: italic; }
+
+/* ── NOTES ──────────────────────────────────── */
+.note  { background: #fffbea; border: 1px solid #f6e05e; border-radius: 7px; padding: 9px 12px; font-size: 0.69rem; color: #744210; margin-bottom: 10px; }
+.warn  { background: #fff5f5; border: 1px solid #feb2b2; border-radius: 7px; padding: 9px 12px; font-size: 0.69rem; color: #c53030; margin-bottom: 10px; }
+.ok    { background: #f0fff4; border: 1px solid #9ae6b4; border-radius: 7px; padding: 9px 12px; font-size: 0.69rem; color: #276227; margin-bottom: 10px; }
+
+/* ── CONCEPT BOX ────────────────────────────── */
+.tc-box { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 9px; padding: 13px 15px; margin-bottom: 12px; }
+.tc-box h4 { font-size: 0.8rem; font-weight: 700; color: #2d3748; margin-bottom: 8px; }
+.tc-box p, .tc-box li { font-size: 0.72rem; color: #4a5568; line-height: 1.7; }
+.tc-box ul { padding-left: 16px; }
+.tc-box li { margin-bottom: 3px; }
+
+/* ── RULES ──────────────────────────────────── */
+.rule-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; cursor: default; transition: background 0.12s; }
+.rule-item:hover { background: #f8fdff; }
+.rule-num { min-width: 28px; height: 28px; border-radius: 50%; background: #ebf8ff; color: #2b6cb0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
+.rule-text { font-size: 0.74rem; font-weight: 700; color: #2d3748; margin-bottom: 2px; }
+.rule-sub  { font-size: 0.67rem; color: #718096; line-height: 1.55; }
+
+/* ── DIFF TABLE ─────────────────────────────── */
+.diff-grid { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #e2e8f0; border-radius: 9px; overflow: hidden; }
+.diff-hdr  { padding: 8px 12px; font-size: 0.75rem; font-weight: 700; text-align: center; }
+.diff-cell { padding: 10px 12px; border-top: 1px solid #e2e8f0; font-size: 0.69rem; transition: background 0.12s; }
+.diff-cell:hover { background: #f0f9ff; }
+.diff-cell strong { display: block; font-size: 0.72rem; margin-bottom: 4px; color: #2d3748; }
+.diff-cell span { color: #718096; line-height: 1.6; display: block; }
+
+/* ── TABLE ──────────────────────────────────── */
+table { width: 100%; border-collapse: collapse; font-size: 0.69rem; margin-bottom: 10px; }
+th { background: #ebf8ff; color: #2b6cb0; padding: 7px 10px; text-align: left; font-weight: 700; border-bottom: 2px solid #bee3f8; }
+td { padding: 7px 10px; border-bottom: 1px solid #e2e8f0; color: #4a5568; }
+tr:hover td { background: #f7fbff; }
+.tag-ok   { background: #c6f6d5; color: #276227; padding: 1px 7px; border-radius: 10px; font-size: 0.62rem; font-weight: 700; }
+.tag-no   { background: #fed7d7; color: #c53030; padding: 1px 7px; border-radius: 10px; font-size: 0.62rem; font-weight: 700; }
+.tag-warn { background: #fefcbf; color: #744210; padding: 1px 7px; border-radius: 10px; font-size: 0.62rem; font-weight: 700; }
+
+/* ── STEPS ──────────────────────────────────── */
+.step { display: flex; gap: 12px; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; transition: background 0.12s; }
+.step:hover { background: #f8fdff; }
+.step-n { min-width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; color: white; flex-shrink: 0; margin-top: 1px; }
+.step-title { font-size: 0.74rem; font-weight: 700; margin-bottom: 2px; }
+.step-sub   { font-size: 0.66rem; color: #718096; line-height: 1.5; }
+.cmd-inline { font-family: 'Courier New', monospace; font-size: 0.64rem; background: #1a202c; color: #fbd38d; padding: 1px 6px; border-radius: 4px; display: inline; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>🔑 IKEv2 Proposal — Cisco IOS</h1>
+    <p>Configuration · Règles · Normal vs Combined · ENARSI</p>
+  </div>
+  <button class="dk-btn" id="dkbtn" onclick="toggleDark()">🌙 Dark</button>
+</div>
+
+<div class="container">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab act" onclick="swt(this,'t-concept')">📖 Concept</button>
+    <button class="tab" onclick="swt(this,'t-config')">⚙️ Configuration</button>
+    <button class="tab" onclick="swt(this,'t-modes')">🔀 Normal vs GCM</button>
+    <button class="tab" onclick="swt(this,'t-rules')">📋 Règles &amp; Pièges</button>
+    <button class="tab" onclick="swt(this,'t-show')">🔍 Show &amp; Debug</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════ TAB CONCEPT -->
+  <div class="tc act" id="t-concept">
+    <div class="card">
+      <div class="ctitle" style="border-color:#3182ce;">C'est quoi un IKEv2 Proposal ?</div>
+
+      <div class="tc-box">
+        <h4>Rôle</h4>
+        <p>Le proposal définit les <strong>algorithmes cryptographiques</strong> utilisés pour protéger le <strong>canal IKE lui-même</strong> (IKE SA = Phase 1). Il est négocié dans les messages <strong>IKE_SA_INIT</strong> (MSG 1 et 2 — en clair).</p>
+      </div>
+
+      <div class="tc-box">
+        <h4>Les 4 types de transforms</h4>
+        <table>
+          <tr><th>Transform</th><th>Commande Cisco</th><th>Rôle</th><th>Exemples</th></tr>
+          <tr><td><strong>Encryption</strong></td><td><span class="cmd-inline">encryption</span></td><td>Confidentialité du canal IKE</td><td>AES-CBC-256, AES-GCM-256</td></tr>
+          <tr><td><strong>Integrity</strong></td><td><span class="cmd-inline">integrity</span></td><td>Intégrité + authenticité</td><td>SHA256, SHA512</td></tr>
+          <tr><td><strong>PRF</strong></td><td><span class="cmd-inline">prf</span></td><td>Dérivation des clés (SKEYSEED)</td><td>SHA256, SHA384</td></tr>
+          <tr><td><strong>DH Group</strong></td><td><span class="cmd-inline">group</span></td><td>Échange de clés Diffie-Hellman</td><td>Group 14, 19, 20, 21</td></tr>
+        </table>
+      </div>
+
+      <div class="note">⚠️ <strong>Différence IKEv1 :</strong> En IKEv2, l'<strong>authentification</strong> (PSK/cert) et la <strong>durée de vie</strong> de la SA ne sont PAS dans le proposal — elles sont gérées dans le IKEv2 Profile. IKEv1 les incluait dans le proposal (ISAKMP policy).</div>
+
+      <div class="tc-box">
+        <h4>Lien proposal → policy → profile</h4>
+        <pre><span class="hcmt">! Le proposal seul ne fait rien — il doit être activé via une policy</span>
+
+<span class="hp">crypto ikev2 proposal</span> <span class="hg">PROP-IKEv2</span>        <span class="hcmt">← définit les algos</span>
+ <span class="hc">encryption</span> aes-cbc-256
+ <span class="hc">integrity</span>  sha256
+ <span class="hc">group</span>      14
+
+<span class="hp">crypto ikev2 policy</span> <span class="hg">POL-IKEv2</span>          <span class="hcmt">← active le proposal</span>
+ <span class="hc">proposal</span> PROP-IKEv2
+
+<span class="hp">crypto ikev2 profile</span> <span class="hg">PROF-IKEv2</span>        <span class="hcmt">← identité + auth (PSK/cert)</span>
+ match identity remote address 10.0.0.2 255.255.255.255
+ authentication remote pre-share
+ authentication local  pre-share
+ keyring local KR-IKEv2</pre>
+      </div>
+
+      <div class="ok">✅ <strong>Proposal default :</strong> Si tu ne configures rien, Cisco utilise un proposal/policy par défaut (inclut DH2, SHA1, 3DES…). Suffisant pour un test rapide, mais jamais pour la production ni l'exam ENARSI.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ TAB CONFIG -->
+  <div class="tc" id="t-config">
+    <div class="card">
+      <div class="ctitle" style="border-color:#805ad5;">Créer, référencer et supprimer un proposal</div>
+
+      <div class="step">
+        <div class="step-n" style="background:#3182ce;">1</div>
+        <div>
+          <div class="step-title" style="color:#3182ce;">Créer le proposal</div>
+          <div class="step-sub">Entre en mode <span class="cmd-inline">(config-ikev2-proposal)</span>. Cisco affiche un message rappelant les requirements.</div>
+          <pre style="margin-top:8px;"><span class="hp">Router(config)#</span><span class="hg">crypto ikev2 proposal</span> ikev2_proposal
+<span class="hz">IKEv2 proposal MUST either have a set of an encryption algorithm</span>
+<span class="hz">other than aes-gcm, an integrity algorithm and a DH group configured</span>
+<span class="hz">or encryption algorithm aes-gcm, a prf algorithm and a DH group configured</span>
+<span class="hp">Router(config-ikev2-proposal)#</span></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n" style="background:#805ad5;">2</div>
+        <div>
+          <div class="step-title" style="color:#805ad5;">Configurer les algorithmes</div>
+          <div class="step-sub">Exemple avec normal cipher (AES-CBC) — <strong>integrity obligatoire</strong></div>
+          <pre style="margin-top:8px;"><span class="hp">Router(config-ikev2-proposal)#</span><span class="hg">encryption</span> aes-cbc-256
+<span class="hp">Router(config-ikev2-proposal)#</span><span class="hg">integrity</span>  sha512
+<span class="hp">Router(config-ikev2-proposal)#</span><span class="hg">prf</span>        sha512
+<span class="hp">Router(config-ikev2-proposal)#</span><span class="hg">group</span>      16</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n" style="background:#2c7a4b;">3</div>
+        <div>
+          <div class="step-title" style="color:#2c7a4b;">Référencer dans une policy</div>
+          <div class="step-sub">Sans cette étape, le proposal n'est <strong>jamais utilisé</strong> en négociation.</div>
+          <pre style="margin-top:8px;"><span class="hp">Router(config)#</span><span class="hg">crypto ikev2 policy</span> ikev2_policy
+<span class="hp">Router(config-ikev2-policy)#</span><span class="hg">proposal</span> ikev2_proposal</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n" style="background:#c53030;">4</div>
+        <div>
+          <div class="step-title" style="color:#c53030;">Supprimer un proposal</div>
+          <div class="step-sub">Il faut d'abord le <strong>dé-référencer</strong> de la policy, sinon Cisco refuse.</div>
+          <pre style="margin-top:8px;"><span class="hcmt">! ❌ Tentative directe — refus :</span>
+<span class="hp">Router(config)#</span>no crypto ikev2 proposal ikev2_proposal
+<span class="hz">% Cannot remove as proposal is in use.</span>
+
+<span class="hcmt">! ✅ Dé-référencer d'abord :</span>
+<span class="hp">Router(config)#</span>crypto ikev2 policy ikev2_policy
+<span class="hp">Router(config-ikev2-policy)#</span>no proposal ikev2_proposal
+<span class="hp">Router(config-ikev2-policy)#</span>exit
+<span class="hp">Router(config)#</span>no crypto ikev2 proposal ikev2_proposal</pre>
+        </div>
+      </div>
+
+      <div class="warn">⚠️ <strong>Proposal incomplet :</strong> Si tu oublies un transform (ex: pas de <code>group</code>), le proposal s'affiche avec la mention <code>! Proposal Incomplete</code> dans la running-config et n'est pas utilisé en négociation.</div>
+      <pre><span class="hp">Router#</span>show run | begin ikev2 proposal
+crypto ikev2 proposal ikev2_proposal
+ <span class="hz">! Proposal Incomplete(MUST have atleast an encryption algorithm,</span>
+ <span class="hz">  an integrity algorithm and a dh group configured)</span></pre>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ TAB MODES -->
+  <div class="tc" id="t-modes">
+    <div class="card">
+      <div class="ctitle" style="border-color:#e53e3e;">Normal Cipher (AES-CBC) vs Combined-Mode (AES-GCM)</div>
+
+      <div class="diff-grid" style="margin-bottom:14px;">
+        <div class="diff-hdr" style="background:#ebf8ff;color:#2b6cb0;">🔵 Normal Cipher (AES-CBC)</div>
+        <div class="diff-hdr" style="background:#f0fff4;color:#276227;">🟢 Combined-Mode (AES-GCM)</div>
+
+        <div class="diff-cell"><strong>Encryption</strong><span>AES-CBC, AES-192, DES, 3DES</span></div>
+        <div class="diff-cell"><strong>Encryption (AEAD)</strong><span>AES-GCM-128, AES-GCM-256</span></div>
+
+        <div class="diff-cell"><strong>Integrity</strong><span>✅ Obligatoire (SHA256, SHA512…)</span></div>
+        <div class="diff-cell"><strong>Integrity</strong><span>❌ Interdite — intégrée dans GCM</span></div>
+
+        <div class="diff-cell"><strong>PRF</strong><span>Optionnel (par défaut = integrity algo)</span></div>
+        <div class="diff-cell"><strong>PRF</strong><span>✅ Obligatoire (dérivation clés)</span></div>
+
+        <div class="diff-cell"><strong>DH Group</strong><span>✅ Obligatoire</span></div>
+        <div class="diff-cell"><strong>DH Group</strong><span>✅ Obligatoire</span></div>
+
+        <div class="diff-cell"><strong>Perf</strong><span>2 passes CPU (encrypt + HMAC)</span></div>
+        <div class="diff-cell"><strong>Perf</strong><span>1 passe CPU — plus rapide (AEAD)</span></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div class="note" style="margin-bottom:8px;">🔵 Exemple — Normal cipher</div>
+          <pre><span class="hp">crypto ikev2 proposal</span> NORMAL
+ <span class="hc">encryption</span> aes-cbc-256
+ <span class="hc">integrity</span>  sha512
+ <span class="hcmt">! prf optionnel ici (= integrity par défaut)</span>
+ <span class="hc">group</span>      16</pre>
+          <pre><span class="hp">show crypto ikev2 proposal</span> NORMAL
+IKEv2 proposal: NORMAL
+  Encryption : <span class="hg">AES-CBC-256</span>
+  Integrity  : <span class="hg">SHA512</span>
+  PRF        : <span class="hg">SHA512</span>
+  DH Group   : <span class="hg">DH_GROUP_4096_MODP/Group 16</span></pre>
+        </div>
+        <div>
+          <div class="ok" style="margin-bottom:8px;">🟢 Exemple — Combined-mode (AES-GCM)</div>
+          <pre><span class="hp">crypto ikev2 proposal</span> GCM
+ <span class="hc">encryption</span> aes-gcm-256 aes-gcm-128
+ <span class="hcmt">! integrity → WARNING si ajoutée</span>
+ <span class="hc">prf</span>        sha512 sha384
+ <span class="hc">group</span>      21 20</pre>
+          <pre><span class="hp">show crypto ikev2 proposal</span> GCM
+IKEv2 proposal: GCM
+  Encryption : <span class="hg">AES-GCM-256 AES-GCM-128</span>
+  Integrity  : <span class="hz">none</span>
+  PRF        : <span class="hg">SHA512 SHA384</span>
+  DH Group   : <span class="hg">DH_GROUP_521_ECP/Group 21</span>
+               <span class="hg">DH_GROUP_384_ECP/Group 20</span></pre>
+        </div>
+      </div>
+
+      <div class="warn">⚠️ <strong>Deux proposals si besoin des deux modes :</strong> AES-GCM et AES-CBC ne peuvent <strong>pas cohabiter dans un même proposal</strong>. Il faut créer deux proposals séparés et les référencer tous les deux dans la policy.<br><br>
+      <span class="cmd-inline">crypto ikev2 policy POL</span> → <span class="cmd-inline">proposal GCM</span> + <span class="cmd-inline">proposal NORMAL</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ TAB RULES -->
+  <div class="tc" id="t-rules">
+    <div class="card">
+      <div class="ctitle" style="border-color:#d69e2e;">Règles importantes &amp; pièges ENARSI</div>
+
+      <div class="rule-item">
+        <div class="rule-num">1</div>
+        <div>
+          <div class="rule-text">Au moins 1 transform de chaque type requis</div>
+          <div class="rule-sub">Un proposal sans encryption, sans integrity (sauf GCM), ou sans DH group est <strong>incomplet</strong> et n'est pas utilisé. Cisco l'indique avec <code>! Proposal Incomplete</code> dans la running-config.</div>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">2</div>
+        <div>
+          <div class="rule-text">Ordre = priorité (du plus au moins préféré)</div>
+          <div class="rule-sub">Si tu configures plusieurs algos : <code>encryption aes-cbc-256 aes-cbc-128</code> → AES-256 est proposé en premier. Le répondeur choisit parmi les proposés.</div>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">3</div>
+        <div>
+          <div class="rule-text">L'initiateur a la priorité en cas de conflit de préférences</div>
+          <div class="rule-sub">Si initiateur propose [SHA512, SHA256] et répondeur préfère SHA256, c'est SHA512 qui est choisi (premier de la liste de l'initiateur qu'il accepte).</div>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">4</div>
+        <div>
+          <div class="rule-text">Proposal doit être référencé dans une policy</div>
+          <div class="rule-sub">Sans <code>crypto ikev2 policy → proposal</code>, le proposal est ignoré. La policy default prend le relais avec ses algos faibles.</div>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">5</div>
+        <div>
+          <div class="rule-text">Dé-référencer avant de supprimer</div>
+          <div class="rule-sub">Cisco refuse <code>no crypto ikev2 proposal X</code> si X est encore référencé dans une policy. Message : <code>% Cannot remove as proposal is in use.</code></div>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">6</div>
+        <div>
+          <div class="rule-text">AES-GCM et AES-CBC = deux proposals séparés</div>
+          <div class="rule-sub">Combined-mode et normal-mode ne peuvent pas cohabiter dans un seul proposal (RFC IKEv2). Créer deux proposals et les deux référencer dans la même policy.</div>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">7</div>
+        <div>
+          <div class="rule-text">Le répondeur doit avoir au moins un proposal compatible</div>
+          <div class="rule-sub">Si aucun des proposals de l'initiateur ne matche côté répondeur → <strong>IKE_SA_INIT échoue</strong> (NO_PROPOSAL_CHOSEN). Debug : <code>debug crypto ikev2 error</code></div>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">8</div>
+        <div>
+          <div class="rule-text">Le proposal default existe toujours</div>
+          <div class="rule-sub">Cisco a un proposal/policy par défaut (DH2, 3DES, SHA1…). Il s'applique si tu ne configures rien. Jamais utiliser en production.</div>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">9</div>
+        <div>
+          <div class="rule-text">IKEv2 Proposal ≠ IPsec Transform-Set</div>
+          <div class="rule-sub">Le proposal protège le <strong>canal IKE (Phase 1)</strong>. Le <code>crypto ipsec transform-set</code> protège les <strong>données (Phase 2 / Child SA)</strong>. Deux configurations distinctes.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ TAB SHOW -->
+  <div class="tc" id="t-show">
+    <div class="card">
+      <div class="ctitle" style="border-color:#2c7a4b;">Show, vérification &amp; debug</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+          <div class="note" style="margin-bottom:6px;">Voir tous les proposals configurés</div>
+          <pre><span class="hp">Router#</span>show crypto ikev2 proposal
+
+IKEv2 proposal: <span class="ht">default</span>
+  Encryption : <span class="hg">AES-CBC-256 AES-CBC-192 AES-CBC-128</span>
+  Integrity  : <span class="hg">SHA512 SHA384 SHA256 SHA96 MD596</span>
+  PRF        : <span class="hg">SHA512 SHA384 SHA256 SHA1 MD5</span>
+  DH Group   : <span class="hg">Group 5 Group 2</span>  <span class="hcmt">← faibles !</span>
+
+IKEv2 proposal: <span class="ht">PROP-IKEv2</span>
+  Encryption : <span class="hg">AES-CBC-256</span>
+  Integrity  : <span class="hg">SHA256</span>
+  PRF        : <span class="hg">SHA256</span>
+  DH Group   : <span class="hg">DH_GROUP_2048_MODP/Group 14</span></pre>
+        </div>
+        <div>
+          <div class="note" style="margin-bottom:6px;">Vérifier la SA IKE établie</div>
+          <pre><span class="hp">Router#</span>show crypto ikev2 sa detail
+
+IKEv2 SAs:
+Session-id:1, <span class="hg">Status:UP-ACTIVE</span>
+Fvrf/ivrf: none/none
+  Local  10.0.0.1/500
+  Remote 10.0.0.2/500
+  Encr: <span class="hg">AES-CBC</span>, keysize: <span class="hg">256</span>
+  PRF: <span class="hg">HMAC-SHA256</span>
+  Hash: <span class="hg">HMAC-SHA256-128</span>
+  DH Grp: <span class="hg">14</span>
+  Auth sign: <span class="hg">PSK</span>
+  Auth verify: <span class="hg">PSK</span></pre>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div class="warn" style="margin-bottom:6px;">Si négociation échoue</div>
+          <pre><span class="hcmt">! Activer le debug</span>
+<span class="hp">Router#</span>terminal monitor
+<span class="hp">Router#</span>debug crypto ikev2 error
+<span class="hp">Router#</span>debug crypto ikev2 internal
+
+<span class="hcmt">! Forcer une nouvelle négo</span>
+<span class="hp">Router#</span>clear crypto ikev2 sa</pre>
+          <div class="warn" style="margin-top:8px;">Message type <span class="cmd-inline">NO_PROPOSAL_CHOSEN</span> → aucun algo en commun entre les deux peers. Vérifier encryption/integrity/DH des deux côtés.</div>
+        </div>
+        <div>
+          <div class="ok" style="margin-bottom:6px;">Vérifier dans la running-config</div>
+          <pre><span class="hp">Router#</span>show run | begin ikev2 proposal
+crypto ikev2 proposal <span class="hg">PROP-IKEv2</span>
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+!
+crypto ikev2 policy <span class="hg">POL-IKEv2</span>
+ proposal PROP-IKEv2  <span class="hcmt">← lien obligatoire</span>
+!
+crypto ikev2 profile <span class="hg">PROF-IKEv2</span>
+ match identity remote address 10.0.0.2
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local KR-IKEv2</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+function swt(btn, id) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('act'));
+  document.querySelectorAll('.tc').forEach(t => t.classList.remove('act'));
+  btn.classList.add('act');
+  document.getElementById(id).classList.add('act');
+}
+
+function toggleDark() {
+  const d = document.body.classList.toggle('dark');
+  document.getElementById('dkbtn').textContent = d ? '☀️ Light' : '🌙 Dark';
+  localStorage.setItem('dk', d ? '1' : '0');
+}
+if (localStorage.getItem('dk') === '1') {
+  document.body.classList.add('dark');
+  document.getElementById('dkbtn').textContent = '☀️ Light';
+}
+</script>
+</body>
+</html>
