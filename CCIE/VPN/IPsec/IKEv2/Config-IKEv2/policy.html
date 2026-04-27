@@ -337,6 +337,42 @@ IKEv2 policy : default <span class="hz">Disabled</span>
       <div class="rule"><div class="rnum">6</div><div><div class="rule-text">Modifier la default policy : retirer "any" d'abord</div><div class="rule-sub">Si <span class="ci">match fvrf any</span> est présent, ajouter un fvrf spécifique provoque une erreur. Faire <span class="ci">no match fvrf any</span> en premier.</div></div></div>
       <div class="rule"><div class="rnum">7</div><div><div class="rule-text">Plusieurs proposals → tous envoyés dans IKE_SA_INIT</div><div class="rule-sub">DH pré-calculé sur le premier proposal. Si le répondeur choisit le second avec un DH différent → nouvel échange DH.</div></div></div>
       <div class="rule"><div class="rnum">8</div><div><div class="rule-text">Policy ≠ Profile</div><div class="rule-sub">Policy = algos Phase 1 (IKE SA). Profile = identité + authentification (PSK, certs, DPD). Indépendants.</div></div></div>
+
+      <div style="background:#f0fff4;border:1.5px solid #68d391;border-radius:9px;padding:13px 15px;margin-top:16px;">
+        <div style="font-size:0.75rem;font-weight:800;color:#276227;margin-bottom:10px;display:flex;align-items:center;gap:7px;">
+          <span style="font-size:1rem;">💡</span> Lab Insight — EVE-NG EDG Router
+        </div>
+        <div style="font-size:0.72rem;color:#2d4a2d;line-height:1.75;">
+          <strong>Q :</strong> Si un routeur Cisco n'a pas de <span class="ci">crypto ikev2 policy</span> configurée explicitement, que se passe-t-il ?
+        </div>
+        <div style="font-size:0.72rem;color:#2d4a2d;line-height:1.75;margin-top:8px;">
+          <strong>R :</strong> Cisco utilise automatiquement la <strong>default policy</strong>, qui pointe sur le <strong>default proposal</strong>.
+          Si le default proposal contient les algorithmes compatibles avec le peer distant, la négociation IKEv2 fonctionne
+          <strong>sans aucune configuration explicite de policy</strong>.
+        </div>
+        <div style="font-size:0.72rem;color:#2d4a2d;line-height:1.75;margin-top:8px;">
+          C'est exactement le cas du routeur EDG en lab EVE-NG : aucune <span class="ci">crypto ikev2 policy</span> n'est configurée,
+          mais le tunnel négocie correctement parce que le default proposal inclut AES-CBC-128 + SHA256 + DH Group 2 —
+          qui correspondent aux algorithmes configurés côté Palo Alto.
+        </div>
+        <pre style="margin-top:10px;margin-bottom:0;"><span class="hcmt">! EDG — show crypto ikev2 proposal</span>
+IKEv2 proposal: <span class="ht">Prop-Ikev2</span>       <span class="hcmt">← configuré mais jamais utilisé (pas de policy)</span>
+  Encryption : <span class="hg">AES-CBC-128</span>
+  Integrity  : <span class="hg">SHA256</span>
+  PRF        : <span class="hg">SHA256</span>
+  DH Group   : <span class="hg">DH_GROUP_1024_MODP/Group 2</span>
+
+IKEv2 proposal: <span class="ht">default</span>          <span class="hcmt">← celui qui est réellement utilisé via la default policy</span>
+  Encryption : <span class="hg">AES-CBC-256 AES-CBC-192 AES-CBC-128</span>
+  Integrity  : <span class="hg">SHA512 SHA384 SHA256 SHA96 MD596</span>
+  PRF        : <span class="hg">SHA512 SHA384 SHA256 SHA1 MD5</span>
+  DH Group   : <span class="hg">DH_GROUP_1536_MODP/Group 5 DH_GROUP_1024_MODP/Group 2</span></pre>
+        <div style="font-size:0.69rem;color:#276227;margin-top:10px;padding-top:8px;border-top:1px solid #9ae6b4;">
+          ⚠️ <strong>Corollaire :</strong> le proposal <span class="ci">Prop-Ikev2</span> est présent dans la running-config mais <strong>n'est jamais utilisé</strong>
+          — aucune policy ne le référence. Pour l'activer : <span class="ci">crypto ikev2 policy POL-EDG → proposal Prop-Ikev2</span>.
+        </div>
+      </div>
+
     </div>
   </div>
 
