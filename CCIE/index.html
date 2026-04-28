@@ -27,8 +27,6 @@
       min-height: 100vh;
       padding: 0;
     }
-
-    /* TOP BAR */
     .topbar {
       background: rgba(10,14,26,0.9);
       backdrop-filter: blur(10px);
@@ -54,8 +52,6 @@
     .topbar a:hover { color: var(--accent); }
     .topbar .sep { color: var(--border); }
     .topbar .current { color: var(--text); font-weight: 500; }
-
-    /* HERO */
     .hero {
       padding: 56px 40px 40px;
       max-width: 900px;
@@ -94,14 +90,11 @@
       line-height: 1.7;
       max-width: 620px;
     }
-
-    /* CONTENT */
     .content {
       max-width: 900px;
       margin: 0 auto;
       padding: 0 40px 80px;
     }
-
     .section-label {
       font-size: 11px;
       font-weight: 600;
@@ -111,14 +104,12 @@
       margin-bottom: 14px;
       font-family: 'JetBrains Mono', monospace;
     }
-
     .card-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 14px;
       margin-bottom: 48px;
     }
-
     .nav-card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -148,7 +139,6 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
     .nav-card:hover::before { opacity: 1; }
-
     .nav-card-icon {
       width: 40px; height: 40px;
       border-radius: 8px;
@@ -163,6 +153,9 @@
       font-weight: 600;
       color: var(--text);
       margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
     }
     .nav-card-sub {
       font-size: 12px;
@@ -174,8 +167,6 @@
       transition: color .2s, transform .2s;
     }
     .nav-card:hover .nav-card-arrow { color: var(--accent); transform: translateX(3px); }
-
-    /* Coming soon badge */
     .badge {
       font-size: 10px;
       font-weight: 600;
@@ -186,7 +177,6 @@
       color: var(--dim);
       font-family: 'JetBrains Mono', monospace;
     }
-
     @media (max-width: 600px) {
       .hero, .content { padding-left: 20px; padding-right: 20px; }
       .hero h1 { font-size: 26px; }
@@ -195,51 +185,51 @@
   </style>
 </head>
 <body>
-
   <div class="topbar">
     <a href="../index.html">🏛️ ArchiZeroTrust</a>
     <span class="sep">›</span>
     <span class="current">CCIE</span>
   </div>
-
   <div class="hero">
     <div class="hero-tag">🔵 CCIE</div>
     <h1>Cisco Certified Internetwork Expert</h1>
     <p>Architectures réseau avancées, routage, VPN, MPLS, SD-WAN et QoS. Labs, configs et fiches de révision pour la certification CCIE.</p>
   </div>
-
   <div class="content">
-
     <div class="section-label">Sujets disponibles</div>
     <div class="card-grid">
 
+      <!-- VPN — actif -->
       <a href="VPN/index.html" class="nav-card">
         <div class="nav-card-icon">🔐</div>
         <div class="nav-card-body">
           <div class="nav-card-title">VPN</div>
-          <div class="nav-card-sub">IPsec, IKEv2, Cisco ↔ Palo Alto, DMVPN , MPLS, VRF, </div>
+          <div class="nav-card-sub">IPsec, IKEv2, Cisco ↔ Palo Alto, DMVPN, MPLS, VRF</div>
         </div>
         <span class="nav-card-arrow">→</span>
       </a>
 
-      <a href="Routing/index.html" class="nav-card" style="opacity:.6; pointer-events:none;">
+      <!-- ROUTING — actif -->
+      <a href="Routing/index.html" class="nav-card">
         <div class="nav-card-icon">🗺️</div>
         <div class="nav-card-body">
-          <div class="nav-card-title">Routing<span class="badge">bientôt</span></div>
-          <div class="nav-card-sub">BGP, OSPF , IS-IS , MPLS , EIGRP , Redistribution , Filter.. </div>
+          <div class="nav-card-title">Routing</div>
+          <div class="nav-card-sub">BGP, OSPF, IS-IS, EIGRP, Redistribution, Filter…</div>
         </div>
         <span class="nav-card-arrow">→</span>
       </a>
 
+      <!-- SDA — bientôt -->
       <a href="#" class="nav-card" style="opacity:.6; pointer-events:none;">
         <div class="nav-card-icon">🌐</div>
         <div class="nav-card-body">
-          <div class="nav-card-title">SDA<span class="badge">bientôt</span></div>
-          <div class="nav-card-sub">DNA Center , ...</div>
+          <div class="nav-card-title">SDA <span class="badge">bientôt</span></div>
+          <div class="nav-card-sub">DNA Center, …</div>
         </div>
         <span class="nav-card-arrow">→</span>
       </a>
 
+      <!-- SD-WAN — bientôt -->
       <a href="#" class="nav-card" style="opacity:.6; pointer-events:none;">
         <div class="nav-card-icon">📡</div>
         <div class="nav-card-body">
@@ -249,6 +239,7 @@
         <span class="nav-card-arrow">→</span>
       </a>
 
+      <!-- QoS — bientôt -->
       <a href="#" class="nav-card" style="opacity:.6; pointer-events:none;">
         <div class="nav-card-icon">⚖️</div>
         <div class="nav-card-body">
@@ -259,8 +250,6 @@
       </a>
 
     </div>
-
   </div>
-
 </body>
 </html>
