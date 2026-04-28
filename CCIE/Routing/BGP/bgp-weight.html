@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP Weight — Référence CCIE / ENARSI</title>
+<style>
+  :root {
+    --bg:        #0d1117;
+    --bg2:       #161b27;
+    --bg3:       #1e2535;
+    --bg4:       #252d3d;
+    --border:    #2a3347;
+    --text:      #e2ecf7;
+    --text2:     #8aadca;
+    --text3:     #556070;
+    --blue:      #1b72be;
+    --blue-lt:   #4a9fd4;
+    --green:     #27ae60;
+    --green-lt:  #2ecc71;
+    --orange:    #e67e22;
+    --orange-lt: #f39c12;
+    --red:       #e74c3c;
+    --teal:      #16a085;
+    --teal-lt:   #1abc9c;
+    --purple:    #8e44ad;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+  /* TOPBAR */
+  .topbar {
+    background: linear-gradient(135deg, #0d1b2a 0%, #1a2e42 100%);
+    padding: 16px 28px;
+    display: flex; align-items: center; gap: 14px;
+    position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.5);
+  }
+  .topbar .logo { background: var(--blue); color: #fff; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 4px; letter-spacing: 1px; }
+  .topbar h1 { font-size: 17px; font-weight: 600; color: var(--text); }
+  .topbar .badge { background: var(--red); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 12px; letter-spacing: .5px; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 10px 20px 0; overflow-x: auto; border-bottom: 1px solid var(--border); }
+  .tab { padding: 8px 15px; font-size: 12px; font-weight: 600; color: var(--text2); cursor: pointer; border-radius: 6px 6px 0 0; border: none; background: transparent; white-space: nowrap; transition: all .2s; }
+  .tab:hover { color: var(--text); background: var(--bg3); }
+  .tab.active { background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-bottom: 1px solid var(--bg3); }
+
+  /* CONTENT */
+  .content { display: none; padding: 24px; max-width: 980px; margin: 0 auto; }
+  .content.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--bg2);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--blue);
+  }
+  .card.warn   { border-left-color: var(--red); }
+  .card.green  { border-left-color: var(--green); }
+  .card.orange { border-left-color: var(--orange); }
+  .card.purple { border-left-color: var(--purple); }
+  .card.teal   { border-left-color: var(--teal); }
+
+  h2 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  h3 { font-size: 12px; font-weight: 700; color: var(--blue-lt); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .6px; }
+  .card.warn   h3 { color: #e57373; }
+  .card.green  h3 { color: var(--green-lt); }
+  .card.orange h3 { color: var(--orange-lt); }
+  .card.teal   h3 { color: var(--teal-lt); }
+  .card.purple h3 { color: #ba68c8; }
+  p { line-height: 1.65; color: var(--text2); margin-bottom: 8px; }
+
+  /* BADGES */
+  .badges { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+  .badge-tag { padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: .3px; }
+  .badge-red    { background: rgba(231,76,60,.15);  color: #e57373; border: 1px solid rgba(231,76,60,.4); }
+  .badge-blue   { background: rgba(27,114,190,.15); color: var(--blue-lt); border: 1px solid rgba(27,114,190,.4); }
+  .badge-green  { background: rgba(39,174,96,.15);  color: var(--green-lt); border: 1px solid rgba(39,174,96,.4); }
+  .badge-orange { background: rgba(230,126,34,.15); color: var(--orange-lt); border: 1px solid rgba(230,126,34,.4); }
+  .badge-teal   { background: rgba(22,160,133,.15); color: var(--teal-lt); border: 1px solid rgba(22,160,133,.4); }
+
+  /* CODE */
+  pre { background: #0a0f1a; color: #a8d8ea; border-radius: 8px; padding: 15px 18px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.75; overflow-x: auto; margin: 10px 0; border: 1px solid var(--border); }
+  .kw  { color: #e2a44a; }
+  .val { color: #7ec8a0; }
+  .cmt { color: #3d5a70; font-style: italic; }
+  .hl  { color: var(--orange-lt); font-weight: bold; }
+  .hl2 { color: var(--teal-lt); font-weight: bold; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th { background: var(--bg4); color: var(--text2); padding: 10px 14px; font-size: 11px; font-weight: 700; text-align: left; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text2); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); }
+  .w-high { color: var(--green-lt); font-weight: 700; }
+  .w-zero { color: #e57373; font-weight: 600; }
+  .w-teal { color: var(--teal-lt); font-weight: 700; }
+
+  /* METHOD CARDS */
+  .method-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .method-card { background: var(--bg2); border-radius: 10px; padding: 18px; border: 1px solid var(--border); border-top: 3px solid var(--blue); }
+  .method-card.m2 { border-top-color: var(--purple); }
+  .method-card.m3 { border-top-color: var(--green); }
+  .method-num { width: 28px; height: 28px; border-radius: 50%; background: var(--blue); color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+  .method-card.m2 .method-num { background: var(--purple); }
+  .method-card.m3 .method-num { background: var(--green); }
+  .method-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .flex-tag { font-size: 10px; font-weight: 700; background: var(--purple); color: #fff; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+
+  /* BEST PATH */
+  .bp-list { list-style: none; }
+  .bp-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 7px; margin-bottom: 4px; font-size: 13px; color: var(--text2); background: var(--bg3); border: 1px solid var(--border); }
+  .bp-item.highlight      { background: rgba(243,156,18,.1);  border-color: rgba(243,156,18,.5);  color: var(--text); font-weight: 700; font-size: 14px; }
+  .bp-item.highlight-aigp { background: rgba(22,160,133,.1);  border-color: rgba(22,160,133,.5);  color: var(--text); font-weight: 700; font-size: 14px; }
+  .bp-num { min-width: 26px; height: 26px; border-radius: 50%; background: var(--bg4); color: var(--text3); font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+  .bp-item.highlight      .bp-num { background: var(--orange-lt); color: #000; }
+  .bp-item.highlight-aigp .bp-num { background: var(--teal); color: #fff; }
+  .bp-scope { margin-left: auto; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: var(--bg4); color: var(--text3); white-space: nowrap; }
+  .bp-item.highlight      .bp-scope { background: rgba(243,156,18,.3); color: var(--orange-lt); }
+  .bp-item.highlight-aigp .bp-scope { background: rgba(22,160,133,.3); color: var(--teal-lt); }
+
+  /* FLOW */
+  .flow { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+  .flow-box { background: var(--bg3); color: var(--text); border-radius: 10px; padding: 14px 22px; text-align: center; min-width: 140px; border: 1px solid var(--border); }
+  .flow-box .fb-title { font-size: 13px; font-weight: 700; }
+  .flow-box .fb-sub { font-size: 10px; color: var(--text2); margin-top: 4px; line-height: 1.6; }
+  .flow-box.active-box { background: var(--blue); border-color: var(--blue-lt); }
+  .flow-box.active-box .fb-sub { color: #b8d8f0; }
+  .flow-arrow { font-size: 22px; color: var(--blue); padding: 0 10px; }
+
+  /* TRAPS */
+  .trap { background: rgba(230,126,34,.08); border-left: 3px solid var(--orange); border-radius: 8px; padding: 14px 18px; margin-bottom: 10px; border: 1px solid rgba(230,126,34,.2); border-left-width: 3px; }
+  .trap h3 { color: var(--orange-lt); font-size: 12px; }
+  .trap p { color: #c8a875; margin-top: 6px; }
+  .trap code { background: rgba(230,126,34,.2); color: var(--orange-lt); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; }
+  .trap.teal-trap { background: rgba(22,160,133,.08); border-color: rgba(22,160,133,.3); border-left-color: var(--teal); }
+  .trap.teal-trap h3 { color: var(--teal-lt); }
+  .trap.teal-trap p { color: #7ecfc0; }
+  .trap.teal-trap code { background: rgba(22,160,133,.2); color: var(--teal-lt); }
+
+  /* FLASH CARDS */
+  .flash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 12px; }
+  .flash { background: var(--bg3); color: var(--text); border-radius: 10px; padding: 16px; text-align: center; border: 1px solid var(--border); }
+  .flash.aigp-flash { background: #0c2420; border-color: rgba(22,160,133,.3); }
+  .flash .f-num { font-size: 26px; font-weight: 700; color: var(--orange-lt); }
+  .flash.aigp-flash .f-num { color: var(--teal-lt); }
+  .flash .f-label { font-size: 10px; color: var(--text2); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+  .flash .f-desc { font-size: 12px; color: var(--text3); margin-top: 8px; line-height: 1.5; }
+
+  /* TOPO */
+  .topo { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 14px 0; }
+  .topo-row { display: flex; align-items: center; }
+  .topo-box { border-radius: 8px; padding: 9px 16px; font-size: 12px; font-weight: 700; text-align: center; border: 1px solid var(--border); }
+  .topo-router { background: var(--blue); color: #fff; border-color: var(--blue-lt); }
+  .topo-isp1 { background: var(--green); color: #fff; border-color: var(--green-lt); }
+  .topo-isp2 { background: var(--bg4); color: var(--text2); }
+  .topo-line { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 8px; }
+  .topo-label { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .topo-label.pref { background: rgba(39,174,96,.2); color: var(--green-lt); border: 1px solid rgba(39,174,96,.4); }
+  .topo-label.low  { background: var(--bg4); color: var(--text3); border: 1px solid var(--border); }
+  .topo-vline { width: 2px; height: 20px; background: var(--border); }
+  .cloud { background: rgba(27,114,190,.1); border: 1px dashed var(--blue); border-radius: 50px; padding: 7px 22px; font-size: 12px; color: var(--blue-lt); font-weight: 600; }
+
+  /* INFO PILLS */
+  .section-intro { color: var(--text2); font-size: 13px; line-height: 1.65; margin-bottom: 16px; }
+  .info-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+  .info-pill { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; padding: 8px 14px; font-size: 12px; color: var(--text); flex: 1; min-width: 130px; }
+  .info-pill strong { display: block; color: var(--blue-lt); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+  .info-pill.teal-pill strong { color: var(--teal-lt); }
+
+  /* AIGP DIAGRAM */
+  .aigp-flow { display: flex; align-items: stretch; justify-content: center; gap: 0; flex-wrap: wrap; margin: 16px 0; }
+  .aigp-as { border: 1px solid var(--blue); border-radius: 10px; padding: 12px 18px; text-align: center; min-width: 100px; background: var(--bg3); }
+  .aigp-as.as2 { border-color: var(--teal); }
+  .aigp-as .as-name { font-size: 11px; font-weight: 700; color: var(--blue-lt); }
+  .aigp-as.as2 .as-name { color: var(--teal-lt); }
+  .aigp-as .igp-val { font-size: 20px; font-weight: 700; color: var(--text); margin: 5px 0; }
+  .aigp-as .igp-label { font-size: 10px; color: var(--text3); }
+  .aigp-arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 8px; }
+  .aigp-arrow .arr-line { width: 36px; height: 2px; background: var(--blue); }
+  .aigp-arrow .arr-label { font-size: 10px; font-weight: 700; color: var(--blue-lt); margin-top: 3px; }
+
+  /* SCROLL */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo">CISCO</span>
+  <h1>BGP Weight</h1>
+  <span class="badge">CCIE / ENARSI</span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('theory',this)">📋 Théorie</button>
+  <button class="tab" onclick="showTab('methods',this)">⚙️ Configuration</button>
+  <button class="tab" onclick="showTab('bestpath',this)">🏆 Best Path</button>
+  <button class="tab" onclick="showTab('flow',this)">🔄 BGP→RIB→FIB</button>
+  <button class="tab" onclick="showTab('compare',this)">⚖️ Comparaisons</button>
+  <button class="tab" onclick="showTab('aigp',this)">🌐 AIGP</button>
+  <button class="tab" onclick="showTab('traps',this)">⚠️ Pièges Exam</button>
+  <button class="tab" onclick="showTab('flash',this)">⚡ Flash Cards</button>
+</div>
+
+<!-- ===== THEORY ===== -->
+<div id="tab-theory" class="content active">
+  <div class="card warn">
+    <h3>⚠️ Ce que le Weight N'EST PAS</h3>
+    <p>Le Weight <strong style="color:var(--text)">n'est PAS un BGP Path Attribute</strong>. Il n'apparaît jamais dans un BGP UPDATE. Il n'a pas de type code IANA. Il n'est jamais propagé à d'autres routeurs.</p>
+    <div class="badges">
+      <span class="badge-tag badge-red">❌ Pas un Path Attribute</span>
+      <span class="badge-tag badge-red">❌ Pas de Type Code</span>
+      <span class="badge-tag badge-red">❌ Non propagé</span>
+      <span class="badge-tag badge-red">❌ Absent des BGP UPDATEs</span>
+    </div>
+  </div>
+
+  <div class="card green">
+    <h3>✅ Ce que le Weight EST</h3>
+    <p>Le Weight est un <strong style="color:var(--text)">paramètre local Cisco propriétaire</strong>, stocké uniquement dans la BGP table du routeur local. Il sert exclusivement à choisir le meilleur chemin sur ce routeur.</p>
+    <div class="badges">
+      <span class="badge-tag badge-blue">🏠 Local uniquement</span>
+      <span class="badge-tag badge-blue">Cisco propriétaire</span>
+      <span class="badge-tag badge-green">✅ Priorité #1 Best Path</span>
+      <span class="badge-tag badge-orange">16 bits → 0 à 65535</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Valeurs par défaut</h2>
+    <p class="section-intro">Règle fondamentale : une route <strong style="color:var(--text)">originée localement</strong> naît avec un weight de 32768. Une route <strong style="color:var(--text)">reçue d'un voisin</strong> a un weight de 0.</p>
+    <table>
+      <tr><th>Origine de la route</th><th>Commande IOS</th><th>Weight par défaut</th></tr>
+      <tr><td>Réseau annoncé</td><td><code style="color:var(--teal-lt)">network</code></td><td class="w-high">32768</td></tr>
+      <tr><td>Redistribution</td><td><code style="color:var(--teal-lt)">redistribute connected/static/ospf…</code></td><td class="w-high">32768</td></tr>
+      <tr><td>Agrégation locale</td><td><code style="color:var(--teal-lt)">aggregate-address</code></td><td class="w-high">32768</td></tr>
+      <tr><td>Route reçue d'un voisin</td><td><code style="color:var(--teal-lt)">neighbor … (BGP UPDATE)</code></td><td class="w-zero">0</td></tr>
+    </table>
+    <div class="info-row">
+      <div class="info-pill"><strong>Stockage</strong>16 bits non signés</div>
+      <div class="info-pill"><strong>Plage</strong>0 → 65535</div>
+      <div class="info-pill"><strong>Décision</strong>HIGHER is preferred</div>
+      <div class="info-pill"><strong>Portée</strong>Routeur local uniquement</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== METHODS ===== -->
+<div id="tab-methods" class="content">
+  <p class="section-intro">Trois méthodes permettent de modifier le Weight. La route-map a priorité sur la commande neighbor en cas de conflit.</p>
+  <div class="method-grid">
+    <div class="method-card">
+      <div class="method-num">1</div>
+      <div class="method-title">neighbor … weight</div>
+      <p style="font-size:12px;margin-bottom:10px;">Toutes les routes reçues de ce voisin reçoivent le même Weight. Simple mais peu granulaire.</p>
+      <pre><span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">neighbor</span> <span class="val">10.1.1.1</span> weight <span class="hl">200</span>  <span class="cmt">! ISP1</span>
+ <span class="kw">neighbor</span> <span class="val">10.2.2.2</span> weight <span class="hl">100</span>  <span class="cmt">! ISP2</span></pre>
+      <div class="topo">
+        <div class="cloud">Internet</div>
+        <div class="topo-row">
+          <div class="topo-line"><span class="topo-label pref">Weight 200 ★</span><div class="topo-vline"></div></div>
+          <div style="width:28px"></div>
+          <div class="topo-line"><span class="topo-label low">Weight 100</span><div class="topo-vline"></div></div>
+        </div>
+        <div class="topo-row" style="gap:14px;">
+          <div class="topo-box topo-isp1">ISP1<br><span style="font-size:10px;font-weight:400;">10.1.1.1</span></div>
+          <div class="topo-box topo-isp2">ISP2<br><span style="font-size:10px;font-weight:400;">10.2.2.2</span></div>
+        </div>
+        <div class="topo-line"><div class="topo-vline" style="height:28px"></div></div>
+        <div class="topo-box topo-router">R1 — AS 65000</div>
+      </div>
+    </div>
+
+    <div class="method-card m2">
+      <div class="method-num">2</div>
+      <div class="method-title">route-map set weight <span class="flex-tag">FLEXIBLE</span></div>
+      <p style="font-size:12px;margin-bottom:10px;">Méthode la plus fine : applique un Weight différent selon des conditions précises.</p>
+      <pre><span class="kw">ip prefix-list</span> NET1 permit <span class="val">192.168.0.0/16</span>
+!
+<span class="kw">route-map</span> SET_WEIGHT permit <span class="val">10</span>
+ <span class="kw">match ip address prefix-list</span> NET1
+ <span class="hl">set weight 300</span>
+<span class="kw">route-map</span> SET_WEIGHT permit <span class="val">20</span>
+ <span class="cmt">! autres → weight 0</span>
+!
+<span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">neighbor</span> <span class="val">10.1.1.1</span> route-map SET_WEIGHT <span class="hl">in</span></pre>
+      <p style="font-size:12px;margin-top:8px;">Conditions <code style="color:var(--teal-lt)">match</code> possibles :</p>
+      <div class="badges" style="margin-top:6px;">
+        <span class="badge-tag badge-blue">prefix-list</span>
+        <span class="badge-tag badge-blue">as-path</span>
+        <span class="badge-tag badge-blue">community</span>
+        <span class="badge-tag badge-blue">tag</span>
+        <span class="badge-tag badge-blue">metric</span>
+      </div>
+    </div>
+
+    <div class="method-card m3">
+      <div class="method-num">3</div>
+      <div class="method-title">Redistribution / Routes locales</div>
+      <p style="font-size:12px;margin-bottom:10px;">Les routes injectées localement héritent automatiquement du Weight 32768 — aucune config nécessaire.</p>
+      <pre><span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">redistribute connected</span>
+ <span class="cmt">! → weight implicite : 32768</span>
+
+ <span class="kw">network</span> <span class="val">10.0.0.0</span> mask <span class="val">255.0.0.0</span>
+ <span class="cmt">! → weight implicite : 32768</span></pre>
+      <div class="badges">
+        <span class="badge-tag badge-green">Weight 32768 automatique</span>
+      </div>
+      <p style="font-size:12px;margin-top:8px;">Ces routes sont toujours préférées aux routes reçues des voisins (weight 0) — comportement by design.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BEST PATH ===== -->
+<div id="tab-bestpath" class="content">
+  <div class="card">
+    <h2>Algorithme BGP Best Path Selection — 13 critères</h2>
+    <p class="section-intro">Le Weight est examiné <strong style="color:var(--text)">en premier</strong>. L'AIGP intervient au <strong style="color:var(--teal-lt)">critère #9</strong>, après la métrique IGP vers le next-hop.</p>
+    <ul class="bp-list">
+      <li class="bp-item highlight">
+        <span class="bp-num">1</span>
+        <span>WEIGHT — plus haut préféré</span>
+        <span class="bp-scope">🏠 Local router</span>
+      </li>
+      <li class="bp-item"><span class="bp-num">2</span><span>LOCAL_PREF — plus haut préféré</span><span class="bp-scope">🏢 Local AS</span></li>
+      <li class="bp-item"><span class="bp-num">3</span><span>Locally originated (network / redistribute / aggregate)</span><span class="bp-scope">🏠 Local router</span></li>
+      <li class="bp-item"><span class="bp-num">4</span><span>AS_PATH — plus court préféré</span><span class="bp-scope">🌐 eBGP</span></li>
+      <li class="bp-item"><span class="bp-num">5</span><span>ORIGIN — IGP &lt; EGP &lt; Incomplete</span><span class="bp-scope">🌐 eBGP</span></li>
+      <li class="bp-item"><span class="bp-num">6</span><span>MED — plus bas préféré</span><span class="bp-scope">🌐 eBGP hint</span></li>
+      <li class="bp-item"><span class="bp-num">7</span><span>eBGP &gt; iBGP</span><span class="bp-scope">🌐 eBGP</span></li>
+      <li class="bp-item"><span class="bp-num">8</span><span>IGP Metric vers next-hop — plus bas préféré</span><span class="bp-scope">🏢 iBGP</span></li>
+      <li class="bp-item highlight-aigp">
+        <span class="bp-num">9</span>
+        <span>AIGP — plus bas préféré (RFC 7311, type code 26)</span>
+        <span class="bp-scope">🌐 Multi-AS</span>
+      </li>
+      <li class="bp-item"><span class="bp-num">10</span><span>Oldest eBGP path (stabilité)</span><span class="bp-scope">🌐 eBGP</span></li>
+      <li class="bp-item"><span class="bp-num">11</span><span>Router-ID du voisin — plus bas préféré</span><span class="bp-scope">🌐 global</span></li>
+      <li class="bp-item"><span class="bp-num">12</span><span>Cluster-list length — plus court préféré</span><span class="bp-scope">🏢 iBGP RR</span></li>
+      <li class="bp-item"><span class="bp-num">13</span><span>Neighbor IP — plus bas préféré</span><span class="bp-scope">🌐 global</span></li>
+    </ul>
+  </div>
+  <div class="card green">
+    <h3>💡 Mnémotechnique (13 critères)</h3>
+    <p><strong style="color:var(--text)">W</strong>e <strong style="color:var(--text)">L</strong>ove <strong style="color:var(--text)">O</strong>ranges <strong style="color:var(--text)">A</strong>s <strong style="color:var(--text)">O</strong>ur <strong style="color:var(--text)">M</strong>eal — <strong style="color:var(--text)">E</strong>very <strong style="color:var(--text)">I</strong>nterface <strong style="color:var(--teal-lt)">A</strong>lways <strong style="color:var(--text)">O</strong>ffers <strong style="color:var(--text)">R</strong>outes <strong style="color:var(--text)">C</strong>onsistently <strong style="color:var(--text)">N</strong>ow</p>
+    <p style="font-size:11px;margin-top:6px;color:var(--text3)">Weight · Local_Pref · Originated · AS_path · Origin · Med · Ebgp · Igp · <strong style="color:var(--teal-lt)">Aigp</strong> · Oldest · Router-id · Cluster · Neighbor-ip</p>
+  </div>
+</div>
+
+<!-- ===== FLOW ===== -->
+<div id="tab-flow" class="content">
+  <div class="card">
+    <h2>BGP → RIB → FIB</h2>
+    <p class="section-intro">Comprendre où intervient le Weight dans le pipeline de forwarding Cisco.</p>
+    <div class="flow">
+      <div class="flow-box active-box">
+        <div class="fb-title">BGP Table</div>
+        <div class="fb-sub">Apprend les chemins<br>Applique le Weight<br>Sélectionne le best path</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">
+        <div class="fb-title">RIB</div>
+        <div class="fb-sub">Routing Info Base<br>ip route show<br>Compare AD entre protocoles</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">
+        <div class="fb-title">FIB</div>
+        <div class="fb-sub">Forwarding Info Base<br>CEF table<br>Forwarde les paquets</div>
+      </div>
+    </div>
+    <table>
+      <tr><th>Étape</th><th>Rôle</th><th>Impact du Weight</th></tr>
+      <tr><td><strong style="color:var(--text)">BGP Table</strong></td><td>Stocke tous les chemins reçus + locaux</td><td class="w-high">✅ Weight appliqué ici — best path sélectionné</td></tr>
+      <tr><td><strong style="color:var(--text)">RIB</strong></td><td>Reçoit le best path BGP (si AD meilleure)</td><td style="color:var(--text3)">Transparent — Weight non visible</td></tr>
+      <tr><td><strong style="color:var(--text)">FIB (CEF)</strong></td><td>Forwarde selon la RIB</td><td style="color:var(--text3)">Transparent — Weight non visible</td></tr>
+    </table>
+  </div>
+  <div class="card orange">
+    <h3>📌 Règle à retenir</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;flex:1;min-width:140px;text-align:center;">
+        <div style="font-size:22px;">📥</div>
+        <div style="font-weight:700;color:var(--blue-lt);margin-top:4px;">BGP</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px;"><strong>Apprend</strong> les chemins</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;flex:1;min-width:140px;text-align:center;">
+        <div style="font-size:22px;">🧠</div>
+        <div style="font-weight:700;color:#ba68c8;margin-top:4px;">RIB</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px;"><strong>Décide</strong> la meilleure route</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;flex:1;min-width:140px;text-align:center;">
+        <div style="font-size:22px;">🚀</div>
+        <div style="font-weight:700;color:var(--green-lt);margin-top:4px;">FIB</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px;"><strong>Forward</strong> les paquets</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== COMPARE ===== -->
+<div id="tab-compare" class="content">
+  <div class="card">
+    <h2>Weight vs LOCAL_PREF</h2>
+    <p class="section-intro">Ces deux attributs sont souvent confondus en exam.</p>
+    <table>
+      <tr><th>Critère</th><th>WEIGHT</th><th>LOCAL_PREF</th></tr>
+      <tr><td>Type</td><td>Paramètre local Cisco</td><td>Well-known discretionary</td></tr>
+      <tr><td>Propagation</td><td class="w-zero">❌ Non propagé</td><td class="w-high">✅ Propagé aux iBGP peers</td></tr>
+      <tr><td>Portée</td><td>Un seul routeur</td><td>Tout l'AS local</td></tr>
+      <tr><td>Valeur par défaut</td><td>32768 (local) / 0 (reçu)</td><td>100</td></tr>
+      <tr><td>Préférence</td><td>Plus haut = préféré</td><td>Plus haut = préféré</td></tr>
+      <tr><td>Priorité Best Path</td><td class="w-high">Critère #1</td><td>Critère #2</td></tr>
+      <tr><td>Cisco propriétaire</td><td class="w-zero">⚠️ Oui</td><td class="w-high">✅ Non — RFC standard</td></tr>
+      <tr><td>Type Code IANA</td><td class="w-zero">❌ Aucun</td><td class="w-high">✅ Type code 5</td></tr>
+      <tr><td>BGP UPDATE</td><td class="w-zero">❌ Jamais envoyé</td><td class="w-high">✅ Envoyé aux iBGP peers</td></tr>
+    </table>
+    <div class="card purple" style="margin-top:14px;">
+      <h3>🎯 Quand utiliser lequel ?</h3>
+      <p><strong style="color:var(--text)">Weight</strong> → Un seul routeur préfère ISP1. Local, rapide, simple.</p>
+      <p style="margin-top:6px;"><strong style="color:var(--text)">LOCAL_PREF</strong> → Tous les routeurs de l'AS sortent par ISP1. Policy AS-wide, interopérable.</p>
+    </div>
+  </div>
+
+  <div class="card teal">
+    <h2>Weight vs AIGP</h2>
+    <p class="section-intro">Souvent testé à l'ENARSI — deux mécanismes très différents.</p>
+    <table>
+      <tr><th>Critère</th><th>WEIGHT</th><th>AIGP</th></tr>
+      <tr><td>Type</td><td>Paramètre local Cisco</td><td class="w-teal">Optional non-transitive attribute</td></tr>
+      <tr><td>RFC</td><td class="w-zero">❌ Cisco propriétaire</td><td class="w-teal">✅ RFC 7311</td></tr>
+      <tr><td>Type Code IANA</td><td class="w-zero">❌ Aucun</td><td class="w-teal">✅ Type code 26</td></tr>
+      <tr><td>Propagation</td><td class="w-zero">❌ Jamais propagé</td><td class="w-teal">✅ Propagé entre peers configurés</td></tr>
+      <tr><td>Portée</td><td>Routeur local uniquement</td><td>Multi-AS (accumulation)</td></tr>
+      <tr><td>Valeur</td><td>Fixe (0–65535)</td><td>Accumulée (somme IGP)</td></tr>
+      <tr><td>Préférence</td><td class="w-high">Plus HAUT = préféré</td><td class="w-teal">Plus BAS = préféré ⚠️</td></tr>
+      <tr><td>Position Best Path</td><td class="w-high">Critère #1</td><td class="w-teal">Critère #9</td></tr>
+      <tr><td>BGP UPDATE</td><td class="w-zero">❌ Absent</td><td class="w-teal">✅ Présent si activé</td></tr>
+    </table>
+    <div style="background:var(--bg3);border:1px solid rgba(22,160,133,.3);border-radius:8px;padding:12px 16px;margin-top:14px;">
+      <p style="color:var(--teal-lt);font-size:13px;"><strong>Règle de mémorisation :</strong><br>
+      Weight → plus haut gagne · local · Cisco only · critère #1<br>
+      AIGP &nbsp;&nbsp;→ plus bas gagne &nbsp;· propagé · RFC 7311 &nbsp;· critère #9</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== AIGP ===== -->
+<div id="tab-aigp" class="content">
+  <div class="card teal">
+    <h2>AIGP — Accumulated IGP Metric</h2>
+    <p class="section-intro">L'AIGP permet à BGP de transporter et accumuler les métriques IGP à travers plusieurs AS, comme si c'était un IGP end-to-end.</p>
+    <div class="badges">
+      <span class="badge-tag badge-teal">RFC 7311</span>
+      <span class="badge-tag badge-teal">Type Code 26</span>
+      <span class="badge-tag badge-teal">Optional Non-Transitive</span>
+      <span class="badge-tag badge-blue">Critère #9 Best Path</span>
+      <span class="badge-tag badge-green">✅ Propagé</span>
+      <span class="badge-tag badge-orange">Plus bas = préféré</span>
+    </div>
+    <div class="info-row" style="margin-top:14px;">
+      <div class="info-pill teal-pill"><strong>Type Code</strong>26</div>
+      <div class="info-pill teal-pill"><strong>Category</strong>Optional Non-Transitive</div>
+      <div class="info-pill teal-pill"><strong>Préférence</strong>LOWER is preferred</div>
+      <div class="info-pill teal-pill"><strong>Position</strong>Critère #9 Best Path</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🔍 Comment fonctionne AIGP ?</h3>
+    <p>L'AIGP accumule la métrique IGP à chaque hop BGP. Quand un routeur reçoit une route avec un AIGP, il ajoute sa propre métrique IGP vers le next-hop à la valeur existante.</p>
+    <div style="text-align:center;margin:18px 0;">
+      <div class="aigp-flow">
+        <div class="aigp-as"><div class="as-name">AS 100</div><div class="igp-val">10</div><div class="igp-label">IGP metric</div></div>
+        <div class="aigp-arrow"><div class="arr-line"></div><div class="arr-label">eBGP +</div></div>
+        <div class="aigp-as as2"><div class="as-name">AS 200</div><div class="igp-val">20</div><div class="igp-label">IGP metric</div></div>
+        <div class="aigp-arrow"><div class="arr-line"></div><div class="arr-label">eBGP +</div></div>
+        <div class="aigp-as"><div class="as-name">AS 300</div><div class="igp-val">5</div><div class="igp-label">IGP metric</div></div>
+      </div>
+      <div style="display:inline-block;background:#0c2420;border:1px solid rgba(22,160,133,.4);color:var(--teal-lt);border-radius:10px;padding:12px 28px;margin-top:12px;">
+        <div style="font-size:22px;font-weight:700;">AIGP total = 35</div>
+        <div style="font-size:11px;margin-top:4px;color:var(--text3)">10 + 20 + 5 = 35 &nbsp;|&nbsp; plus bas = préféré</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>⚙️ Configuration AIGP</h3>
+    <pre><span class="cmt">! Activer AIGP sur un voisin eBGP</span>
+<span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">neighbor</span> <span class="val">10.1.1.1</span> <span class="hl2">aigp</span>
+
+<span class="cmt">! Vérifier AIGP dans la table BGP</span>
+<span class="kw">show ip bgp</span> <span class="val">192.168.1.0</span>
+<span class="cmt">! → AIGP: x  (métrique accumulée visible)</span>
+
+<span class="cmt">! Envoyer une valeur AIGP via route-map</span>
+<span class="kw">route-map</span> SET_AIGP permit <span class="val">10</span>
+ <span class="hl2">set aigp-metric igp-metric</span>
+<span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">neighbor</span> <span class="val">10.1.1.1</span> route-map SET_AIGP out</pre>
+  </div>
+
+  <div class="card orange">
+    <h3>📌 Cas d'usage typique — BGP-free core</h3>
+    <p>Dans un réseau SP avec un cœur BGP-free (LSR ne font pas tourner BGP), AIGP permet de comparer le coût total du chemin de bout en bout, même si certains AS intermédiaires n'ont pas de visibilité complète sur les routes.</p>
+    <div class="badges" style="margin-top:8px;">
+      <span class="badge-tag badge-orange">Service Provider</span>
+      <span class="badge-tag badge-orange">BGP-free core</span>
+      <span class="badge-tag badge-orange">MPLS networks</span>
+      <span class="badge-tag badge-orange">Multi-AS path cost</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TRAPS ===== -->
+<div id="tab-traps" class="content">
+  <div class="trap teal-trap">
+    <h3>🌐 PIÈGE #0 — AIGP vs Weight : confusion fréquente à l'exam</h3>
+    <p>Weight : <strong>local · plus haut = préféré · Cisco propriétaire · non propagé · pas de type code</strong><br>
+    AIGP : <strong>propagé · plus bas = préféré · RFC 7311 · type code 26 · optional non-transitive</strong></p>
+  </div>
+  <div class="trap">
+    <h3>⚠️ PIÈGE #1 — Cisco propriétaire</h3>
+    <p>Le Weight n'est compris que par les routeurs Cisco. Juniper, Nokia, Arista l'ignorent. Pour une politique interopérable, utilise <code>LOCAL_PREF</code>.</p>
+  </div>
+  <div class="trap">
+    <h3>⚠️ PIÈGE #2 — Direction : IN seulement</h3>
+    <p>Le Weight ne peut être appliqué qu'en <strong>inbound</strong> (<code>route-map … in</code>). Appliquer en <code>out</code> n'a aucun effet sur le Weight.</p>
+  </div>
+  <div class="trap">
+    <h3>⚠️ PIÈGE #3 — clear ip bgp et réapplication</h3>
+    <p>Après un <code>clear ip bgp * soft in</code>, le Weight est <strong>réappliqué immédiatement</strong>. Contrairement à LOCAL_PREF ou MED, la convergence est instantanée et purement locale.</p>
+  </div>
+  <div class="trap">
+    <h3>⚠️ PIÈGE #4 — Conflit neighbor weight vs route-map</h3>
+    <p>Si tu configures à la fois <code>neighbor X weight 100</code> ET <code>route-map set weight 300 in</code> sur le même voisin, la <strong>route-map gagne</strong>.</p>
+  </div>
+  <div class="trap">
+    <h3>⚠️ PIÈGE #5 — AIGP non activé par défaut</h3>
+    <p>AIGP doit être explicitement activé avec <code>neighbor X.X.X.X aigp</code>. Sans cette commande, le routeur <strong>ignore silencieusement</strong> l'attribut AIGP reçu.</p>
+  </div>
+  <div class="card" style="margin-top:16px;">
+    <h3>🔍 Commandes de vérification</h3>
+    <pre><span class="kw">show ip bgp</span>                        <span class="cmt">! colonne Weight visible</span>
+<span class="kw">show ip bgp</span> <span class="val">192.168.1.0</span>            <span class="cmt">! détail + AIGP si présent</span>
+<span class="kw">show ip bgp neighbors</span> <span class="val">10.1.1.1</span> received-routes
+<span class="kw">debug ip bgp</span> <span class="val">10.1.1.1</span> updates</pre>
+  </div>
+</div>
+
+<!-- ===== FLASH ===== -->
+<div id="tab-flash" class="content">
+  <div class="flash-grid">
+    <div class="flash"><div class="f-num">32768</div><div class="f-label">Weight route locale</div><div class="f-desc">network, redistribute, aggregate → naissent avec 32768</div></div>
+    <div class="flash"><div class="f-num">0</div><div class="f-label">Weight route reçue</div><div class="f-desc">Toute route apprise d'un voisin BGP démarre à 0</div></div>
+    <div class="flash"><div class="f-num">#1</div><div class="f-label">Weight — Priorité Best Path</div><div class="f-desc">Premier critère examiné dans l'algorithme BGP</div></div>
+    <div class="flash"><div class="f-num">16 bits</div><div class="f-label">Taille du Weight</div><div class="f-desc">Valeurs possibles : 0 à 65535</div></div>
+    <div class="flash aigp-flash"><div class="f-num">26</div><div class="f-label">AIGP — Type Code IANA</div><div class="f-desc">RFC 7311 · Optional Non-Transitive · Type code 26</div></div>
+    <div class="flash aigp-flash"><div class="f-num">#9</div><div class="f-label">AIGP — Priorité Best Path</div><div class="f-desc">Critère #9 · Plus bas = préféré · Après IGP metric</div></div>
+    <div class="flash aigp-flash"><div class="f-num">LOW</div><div class="f-label">AIGP — Règle de préférence</div><div class="f-desc">AIGP le plus BAS est préféré — inverse du Weight !</div></div>
+    <div class="flash"><div class="f-num">LOCAL</div><div class="f-label">Weight — Portée</div><div class="f-desc">Jamais dans un BGP UPDATE · Jamais propagé · Cisco only</div></div>
+    <div class="flash aigp-flash"><div class="f-num">PROP</div><div class="f-label">AIGP — Propagé</div><div class="f-desc">Transmis entre peers si activé avec neighbor aigp</div></div>
+    <div class="flash"><div class="f-num">HIGH</div><div class="f-label">Weight — Règle de préférence</div><div class="f-desc">Weight le plus ÉLEVÉ est toujours préféré</div></div>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left-color:var(--orange-lt);">
+    <h3 style="color:var(--orange-lt);">🎓 Résumé Exam en 6 points</h3>
+    <ol style="padding-left:20px;line-height:2.4;font-size:13px;color:var(--text2);">
+      <li>Weight = paramètre <strong style="color:var(--text)">local Cisco</strong> — pas un path attribute RFC — pas de type code</li>
+      <li>Valeur par défaut : <strong style="color:var(--text)">32768</strong> (local) / <strong style="color:var(--text)">0</strong> (reçu voisin)</li>
+      <li>Critère <strong style="color:var(--text)">#1</strong> dans BGP best path — plus haut = préféré</li>
+      <li>Jamais dans les BGP UPDATEs — <strong style="color:var(--text)">portée routeur uniquement</strong></li>
+      <li>AIGP (RFC 7311, type code <strong style="color:var(--teal-lt)">26</strong>) = critère <strong style="color:var(--teal-lt)">#9</strong> — plus bas = préféré — propagé</li>
+      <li>Environnement multi-vendor → utiliser <strong style="color:var(--text)">LOCAL_PREF</strong> à la place de Weight</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+function showTab(name, el) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
