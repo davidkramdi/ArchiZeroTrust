@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP LOCAL_PREF — Référence CCIE / ENARSI</title>
+<style>
+  :root {
+    --bg:       #0d1117;
+    --bg2:      #111827;
+    --bg3:      #1a2235;
+    --bg4:      #202b3d;
+    --border:   #1e2d42;
+    --text:     #f0f4fa;
+    --text2:    #8aadca;
+    --text3:    #4a6070;
+    --blue:     #1b72be;
+    --blue-lt:  #4a9fd4;
+    --green:    #27ae60;
+    --green-lt: #2ecc71;
+    --orange:   #e67e22;
+    --orange-lt:#f39c12;
+    --red:      #e74c3c;
+    --teal:     #16a085;
+    --teal-lt:  #1abc9c;
+    --purple:   #8e44ad;
+    --purp-lt:  #9b59b6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+  .topbar { background: linear-gradient(135deg,#0d1b2a,#1a2e42); padding: 14px 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); box-shadow: 0 2px 16px rgba(0,0,0,.5); }
+  .topbar .logo { background: var(--blue); color: #fff; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 4px; letter-spacing: 1px; }
+  .topbar h1 { font-size: 16px; font-weight: 600; color: var(--text); }
+  .topbar .badge { background: var(--red); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 12px; }
+  .topbar .pos { margin-left: auto; font-size: 11px; color: var(--text3); font-weight: 600; }
+  .topbar .pos span { color: var(--orange-lt); }
+
+  .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 10px 20px 0; overflow-x: auto; border-bottom: 1px solid var(--border); }
+  .tab { padding: 8px 15px; font-size: 12px; font-weight: 600; color: var(--text2); cursor: pointer; border-radius: 6px 6px 0 0; border: none; background: transparent; white-space: nowrap; transition: all .2s; }
+  .tab:hover { color: var(--text); background: var(--bg3); }
+  .tab.active { background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-bottom: 1px solid var(--bg3); }
+
+  .content { display: none; padding: 24px; max-width: 980px; margin: 0 auto; }
+  .content.active { display: block; }
+
+  .card { background: var(--bg2); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; border: 1px solid var(--border); border-left: 4px solid var(--blue); }
+  .card.warn   { border-left-color: var(--red); }
+  .card.green  { border-left-color: var(--green); }
+  .card.orange { border-left-color: var(--orange); }
+  .card.purple { border-left-color: var(--purple); }
+  .card.teal   { border-left-color: var(--teal); }
+
+  h2 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  h3 { font-size: 12px; font-weight: 700; color: var(--blue-lt); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .6px; }
+  .card.warn h3   { color: #e57373; }
+  .card.green h3  { color: var(--green-lt); }
+  .card.orange h3 { color: var(--orange-lt); }
+  .card.teal h3   { color: var(--teal-lt); }
+  .card.purple h3 { color: #ba68c8; }
+  p { line-height: 1.65; color: var(--text2); margin-bottom: 8px; }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+  .badge-tag { padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge-blue   { background: rgba(27,114,190,.15); color: var(--blue-lt); border: 1px solid rgba(27,114,190,.4); }
+  .badge-green  { background: rgba(39,174,96,.15);  color: var(--green-lt); border: 1px solid rgba(39,174,96,.4); }
+  .badge-orange { background: rgba(230,126,34,.15); color: var(--orange-lt); border: 1px solid rgba(230,126,34,.4); }
+  .badge-red    { background: rgba(231,76,60,.15);  color: #e57373; border: 1px solid rgba(231,76,60,.4); }
+  .badge-purple { background: rgba(142,68,173,.15); color: #ba68c8; border: 1px solid rgba(142,68,173,.4); }
+
+  pre { background: #0a0f1a; color: #a8d8ea; border-radius: 8px; padding: 15px 18px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.75; overflow-x: auto; margin: 10px 0; border: 1px solid var(--border); }
+  .kw  { color: #e2a44a; }
+  .val { color: #7ec8a0; }
+  .cmt { color: #3d5a70; font-style: italic; }
+  .hl  { color: var(--orange-lt); font-weight: bold; }
+  .hl2 { color: var(--teal-lt); font-weight: bold; }
+  .hl3 { color: #ba68c8; font-weight: bold; }
+  .sel { color: var(--green-lt); font-weight: bold; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th { background: var(--bg4); color: var(--text2); padding: 10px 14px; font-size: 11px; font-weight: 700; text-align: left; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text2); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); }
+  .w-high   { color: var(--green-lt); font-weight: 700; }
+  .w-zero   { color: #e57373; font-weight: 600; }
+  .w-orange { color: var(--orange-lt); font-weight: 700; }
+
+  .info-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+  .info-pill { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; padding: 8px 14px; font-size: 12px; color: var(--text); flex: 1; min-width: 120px; }
+  .info-pill strong { display: block; color: var(--blue-lt); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+
+  .section-intro { color: var(--text2); font-size: 13px; line-height: 1.65; margin-bottom: 16px; }
+
+  /* PROPAGATION */
+  .prop-diagram { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+  .prop-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg3); font-size: 13px; flex-wrap: wrap; }
+  .prop-row .pr-from { color: var(--text2); min-width: 160px; font-family: monospace; }
+  .prop-row .pr-result { font-weight: 700; }
+  .prop-row.yes .pr-result { color: var(--green-lt); }
+  .prop-row.no  .pr-result { color: #e57373; }
+  .prop-row .pr-note { margin-left: auto; font-size: 11px; color: var(--text3); }
+
+  /* TOPO */
+  .topo-wrap { display: flex; justify-content: center; margin: 18px 0; }
+  .topo-col  { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .topo-spread { display: flex; gap: 60px; align-items: flex-start; }
+  .topo-box { border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 700; text-align: center; border: 1px solid var(--border); min-width: 90px; }
+  .box-isp1 { background: rgba(39,174,96,.15); border-color: rgba(39,174,96,.4); color: var(--green-lt); }
+  .box-isp2 { background: var(--bg4); color: var(--text2); }
+  .box-r    { background: var(--blue); color: #fff; border-color: var(--blue-lt); }
+  .box-r2   { background: var(--bg3); color: var(--text2); }
+  .topo-line-v { width: 2px; height: 22px; background: var(--border); }
+  .topo-label { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .lbl-ebgp { background: rgba(230,126,34,.15); color: var(--orange-lt); border: 1px solid rgba(230,126,34,.3); }
+  .lbl-ibgp { background: rgba(27,114,190,.15); color: var(--blue-lt); border: 1px solid rgba(27,114,190,.3); }
+  .lbl-lp   { background: rgba(39,174,96,.15); color: var(--green-lt); border: 1px solid rgba(39,174,96,.3); font-size: 11px; padding: 3px 10px; }
+  .lbl-def  { background: var(--bg4); color: var(--text3); border: 1px solid var(--border); font-size: 11px; padding: 3px 10px; }
+
+  /* BGP TABLE */
+  .bgp-table-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
+  .bgp-tbl { width: 100%; border-collapse: collapse; font-family: 'Courier New', monospace; font-size: 12px; }
+  .bgp-tbl th { background: #0a0f1a; color: var(--text2); padding: 7px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); font-family: 'Segoe UI', sans-serif; }
+  .bgp-tbl td { padding: 7px 12px; border-bottom: 1px solid rgba(30,45,66,.5); color: var(--text2); }
+  .bgp-tbl tr:last-child td { border-bottom: none; }
+  .bgp-tbl .best td { background: rgba(39,174,96,.07); }
+  .bgp-tbl .best td:first-child { color: var(--green-lt); font-weight: 700; }
+  .bgp-tbl .alt td { color: var(--text3); }
+  .lp-high { color: var(--green-lt); font-weight: 700; }
+  .lp-low  { color: var(--text3); }
+  .lp-eq   { color: var(--orange-lt); }
+
+  /* TOGGLE */
+  .toggle-wrap { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .toggle-btn { padding: 6px 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg3); color: var(--text2); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; }
+  .toggle-btn.active { background: var(--blue); border-color: var(--blue-lt); color: #fff; }
+
+  /* METHOD GRID */
+  .method-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .method-card { background: var(--bg2); border-radius: 10px; padding: 18px; border: 1px solid var(--border); border-top: 3px solid var(--blue); }
+  .method-card.m2 { border-top-color: var(--purple); }
+  .method-card.m3 { border-top-color: var(--teal); }
+  .method-num { width: 28px; height: 28px; border-radius: 50%; background: var(--blue); color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+  .method-card.m2 .method-num { background: var(--purple); }
+  .method-card.m3 .method-num { background: var(--teal); }
+  .method-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+
+  /* TRAP */
+  .trap { background: rgba(230,126,34,.08); border: 1px solid rgba(230,126,34,.2); border-left: 3px solid var(--orange); border-radius: 8px; padding: 14px 18px; margin-bottom: 10px; }
+  .trap h3 { color: var(--orange-lt); font-size: 12px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .trap p { color: #c8a875; }
+  .trap code { background: rgba(230,126,34,.2); color: var(--orange-lt); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; }
+
+  /* FLASH */
+  .flash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .flash { background: var(--bg3); border-radius: 10px; padding: 16px; text-align: center; border: 1px solid var(--border); }
+  .flash .f-num { font-size: 26px; font-weight: 700; color: var(--orange-lt); }
+  .flash .f-label { font-size: 10px; color: var(--text2); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+  .flash .f-desc { font-size: 12px; color: var(--text3); margin-top: 8px; line-height: 1.5; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo">CISCO</span>
+  <h1>BGP LOCAL_PREF</h1>
+  <span class="badge">CCIE / ENARSI</span>
+  <span class="pos">Best Path Critère <span>#2</span></span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('theory',this)">📋 Théorie</button>
+  <button class="tab" onclick="showTab('propagation',this)">📡 Propagation</button>
+  <button class="tab" onclick="showTab('config',this)">⚙️ Configuration</button>
+  <button class="tab" onclick="showTab('bgptable',this)">📊 Table BGP</button>
+  <button class="tab" onclick="showTab('compare',this)">⚖️ vs Weight</button>
+  <button class="tab" onclick="showTab('traps',this)">⚠️ Pièges Exam</button>
+  <button class="tab" onclick="showTab('flash',this)">⚡ Flash Cards</button>
+</div>
+
+<!-- ===== THEORY ===== -->
+<div id="tab-theory" class="content active">
+  <div class="card">
+    <h2>LOCAL_PREF — Définition</h2>
+    <p class="section-intro"><strong style="color:var(--text)">Décider par quelle sortie ISP mon AS doit passer.</strong> LOCAL_PREF est le critère #2 dans l'algorithme BGP Best Path, utilisé pour influencer le trafic sortant à l'échelle de tout l'AS.</p>
+    <div class="info-row">
+      <div class="info-pill"><strong>Attribute Name</strong>LOCAL_PREF</div>
+      <div class="info-pill"><strong>Type Code</strong>5</div>
+      <div class="info-pill"><strong>Category</strong>Well-known Discretionary</div>
+      <div class="info-pill"><strong>Default Value</strong>100</div>
+      <div class="info-pill"><strong>Comparaison</strong>Highest wins</div>
+      <div class="info-pill"><strong>Portée</strong>Intra-AS (iBGP only)</div>
+    </div>
+  </div>
+
+  <div class="card green">
+    <h3>✅ Règle fondamentale</h3>
+    <p>Le chemin avec le <strong style="color:var(--text)">LOCAL_PREF le plus élevé</strong> est préféré. Si ISP1 reçoit LP=200 et ISP2 LP=100, <strong style="color:var(--green-lt)">tous les routeurs de l'AS</strong> sortiront par ISP1 — automatiquement, sans config supplémentaire sur chaque routeur.</p>
+    <div class="badges">
+      <span class="badge-tag badge-green">Plus haut = préféré</span>
+      <span class="badge-tag badge-blue">Propagé dans tout l'AS</span>
+      <span class="badge-tag badge-orange">Jamais envoyé à eBGP</span>
+      <span class="badge-tag badge-purple">Well-known Discretionary</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🌐 Topologie Dual-Homed — Scénario classique ENARSI</h3>
+    <p style="margin-bottom:14px;">AS 65000 connecté à deux ISP. route-map appliquée sur R1 (session eBGP ISP1) → LOCAL_PREF 200 propagé à tout l'AS.</p>
+    <div class="topo-wrap">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="topo-spread">
+          <div class="topo-col">
+            <div class="topo-box box-isp1">ISP1<br><span style="font-size:10px;font-weight:400;">AS 100</span></div>
+          </div>
+          <div class="topo-col">
+            <div class="topo-box box-isp2">ISP2<br><span style="font-size:10px;font-weight:400;">AS 200</span></div>
+          </div>
+        </div>
+        <div class="topo-spread">
+          <div class="topo-col">
+            <div class="topo-label lbl-ebgp">eBGP</div>
+            <div class="topo-line-v"></div>
+            <div class="topo-label lbl-lp">LP = 200 ★</div>
+            <div class="topo-line-v"></div>
+          </div>
+          <div class="topo-col">
+            <div class="topo-label lbl-ebgp">eBGP</div>
+            <div class="topo-line-v"></div>
+            <div class="topo-label lbl-def">LP = 100</div>
+            <div class="topo-line-v"></div>
+          </div>
+        </div>
+        <div class="topo-spread">
+          <div class="topo-col">
+            <div class="topo-box box-r">R1<br><span style="font-size:10px;font-weight:400;">10.0.0.1</span></div>
+          </div>
+          <div class="topo-col">
+            <div class="topo-box box-r">R2<br><span style="font-size:10px;font-weight:400;">10.0.0.2</span></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-end;justify-content:center;gap:0;">
+          <div style="width:2px;height:16px;background:var(--border);"></div>
+          <div style="height:2px;width:80px;background:var(--border);margin-bottom:0;"></div>
+          <div style="width:2px;height:16px;background:var(--border);"></div>
+        </div>
+        <div class="topo-label lbl-ibgp" style="margin-bottom:4px;">iBGP — LP propagé automatiquement</div>
+        <div class="topo-line-v"></div>
+        <div class="topo-box box-r2">R3 / R4…<br><span style="font-size:10px;font-weight:400;">AS 65000</span></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--green-lt);text-align:center;font-weight:700;">★ Tout l'AS préfère la sortie par ISP1</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROPAGATION ===== -->
+<div id="tab-propagation" class="content">
+  <div class="card">
+    <h2>Règles de propagation</h2>
+    <p class="section-intro">LOCAL_PREF a des règles de propagation strictes. C'est ce qui le différencie fondamentalement du Weight (local) et du MED (vers l'AS voisin).</p>
+    <div class="prop-diagram">
+      <div class="prop-row yes">
+        <span>📥</span>
+        <span class="pr-from">eBGP → iBGP</span>
+        <span>→</span>
+        <span class="pr-result">✅ LOCAL_PREF propagé</span>
+        <span class="pr-note">R1 reçoit de ISP1, envoie LP aux peers iBGP</span>
+      </div>
+      <div class="prop-row yes">
+        <span>🔄</span>
+        <span class="pr-from">iBGP → iBGP</span>
+        <span>→</span>
+        <span class="pr-result">✅ LOCAL_PREF propagé</span>
+        <span class="pr-note">Tous les routeurs de l'AS reçoivent le LP</span>
+      </div>
+      <div class="prop-row no">
+        <span>🚫</span>
+        <span class="pr-from">iBGP → eBGP</span>
+        <span>→</span>
+        <span class="pr-result">❌ LOCAL_PREF NON propagé</span>
+        <span class="pr-note">Stripped avant envoi à l'AS voisin</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card orange">
+    <h3>📌 Pourquoi LOCAL_PREF ne sort pas vers eBGP ?</h3>
+    <p>LOCAL_PREF est un attribut <strong style="color:var(--text)">Well-known Discretionary</strong> — son application est <strong style="color:var(--text)">interne à l'AS</strong>. L'envoyer à l'AS voisin permettrait à d'autres AS d'influencer ta politique de routage interne. Cisco le supprime automatiquement avant tout envoi eBGP.</p>
+  </div>
+
+  <div class="card">
+    <h3>🔍 Scénario de propagation complet</h3>
+    <pre><span class="cmt">! R1 reçoit 10.0.0.0/8 de ISP1 (eBGP)</span>
+<span class="cmt">! route-map PREFER-ISP1 applique LOCAL_PREF 200</span>
+<span class="cmt">! R1 propage à R2, R3, R4 via iBGP → LP=200 visible partout dans l'AS</span>
+<span class="cmt">! R2 reçoit 10.0.0.0/8 de ISP2 (eBGP) → LP=100 (défaut)</span>
+<span class="cmt">! Résultat : TOUS les routeurs AS 65000 préfèrent via R1/ISP1</span>
+
+R3# <span class="kw">show ip bgp</span> <span class="val">10.0.0.0</span>
+  Local preference: <span class="hl">200</span>    <span class="cmt">← reçu via iBGP depuis R1</span>
+  Next hop: <span class="val">10.0.0.1</span> (R1 → ISP1)</pre>
+  </div>
+</div>
+
+<!-- ===== CONFIG ===== -->
+<div id="tab-config" class="content">
+  <p class="section-intro">Deux méthodes principales. La route-map est recommandée en production et la plus testée à l'exam.</p>
+  <div class="method-grid">
+
+    <div class="method-card">
+      <div class="method-num">1</div>
+      <div class="method-title">route-map set local-preference <span style="font-size:10px;background:var(--blue);color:#fff;padding:2px 7px;border-radius:8px;margin-left:4px;">RECOMMANDÉ</span></div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Appliquée en <strong style="color:var(--text)">inbound sur la session eBGP</strong>. Le voisin 1.1.1.1 est bien un voisin eBGP (ISP1).</p>
+      <pre><span class="kw">route-map</span> PREFER-ISP1 permit <span class="val">10</span>
+ <span class="hl">set local-preference 200</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">neighbor</span> <span class="val">1.1.1.1</span> route-map PREFER-ISP1 <span class="hl">in</span>
+ <span class="cmt">! 1.1.1.1 = voisin eBGP ISP1</span></pre>
+      <p style="font-size:11px;color:var(--text3);margin-top:6px;">→ Toutes les routes reçues de ISP1 auront LP=200</p>
+    </div>
+
+    <div class="method-card m3">
+      <div class="method-num">1+</div>
+      <div class="method-title">route-map granulaire (par préfixe)</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">LP différent selon le préfixe, l'AS-PATH ou la community.</p>
+      <pre><span class="kw">ip prefix-list</span> CRITIQUES permit <span class="val">10.0.0.0/8</span>
+<span class="cmt">!</span>
+<span class="kw">route-map</span> SET-LP permit <span class="val">10</span>
+ <span class="kw">match ip address prefix-list</span> CRITIQUES
+ <span class="hl">set local-preference 300</span>
+<span class="kw">route-map</span> SET-LP permit <span class="val">20</span>
+ <span class="hl">set local-preference 150</span>
+ <span class="cmt">! autres routes → LP 150</span></pre>
+    </div>
+
+    <div class="method-card m2">
+      <div class="method-num">2</div>
+      <div class="method-title">bgp default local-preference</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Change la valeur par défaut globalement pour tout l'AS. Moins précis mais rapide.</p>
+      <pre><span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="hl3">bgp default local-preference 150</span>
+ <span class="cmt">! toutes les routes reçues</span>
+ <span class="cmt">! LP=150 au lieu de 100</span></pre>
+      <p style="font-size:11px;color:var(--text3);margin-top:6px;">→ Utile pour hiérarchiser deux AS sans route-map.</p>
+    </div>
+
+  </div>
+
+  <div class="card" style="margin-top:4px;">
+    <h3>📋 Comparaison des méthodes</h3>
+    <table>
+      <tr><th>Méthode</th><th>Granularité</th><th>Usage typique</th><th>Exam</th></tr>
+      <tr><td><code style="color:var(--teal-lt)">bgp default local-preference</code></td><td>Toutes les routes</td><td>Politique globale AS</td><td style="color:var(--text3)">Rare</td></tr>
+      <tr><td><code style="color:var(--teal-lt)">route-map set local-preference in</code></td><td>Par préfixe / AS-PATH / community</td><td>Production</td><td class="w-high">✅ Très fréquent</td></tr>
+      <tr><td><code style="color:var(--teal-lt)">neighbor … route-map in</code></td><td>Par voisin eBGP</td><td>Standard dual-homed</td><td class="w-high">✅ Le plus courant</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ===== BGP TABLE ===== -->
+<div id="tab-bgptable" class="content">
+  <div class="card">
+    <h2>Table BGP — Avant / Après LOCAL_PREF</h2>
+    <p class="section-intro">Visualise l'impact de LOCAL_PREF sur la sélection du chemin depuis R3 (routeur interne qui reçoit les deux routes via iBGP).</p>
+
+    <div class="toggle-wrap">
+      <button class="toggle-btn active" onclick="showTable('avant',this)">AVANT — Sans LOCAL_PREF configuré</button>
+      <button class="toggle-btn" onclick="showTable('apres',this)">APRÈS — LOCAL_PREF 200 sur ISP1</button>
+    </div>
+
+    <div id="tbl-avant">
+      <div class="bgp-table-label">R3# show ip bgp — Aucune route-map configurée</div>
+      <table class="bgp-tbl">
+        <tr><th>Status</th><th>Network</th><th>Next Hop</th><th>Metric</th><th>LocPrf</th><th>Weight</th><th>Path</th></tr>
+        <tr class="best"><td>*&gt;</td><td>10.0.0.0/8</td><td>10.0.0.1 (R1)</td><td>0</td><td class="lp-eq">100</td><td>0</td><td>100 i</td></tr>
+        <tr class="alt"><td>*</td><td>10.0.0.0/8</td><td>10.0.0.2 (R2)</td><td>0</td><td class="lp-eq">100</td><td>0</td><td>200 i</td></tr>
+      </table>
+      <div style="background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.2);border-radius:8px;padding:12px 16px;margin-top:10px;">
+        <p style="color:var(--orange-lt);font-size:12px;">⚠️ Les deux chemins ont <strong>LOCAL_PREF = 100</strong> (valeur par défaut). BGP utilise le critère suivant pour départager (AS-PATH length → ISP1 gagne par hasard ici). Pas de politique intentionnelle.</p>
+      </div>
+    </div>
+
+    <div id="tbl-apres" style="display:none;">
+      <div class="bgp-table-label">R3# show ip bgp — route-map PREFER-ISP1 sur R1 (neighbor ISP1 in)</div>
+      <table class="bgp-tbl">
+        <tr><th>Status</th><th>Network</th><th>Next Hop</th><th>Metric</th><th>LocPrf</th><th>Weight</th><th>Path</th></tr>
+        <tr class="best"><td>*&gt;</td><td>10.0.0.0/8</td><td>10.0.0.1 (R1)</td><td>0</td><td class="lp-high">200</td><td>0</td><td>100 i</td></tr>
+        <tr class="alt"><td>*</td><td>10.0.0.0/8</td><td>10.0.0.2 (R2)</td><td>0</td><td class="lp-low">100</td><td>0</td><td>200 i</td></tr>
+      </table>
+      <div style="background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);border-radius:8px;padding:12px 16px;margin-top:10px;">
+        <p style="color:var(--green-lt);font-size:12px;">✅ <strong>LOCAL_PREF 200 &gt; 100</strong> → BGP sélectionne ISP1 (<code style="background:rgba(39,174,96,.15);padding:1px 5px;border-radius:3px;">*&gt;</code>). R3 n'a aucune config spécifique — il a reçu LP=200 automatiquement via iBGP depuis R1.</p>
+      </div>
+      <div style="margin-top:16px;">
+        <div class="bgp-table-label">R3# show ip bgp 10.0.0.0 — Détail du chemin sélectionné</div>
+        <pre><span class="cmt">BGP routing table entry for 10.0.0.0/8, version 4</span>
+Paths: (2 available, best #1, table default)
+
+  Path <span class="sel">1</span> — <span class="sel">BEST</span>
+    <span class="val">10.0.0.1</span> (R1) from <span class="val">10.0.0.1</span>
+    Origin IGP, metric 0, <span class="hl">localpref 200</span>, valid, internal, <span class="sel">best</span>
+    Reason: <span class="hl">Higher Local Preference</span>
+    AS_PATH: <span class="val">100</span>
+
+  Path 2
+    <span class="val">10.0.0.2</span> (R2) from <span class="val">10.0.0.2</span>
+    Origin IGP, metric 0, localpref <span class="lp-low">100</span>, valid, internal
+    AS_PATH: <span class="val">200</span></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== COMPARE ===== -->
+<div id="tab-compare" class="content">
+  <div class="card">
+    <h2>LOCAL_PREF vs Weight</h2>
+    <p class="section-intro">Les deux attributs les plus confondus en exam. Retiens : <strong style="color:var(--text)">Weight = un routeur</strong> · <strong style="color:var(--green-lt)">LOCAL_PREF = tout l'AS</strong>.</p>
+    <table>
+      <tr><th>Critère</th><th>WEIGHT</th><th>LOCAL_PREF</th></tr>
+      <tr><td>Type</td><td>Paramètre local Cisco</td><td class="w-orange">Well-known Discretionary</td></tr>
+      <tr><td>RFC / Standard</td><td class="w-zero">❌ Cisco propriétaire</td><td class="w-high">✅ RFC 4271</td></tr>
+      <tr><td>Type Code IANA</td><td class="w-zero">❌ Aucun</td><td class="w-high">✅ Type code 5</td></tr>
+      <tr><td>Propagation</td><td class="w-zero">❌ Jamais — routeur local</td><td class="w-high">✅ Tout l'AS via iBGP</td></tr>
+      <tr><td>Envoyé à eBGP</td><td class="w-zero">❌ Non</td><td class="w-zero">❌ Non (stripped)</td></tr>
+      <tr><td>Portée</td><td>1 routeur uniquement</td><td class="w-orange">Tout l'AS</td></tr>
+      <tr><td>Valeur par défaut</td><td>32768 (local) / 0 (reçu)</td><td class="w-orange">100</td></tr>
+      <tr><td>Préférence</td><td>Plus haut = préféré</td><td>Plus haut = préféré</td></tr>
+      <tr><td>Position Best Path</td><td class="w-high">Critère #1</td><td class="w-orange">Critère #2</td></tr>
+      <tr><td>Direction route-map</td><td>IN seulement</td><td class="w-orange">IN sur session eBGP</td></tr>
+      <tr><td>Multi-vendor</td><td class="w-zero">❌ Cisco only</td><td class="w-high">✅ Tous les routeurs BGP</td></tr>
+    </table>
+  </div>
+
+  <div class="card green">
+    <h3>🎯 Règle de mémorisation</h3>
+    <p><strong style="color:var(--text)">Weight</strong> → Un seul routeur préfère ISP1. Local, instantané, Cisco only.</p>
+    <p style="margin-top:6px;"><strong style="color:var(--text)">LOCAL_PREF</strong> → Tout l'AS sort par ISP1. Propagé via iBGP, interopérable, policy AS-wide.</p>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-top:12px;font-family:monospace;font-size:12px;color:var(--text2);">
+      Weight &nbsp;&nbsp;&nbsp;= critère #1 · local &nbsp;&nbsp;· Cisco · 0–65535 · default 32768/0<br>
+      LOCAL_PREF = critère #2 · AS-wide · RFC &nbsp;&nbsp;· 0–∞ &nbsp;&nbsp;&nbsp;· default 100
+    </div>
+  </div>
+</div>
+
+<!-- ===== TRAPS ===== -->
+<div id="tab-traps" class="content">
+  <div class="trap">
+    <h3>⚠️ PIÈGE #1 — Direction IN obligatoire sur session eBGP</h3>
+    <p>LOCAL_PREF se configure avec <code>route-map … in</code> sur la session <strong>eBGP</strong>. Appliqué en <code>out</code> ou sur un voisin iBGP → aucun effet sur la sélection de chemin sortante.</p>
+  </div>
+  <div class="trap">
+    <h3>⚠️ PIÈGE #2 — LOCAL_PREF n'est PAS envoyé à eBGP</h3>
+    <p>Même avec LP=500, l'AS voisin ne le verra jamais. Pour influencer le trafic <strong>entrant</strong> dans ton AS, utilise <code>AS-PATH prepending</code> ou <code>MED</code> — pas LOCAL_PREF.</p>
+  </div>
+  <div class="trap">
+    <h3>⚠️ PIÈGE #3 — Valeur par défaut 100, pas 0</h3>
+    <p>Contrairement au Weight (0 pour les routes reçues), LOCAL_PREF est <strong>100 par défaut</strong>. Pour déprécier une route, mets LP à <code>50</code> — pas besoin de monter l'autre à 1000.</p>
+  </div>
+  <div class="trap">
+    <h3>⚠️ PIÈGE #4 — Well-known Discretionary ≠ toujours présent</h3>
+    <p>"Well-known" = tous les routeurs BGP doivent reconnaître l'attribut. "Discretionary" = pas obligatoire dans chaque UPDATE. S'il est absent, la valeur par défaut (100) s'applique.</p>
+  </div>
+  <div class="trap">
+    <h3>⚠️ PIÈGE #5 — Weight a priorité sur LOCAL_PREF</h3>
+    <p>Si un routeur a un <code>weight</code> configuré, il est examiné avant LOCAL_PREF. Un Weight=1 sur ISP2 écrase LP=200 sur ISP1 pour ce routeur uniquement.</p>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>🔍 Commandes de vérification</h3>
+    <pre><span class="kw">show ip bgp</span>                       <span class="cmt">! colonne LocPrf visible</span>
+<span class="kw">show ip bgp</span> <span class="val">10.0.0.0</span>              <span class="cmt">! détail + local preference + reason</span>
+<span class="kw">show route-map</span> PREFER-ISP1        <span class="cmt">! vérifier la route-map</span>
+<span class="kw">show ip bgp neighbors</span> <span class="val">1.1.1.1</span> policy <span class="cmt">! policy appliquée au voisin</span>
+<span class="kw">clear ip bgp</span> <span class="val">1.1.1.1</span> soft in       <span class="cmt">! réappliquer sans reset session</span></pre>
+  </div>
+</div>
+
+<!-- ===== FLASH ===== -->
+<div id="tab-flash" class="content">
+  <div class="flash-grid">
+    <div class="flash"><div class="f-num">5</div><div class="f-label">Type Code IANA</div><div class="f-desc">Well-known Discretionary · RFC 4271</div></div>
+    <div class="flash"><div class="f-num">100</div><div class="f-label">Valeur par défaut</div><div class="f-desc">Toutes les routes BGP ont LP=100 si non configuré</div></div>
+    <div class="flash"><div class="f-num">#2</div><div class="f-label">Position Best Path</div><div class="f-desc">Critère #2 — après Weight, avant AS-PATH</div></div>
+    <div class="flash"><div class="f-num">AS</div><div class="f-label">Portée</div><div class="f-desc">Propagé à TOUS les routeurs iBGP de l'AS</div></div>
+    <div class="flash"><div class="f-num">IN</div><div class="f-label">Direction route-map</div><div class="f-desc">Inbound sur session eBGP uniquement</div></div>
+    <div class="flash"><div class="f-num">HIGH</div><div class="f-label">Règle de préférence</div><div class="f-desc">LOCAL_PREF le plus ÉLEVÉ est préféré</div></div>
+    <div class="flash"><div class="f-num">NO</div><div class="f-label">Envoyé à eBGP</div><div class="f-desc">Stripped avant tout envoi vers un AS voisin</div></div>
+    <div class="flash"><div class="f-num">OUT</div><div class="f-label">Influence le trafic</div><div class="f-desc">Trafic SORTANT de l'AS — choisir la meilleure sortie ISP</div></div>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left-color:var(--orange-lt);">
+    <h3 style="color:var(--orange-lt);">🎓 Résumé Exam en 5 points</h3>
+    <ol style="padding-left:20px;line-height:2.4;font-size:13px;color:var(--text2);">
+      <li>LOCAL_PREF = Well-known Discretionary · <strong style="color:var(--text)">type code 5</strong> · défaut 100</li>
+      <li>Critère <strong style="color:var(--text)">#2</strong> Best Path — plus haut = préféré</li>
+      <li>Propagé dans <strong style="color:var(--text)">tout l'AS via iBGP</strong> — jamais envoyé à eBGP</li>
+      <li>Se configure avec <strong style="color:var(--text)">route-map … in</strong> sur session eBGP</li>
+      <li>Influence le trafic <strong style="color:var(--text)">sortant</strong> — pour entrant : AS-PATH prepending ou MED</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+function showTab(name, el) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+function showTable(which, el) {
+  document.getElementById('tbl-avant').style.display = which === 'avant' ? 'block' : 'none';
+  document.getElementById('tbl-apres').style.display = which === 'apres' ? 'block' : 'none';
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
