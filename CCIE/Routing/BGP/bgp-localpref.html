@@ -381,7 +381,7 @@ R3# <span class="kw">show ip bgp</span> <span class="val">10.0.0.0</span>
         <tr class="alt"><td>*</td><td>10.0.0.0/8</td><td>10.0.0.2 (R2)</td><td>0</td><td class="lp-eq">100</td><td>0</td><td>200 i</td></tr>
       </table>
       <div style="background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.2);border-radius:8px;padding:12px 16px;margin-top:10px;">
-        <p style="color:var(--orange-lt);font-size:12px;">⚠️ Les deux chemins ont <strong>LOCAL_PREF = 100</strong> (valeur par défaut). BGP utilise le critère suivant pour départager (AS-PATH length → ISP1 gagne par hasard ici). Pas de politique intentionnelle.</p>
+        <p style="color:var(--orange-lt);font-size:12px;">⚠️ Les deux chemins ont <strong>LOCAL_PREF = 100</strong> (valeur par défaut). AS-PATH length = tie (1/1), ORIGIN = tie, MED = tie, iBGP/iBGP = tie. BGP descend jusqu'au critère #13 : <strong>Lowest Neighbor IP</strong> → 10.0.0.1 &lt; 10.0.0.2 → R1 gagne. Pas de politique intentionnelle.</p>
       </div>
     </div>
 
