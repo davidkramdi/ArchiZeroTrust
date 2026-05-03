@@ -24,7 +24,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', system-ui, Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* NAV */
     nav {
       background: rgba(11,15,26,0.95);
       backdrop-filter: blur(8px);
@@ -44,12 +43,7 @@
     nav .site-name { color: var(--text); font-weight: 700; display: flex; align-items: center; gap: 6px; }
     nav .site-name svg { width:16px; height:16px; }
 
-    /* HERO */
-    .hero {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 72px 32px 48px;
-    }
+    .hero { max-width: 860px; margin: 0 auto; padding: 72px 32px 48px; }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 6px;
       background: rgba(27,114,190,.12);
@@ -57,123 +51,52 @@
       color: var(--blue-lt);
       font-size: 11px; font-weight: 700;
       padding: 4px 12px; border-radius: 20px;
-      letter-spacing: .5px;
-      margin-bottom: 20px;
+      letter-spacing: .5px; margin-bottom: 20px;
     }
     .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--blue-lt); display: block; }
-    h1 {
-      font-size: clamp(28px, 4vw, 46px);
-      font-weight: 800;
-      line-height: 1.15;
-      color: var(--text);
-      margin-bottom: 16px;
-      letter-spacing: -.5px;
-    }
-    .hero-desc {
-      font-size: 15px;
-      color: var(--text2);
-      line-height: 1.7;
-      max-width: 600px;
-    }
+    h1 { font-size: clamp(28px, 4vw, 46px); font-weight: 800; line-height: 1.15; color: var(--text); margin-bottom: 16px; letter-spacing: -.5px; }
+    .hero-desc { font-size: 15px; color: var(--text2); line-height: 1.7; max-width: 600px; }
 
-    /* SECTION LABEL */
-    .section-label {
-      max-width: 860px;
-      margin: 0 auto 16px;
-      padding: 0 32px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      color: var(--text3);
-      text-transform: uppercase;
-    }
+    .section-label { max-width: 860px; margin: 0 auto 16px; padding: 0 32px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; }
+    .section-label.mt { margin-top: 32px; }
 
-    /* GRID */
-    .grid {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 0 32px 80px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 12px;
-    }
+    .grid { max-width: 860px; margin: 0 auto; padding: 0 32px 80px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
 
-    /* CARD */
     .card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      text-decoration: none;
-      color: inherit;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+      text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 10px;
       transition: border-color .2s, background .2s, transform .15s;
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
     }
     .card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0;
-      height: 2px;
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
       background: linear-gradient(90deg, var(--blue), var(--teal));
-      opacity: 0;
-      transition: opacity .2s;
+      opacity: 0; transition: opacity .2s;
     }
     .card:hover { border-color: rgba(27,114,190,.5); background: var(--bg3); transform: translateY(-2px); }
     .card:hover::before { opacity: 1; }
     .card.disabled { cursor: default; opacity: .6; pointer-events: none; }
 
     .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-    .card-icon {
-      width: 36px; height: 36px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-      background: var(--bg4);
-      border: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-    .badge-dispo  { background: rgba(39,174,96,.15);  color: #2ecc71; border: 1px solid rgba(39,174,96,.3);  font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: .5px; white-space: nowrap; }
-    .badge-bientot{ background: rgba(230,126,34,.1);  color: #e6963a; border: 1px solid rgba(230,126,34,.25); font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: .5px; white-space: nowrap; }
-    .badge-new    { background: rgba(22,160,133,.15); color: #1abc9c; border: 1px solid rgba(22,160,133,.3);  font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: .5px; white-space: nowrap; }
+    .card-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; background: var(--bg4); border: 1px solid var(--border); flex-shrink: 0; }
+    .badge-dispo   { background: rgba(39,174,96,.15);  color: #2ecc71; border: 1px solid rgba(39,174,96,.3);  font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: .5px; white-space: nowrap; }
+    .badge-bientot { background: rgba(230,126,34,.1);  color: #e6963a; border: 1px solid rgba(230,126,34,.25); font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: .5px; white-space: nowrap; }
 
     .card-title { font-size: 14px; font-weight: 700; color: var(--text); }
     .card-desc  { font-size: 12px; color: var(--text2); line-height: 1.55; flex: 1; }
-    .card-arrow {
-      display: flex; align-items: center; gap: 4px;
-      font-size: 11px; font-weight: 600;
-      color: var(--blue-lt);
-      margin-top: 4px;
-    }
+    .card-arrow { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--blue-lt); margin-top: 4px; }
     .card-arrow svg { width:14px; height:14px; transition: transform .2s; }
     .card:hover .card-arrow svg { transform: translateX(3px); }
 
-    /* DIVIDER */
-    .divider {
-      max-width: 860px;
-      margin: 8px auto 24px;
-      padding: 0 32px;
-      border: none;
-      border-top: 1px solid var(--border);
-    }
-    .section-label.mt { margin-top: 32px; }
+    .divider { max-width: 860px; margin: 8px auto 24px; border: none; border-top: 1px solid var(--border); }
 
-    /* FOOTER */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 20px 32px;
-      text-align: center;
-      font-size: 12px;
-      color: var(--text3);
-    }
+    footer { border-top: 1px solid var(--border); padding: 20px 32px; text-align: center; font-size: 12px; color: var(--text3); }
     footer a { color: var(--text2); text-decoration: none; }
     footer a:hover { color: var(--text); }
   </style>
 </head>
 <body>
 
-  <!-- NAV -->
   <nav>
     <span class="site-name">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
@@ -187,19 +110,17 @@
     <span class="current">BGP</span>
   </nav>
 
-  <!-- HERO -->
   <div class="hero">
     <div class="hero-badge">BGP</div>
     <h1>Border Gateway Protocol</h1>
-    <p class="hero-desc">
-      Le protocole de routage inter-AS d'internet. Sélection du meilleur chemin, attributs, politiques de routage, filtrage et design avancé pour la certification CCIE.
-    </p>
+    <p class="hero-desc">Le protocole de routage inter-AS d'internet. Sélection du meilleur chemin, attributs, politiques de routage, filtrage et design avancé pour la certification CCIE.</p>
   </div>
 
-  <!-- ATTRIBUTS DE CHEMIN -->
+  <!-- ATTRIBUTS & SÉLECTION -->
   <div class="section-label">Attributs &amp; Sélection de chemin</div>
   <div class="grid">
 
+    <!-- Weight — DISPONIBLE -->
     <a href="bgp-weight.html" class="card">
       <div class="card-header">
         <div class="card-icon">⚖️</div>
@@ -210,15 +131,18 @@
       <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </a>
 
-    <div class="card disabled">
+    <!-- LOCAL_PREF — DISPONIBLE -->
+    <a href="bgp-localpref.html" class="card">
       <div class="card-header">
         <div class="card-icon">📍</div>
-        <span class="badge-bientot">BIENTÔT</span>
+        <span class="badge-dispo">DISPONIBLE</span>
       </div>
       <div class="card-title">LOCAL_PREF</div>
-      <div class="card-desc">Critère #2. Propagé à tout l'AS via iBGP. Policy sortante AS-wide. Valeur par défaut 100.</div>
-    </div>
+      <div class="card-desc">Critère #2. Propagé à tout l'AS via iBGP. Policy sortante AS-wide. Table BGP avant/après. Valeur par défaut 100.</div>
+      <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    </a>
 
+    <!-- AS-PATH — bientôt -->
     <div class="card disabled">
       <div class="card-header">
         <div class="card-icon">🔗</div>
@@ -228,6 +152,7 @@
       <div class="card-desc">Critère #4. Liste des AS traversés. AS-path prepending, regex filtering, allow-as-in.</div>
     </div>
 
+    <!-- MED — bientôt -->
     <div class="card disabled">
       <div class="card-header">
         <div class="card-icon">📊</div>
@@ -237,6 +162,7 @@
       <div class="card-desc">Multi-Exit Discriminator — critère #6. Hint vers l'AS voisin. always-compare-med, deterministic-med.</div>
     </div>
 
+    <!-- Communities — bientôt -->
     <div class="card disabled">
       <div class="card-header">
         <div class="card-icon">🏷️</div>
@@ -246,6 +172,7 @@
       <div class="card-desc">Standard, Extended, Large communities. no-export, no-advertise. Politiques inter-AS flexibles.</div>
     </div>
 
+    <!-- AIGP — bientôt -->
     <div class="card disabled">
       <div class="card-header">
         <div class="card-icon">🌐</div>
@@ -263,37 +190,25 @@
   <div class="grid">
 
     <div class="card disabled">
-      <div class="card-header">
-        <div class="card-icon">🪞</div>
-        <span class="badge-bientot">BIENTÔT</span>
-      </div>
+      <div class="card-header"><div class="card-icon">🪞</div><span class="badge-bientot">BIENTÔT</span></div>
       <div class="card-title">Route Reflector</div>
       <div class="card-desc">Suppression de la full-mesh iBGP. Cluster-ID, Originator-ID, règles anti-loop.</div>
     </div>
 
     <div class="card disabled">
-      <div class="card-header">
-        <div class="card-icon">🏛️</div>
-        <span class="badge-bientot">BIENTÔT</span>
-      </div>
+      <div class="card-header"><div class="card-icon">🏛️</div><span class="badge-bientot">BIENTÔT</span></div>
       <div class="card-title">Confederation</div>
       <div class="card-desc">Subdivision d'un AS en sous-AS. Réduction full-mesh. CONFED_SEQ, CONFED_SET.</div>
     </div>
 
     <div class="card disabled">
-      <div class="card-header">
-        <div class="card-icon">🔍</div>
-        <span class="badge-bientot">BIENTÔT</span>
-      </div>
+      <div class="card-header"><div class="card-icon">🔍</div><span class="badge-bientot">BIENTÔT</span></div>
       <div class="card-title">Route Filtering</div>
       <div class="card-desc">prefix-list, distribute-list, filter-list, route-map. Soft/hard reset. Inbound vs outbound.</div>
     </div>
 
     <div class="card disabled">
-      <div class="card-header">
-        <div class="card-icon">📦</div>
-        <span class="badge-bientot">BIENTÔT</span>
-      </div>
+      <div class="card-header"><div class="card-icon">📦</div><span class="badge-bientot">BIENTÔT</span></div>
       <div class="card-title">Aggregation</div>
       <div class="card-desc">aggregate-address, summary-only, suppress-map, as-set. Atomic aggregate.</div>
     </div>
@@ -306,28 +221,19 @@
   <div class="grid">
 
     <div class="card disabled">
-      <div class="card-header">
-        <div class="card-icon">🤝</div>
-        <span class="badge-bientot">BIENTÔT</span>
-      </div>
+      <div class="card-header"><div class="card-icon">🤝</div><span class="badge-bientot">BIENTÔT</span></div>
       <div class="card-title">Sessions iBGP / eBGP</div>
       <div class="card-desc">États FSM, TTL security, MD5, timers, next-hop-self, update-source loopback.</div>
     </div>
 
     <div class="card disabled">
-      <div class="card-header">
-        <div class="card-icon">🛡️</div>
-        <span class="badge-bientot">BIENTÔT</span>
-      </div>
+      <div class="card-header"><div class="card-icon">🛡️</div><span class="badge-bientot">BIENTÔT</span></div>
       <div class="card-title">BGP Security</div>
       <div class="card-desc">TTL security hacking, MD5 authentication, prefix filtering, max-prefix, RPKI basics.</div>
     </div>
 
     <div class="card disabled">
-      <div class="card-header">
-        <div class="card-icon">🚀</div>
-        <span class="badge-bientot">BIENTÔT</span>
-      </div>
+      <div class="card-header"><div class="card-icon">🚀</div><span class="badge-bientot">BIENTÔT</span></div>
       <div class="card-title">BGP Multipath</div>
       <div class="card-desc">maximum-paths ibgp/ebgp. ECMP avec BGP. Conditions de load-balancing.</div>
     </div>
