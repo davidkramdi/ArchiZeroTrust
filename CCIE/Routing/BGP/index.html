@@ -24,17 +24,13 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', system-ui, Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
+    /* ── Nav ── */
     nav {
-      background: rgba(11,15,26,0.95);
-      backdrop-filter: blur(8px);
+      background: rgba(11,15,26,0.95); backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--border);
-      padding: 0 32px;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      position: sticky; top: 0; z-index: 100;
+      padding: 0 32px; height: 48px;
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; position: sticky; top: 0; z-index: 100;
     }
     nav a { color: var(--text2); text-decoration: none; transition: color .2s; }
     nav a:hover { color: var(--text); }
@@ -43,102 +39,129 @@
     nav .site-name { color: var(--text); font-weight: 700; display: flex; align-items: center; gap: 6px; }
     nav .site-name svg { width:16px; height:16px; }
 
-    .hero { max-width: 860px; margin: 0 auto; padding: 72px 32px 48px; }
+    /* ── Hero ── */
+    .hero { max-width: 900px; margin: 0 auto; padding: 72px 32px 48px; }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(27,114,190,.12);
-      border: 1px solid rgba(27,114,190,.3);
-      color: var(--blue-lt);
-      font-size: 11px; font-weight: 700;
-      padding: 4px 12px; border-radius: 20px;
-      letter-spacing: .5px; margin-bottom: 20px;
+      background: rgba(27,114,190,.12); border: 1px solid rgba(27,114,190,.3);
+      color: var(--blue-lt); font-size: 11px; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px; letter-spacing: .5px; margin-bottom: 20px;
     }
-    .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--blue-lt); display: block; }
-    h1 { font-size: clamp(28px, 4vw, 46px); font-weight: 800; line-height: 1.15; color: var(--text); margin-bottom: 16px; letter-spacing: -.5px; }
-    .hero-desc { font-size: 15px; color: var(--text2); line-height: 1.7; max-width: 600px; }
-
-    .section-label { max-width: 860px; margin: 0 auto 16px; padding: 0 32px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; }
-    .section-label.mt { margin-top: 32px; }
-
-    .grid { max-width: 860px; margin: 0 auto; padding: 0 32px 80px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-
-    .card {
-      background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px;
-      text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 10px;
-      transition: border-color .2s, background .2s, transform .15s;
-      position: relative; overflow: hidden;
-    }
-    .card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--blue), var(--teal));
-      opacity: 0; transition: opacity .2s;
-    }
-    .card:hover { border-color: rgba(27,114,190,.5); background: var(--bg3); transform: translateY(-2px); }
-    .card:hover::before { opacity: 1; }
-    .card.disabled { cursor: default; opacity: .6; pointer-events: none; }
-
-    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-    .card-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; background: var(--bg4); border: 1px solid var(--border); flex-shrink: 0; }
-    .badge-dispo   { background: rgba(39,174,96,.15);  color: #2ecc71; border: 1px solid rgba(39,174,96,.3);  font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: .5px; white-space: nowrap; }
-    .badge-bientot { background: rgba(230,126,34,.1);  color: #e6963a; border: 1px solid rgba(230,126,34,.25); font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: .5px; white-space: nowrap; }
-
-    .card-title { font-size: 14px; font-weight: 700; color: var(--text); }
-    .card-desc  { font-size: 12px; color: var(--text2); line-height: 1.55; flex: 1; }
-    .card-arrow { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--blue-lt); margin-top: 4px; }
-    .card-arrow svg { width:14px; height:14px; transition: transform .2s; }
-    .card:hover .card-arrow svg { transform: translateX(3px); }
-
-    .divider { max-width: 860px; margin: 8px auto 24px; border: none; border-top: 1px solid var(--border); }
-
-    footer { border-top: 1px solid var(--border); padding: 20px 32px; text-align: center; font-size: 12px; color: var(--text3); }
-    footer a { color: var(--text2); text-decoration: none; }
-    footer a:hover { color: var(--text); }
+    .hero-badge::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--blue-lt); display:block; }
+    h1 { font-size: clamp(28px,4vw,46px); font-weight: 800; line-height: 1.15; color: var(--text); margin-bottom: 16px; letter-spacing: -.5px; }
+    .hero-desc { font-size: 15px; color: var(--text2); line-height: 1.7; max-width: 620px; }
 
     /* ── Best Path Strip ── */
-    .bp-strip-wrap { max-width: 860px; margin: 0 auto 28px; padding: 0 32px; }
-    .bp-strip-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--text3); text-transform: uppercase; margin-bottom: 10px; }
-    .bp-mnemonic { color: var(--blue-lt); font-family: 'Courier New', monospace; letter-spacing: 3px; }
+    .bp-wrap { max-width: 900px; margin: 0 auto 36px; padding: 0 32px; }
+    .bp-header {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+      margin-bottom: 12px;
+    }
+    .bp-title { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--text3); text-transform: uppercase; }
+    .bp-mnemonic { color: var(--blue-lt); font-family: 'Courier New', monospace; letter-spacing: 3px; font-size: 12px; }
+    .bp-prereq {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(231,76,60,.1); border: 1px solid rgba(231,76,60,.3);
+      color: #e74c3c; font-size: 10px; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px;
+    }
+    .bp-prereq::before { content: '⚠'; }
     .bp-strip {
-      display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px;
+      display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px;
       scrollbar-width: thin; scrollbar-color: var(--border) transparent;
     }
     .bp-step {
       display: flex; flex-direction: column; align-items: center; gap: 2px;
-      min-width: 58px; padding: 8px 6px; border-radius: 8px;
+      min-width: 58px; padding: 8px 4px; border-radius: 8px;
       background: var(--bg3); border: 1px solid var(--border);
       text-decoration: none; color: var(--text3); cursor: default;
       flex-shrink: 0; transition: border-color .2s, background .2s;
     }
     .bp-step.active {
       background: rgba(27,114,190,.12); border-color: rgba(27,114,190,.4);
-      cursor: pointer; color: var(--text);
+      cursor: pointer;
     }
     .bp-step.active:hover { background: rgba(27,114,190,.22); border-color: var(--blue-lt); }
-    .bp-num { font-size: 9px; font-weight: 700; color: var(--text3); line-height: 1; }
+    .bp-num  { font-size: 9px; font-weight: 700; color: var(--text3); line-height: 1; }
     .bp-step.active .bp-num { color: var(--blue-lt); }
-    .bp-letter { font-size: 18px; font-weight: 800; line-height: 1.1; color: var(--text3); font-family: 'Courier New', monospace; }
+    .bp-letter { font-size: 18px; font-weight: 800; line-height: 1.1; font-family: 'Courier New', monospace; color: var(--text3); }
     .bp-step.active .bp-letter { color: var(--blue-lt); }
-    .bp-name { font-size: 9px; font-weight: 600; letter-spacing: .3px; color: var(--text3); text-align: center; line-height: 1.2; }
+    .bp-name { font-size: 9px; font-weight: 600; color: var(--text3); text-align: center; line-height: 1.2; }
     .bp-step.active .bp-name { color: var(--text2); }
 
-    /* ── Attribute category badges ── */
+    /* ── Section labels ── */
+    .section-label {
+      max-width: 900px; margin: 0 auto 16px; padding: 0 32px;
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      color: var(--text3); text-transform: uppercase;
+    }
+    .section-label.mt { margin-top: 32px; }
+
+    /* ── Grid ── */
+    .grid {
+      max-width: 900px; margin: 0 auto; padding: 0 32px 48px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px;
+      text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 8px;
+      transition: border-color .2s, background .2s, transform .15s;
+      position: relative; overflow: hidden;
+    }
+    .card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background: linear-gradient(90deg, var(--blue), var(--teal));
+      opacity:0; transition: opacity .2s;
+    }
+    .card:hover { border-color: rgba(27,114,190,.5); background: var(--bg3); transform: translateY(-2px); }
+    .card:hover::before { opacity: 1; }
+    .card.disabled { cursor: default; opacity: .55; pointer-events: none; }
+    .card.prereq { border-color: rgba(231,76,60,.25); background: rgba(231,76,60,.04); }
+    .card.prereq::before { background: linear-gradient(90deg, #e74c3c, #e67e22); }
+
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .card-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; background: var(--bg4); border: 1px solid var(--border); flex-shrink: 0; }
+    .card-num { font-size: 10px; font-weight: 800; color: var(--text3); font-family: 'Courier New', monospace; white-space: nowrap; }
+
+    .badge-dispo   { background: rgba(39,174,96,.15);  color: #2ecc71; border: 1px solid rgba(39,174,96,.3);  font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: .5px; white-space: nowrap; }
+    .badge-bientot { background: rgba(230,126,34,.1);  color: #e6963a; border: 1px solid rgba(230,126,34,.25); font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: .5px; white-space: nowrap; }
+    .badge-prereq  { background: rgba(231,76,60,.12);  color: #e74c3c; border: 1px solid rgba(231,76,60,.3);  font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: .5px; white-space: nowrap; }
+
+    .card-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .card-desc  { font-size: 12px; color: var(--text2); line-height: 1.55; flex: 1; }
+    .card-arrow { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--blue-lt); margin-top: 2px; }
+    .card-arrow svg { width:13px; height:13px; transition: transform .2s; }
+    .card:hover .card-arrow svg { transform: translateX(3px); }
+
+    /* ── Attribute category tags ── */
     .attr-tag {
       display: inline-flex; align-items: center; gap: 4px;
       font-size: 9px; font-weight: 700; letter-spacing: .4px;
       padding: 2px 7px; border-radius: 6px; text-transform: uppercase;
-      margin-bottom: 2px;
     }
-    .attr-tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; display: block; flex-shrink: 0; }
-    .attr-wkm  { background: rgba(231,76,60,.12);  color: #e74c3c; border: 1px solid rgba(231,76,60,.3); }
-    .attr-wkm::before  { background: #e74c3c; }
-    .attr-wkd  { background: rgba(74,159,212,.12); color: #4a9fd4; border: 1px solid rgba(74,159,212,.3); }
-    .attr-wkd::before  { background: #4a9fd4; }
-    .attr-opt  { background: rgba(230,126,34,.12); color: #e6963a; border: 1px solid rgba(230,126,34,.3); }
-    .attr-opt::before  { background: #e6963a; }
-    .attr-optn { background: rgba(22,160,133,.12); color: #1abc9c; border: 1px solid rgba(22,160,133,.3); }
-    .attr-optn::before { background: #1abc9c; }
-    .attr-local{ background: rgba(138,173,202,.1);  color: #8aadca; border: 1px solid rgba(138,173,202,.2); }
-    .attr-local::before{ background: #8aadca; }
+    .attr-tag::before { content:''; width:5px; height:5px; border-radius:50%; display:block; flex-shrink:0; }
+    .attr-wkm   { background:rgba(231,76,60,.12);   color:#e74c3c; border:1px solid rgba(231,76,60,.3); }
+    .attr-wkm::before   { background:#e74c3c; }
+    .attr-wkd   { background:rgba(74,159,212,.12);  color:#4a9fd4; border:1px solid rgba(74,159,212,.3); }
+    .attr-wkd::before   { background:#4a9fd4; }
+    .attr-opt   { background:rgba(230,126,34,.12);  color:#e6963a; border:1px solid rgba(230,126,34,.3); }
+    .attr-opt::before   { background:#e6963a; }
+    .attr-optn  { background:rgba(22,160,133,.12);  color:#1abc9c; border:1px solid rgba(22,160,133,.3); }
+    .attr-optn::before  { background:#1abc9c; }
+    .attr-local { background:rgba(138,173,202,.1);  color:#8aadca; border:1px solid rgba(138,173,202,.2); }
+    .attr-local::before { background:#8aadca; }
+    .attr-rule  { background:rgba(155,89,182,.12);  color:#a878d4; border:1px solid rgba(155,89,182,.3); }
+    .attr-rule::before  { background:#a878d4; }
+
+    /* ── Divider ── */
+    .divider { max-width: 900px; margin: 0 auto 24px; border: none; border-top: 1px solid var(--border); }
+
+    /* ── Footer ── */
+    footer { border-top: 1px solid var(--border); padding: 20px 32px; text-align: center; font-size: 12px; color: var(--text3); }
+    footer a { color: var(--text2); text-decoration: none; }
+    footer a:hover { color: var(--text); }
   </style>
 </head>
 <body>
@@ -162,165 +185,230 @@
     <p class="hero-desc">Le protocole de routage inter-AS d'internet. Sélection du meilleur chemin, attributs, politiques de routage, filtrage et design avancé pour la certification CCIE.</p>
   </div>
 
-  <!-- BEST PATH SELECTOR STRIP -->
-  <div class="bp-strip-wrap">
-    <div class="bp-strip-label">BGP Best Path Selection — <span class="bp-mnemonic">W·L·L·A·O·M·E·I·A·O·R·C·N</span></div>
+  <!-- ════════════════════════════════════════════
+       BEST PATH STRIP
+       ════════════════════════════════════════════ -->
+  <div class="bp-wrap">
+    <div class="bp-header">
+      <span class="bp-title">BGP Best Path Selection</span>
+      <span class="bp-mnemonic">W · L · L · A · O · M · E · I · A · O · R · C · N</span>
+      <span class="bp-prereq">Préalable : NEXT_HOP joignable via IGP</span>
+    </div>
     <div class="bp-strip">
-      <a href="bgp-weight.html" class="bp-step active" title="Weight">
-        <span class="bp-num">1</span>
-        <span class="bp-letter">W</span>
-        <span class="bp-name">Weight</span>
-      </a>
-      <a href="bgp-localpref.html" class="bp-step active" title="LOCAL_PREF">
-        <span class="bp-num">2</span>
-        <span class="bp-letter">L</span>
-        <span class="bp-name">Local Pref</span>
-      </a>
-      <div class="bp-step" title="Locally Originated">
-        <span class="bp-num">3</span>
-        <span class="bp-letter">L</span>
-        <span class="bp-name">Local Orig</span>
-      </div>
-      <div class="bp-step" title="AS-PATH length">
-        <span class="bp-num">4</span>
-        <span class="bp-letter">A</span>
-        <span class="bp-name">AS-PATH</span>
-      </div>
-      <a href="bgp-origin.html" class="bp-step active" title="Origin">
-        <span class="bp-num">5</span>
-        <span class="bp-letter">O</span>
-        <span class="bp-name">Origin</span>
-      </a>
-      <div class="bp-step" title="MED">
-        <span class="bp-num">6</span>
-        <span class="bp-letter">M</span>
-        <span class="bp-name">MED</span>
-      </div>
-      <div class="bp-step" title="eBGP over iBGP">
-        <span class="bp-num">7</span>
-        <span class="bp-letter">E</span>
-        <span class="bp-name">eBGP/iBGP</span>
-      </div>
-      <div class="bp-step" title="IGP metric">
-        <span class="bp-num">8</span>
-        <span class="bp-letter">I</span>
-        <span class="bp-name">IGP metric</span>
-      </div>
-      <div class="bp-step" title="AIGP">
-        <span class="bp-num">9</span>
-        <span class="bp-letter">A</span>
-        <span class="bp-name">AIGP</span>
-      </div>
-      <div class="bp-step" title="Oldest eBGP">
-        <span class="bp-num">10</span>
-        <span class="bp-letter">O</span>
-        <span class="bp-name">Oldest</span>
-      </div>
-      <div class="bp-step" title="Router-ID">
-        <span class="bp-num">11</span>
-        <span class="bp-letter">R</span>
-        <span class="bp-name">Router-ID</span>
-      </div>
-      <div class="bp-step" title="Cluster-list length">
-        <span class="bp-num">12</span>
-        <span class="bp-letter">C</span>
-        <span class="bp-name">Cluster-list</span>
-      </div>
-      <div class="bp-step" title="Neighbor IP">
-        <span class="bp-num">13</span>
-        <span class="bp-letter">N</span>
-        <span class="bp-name">Neighbor IP</span>
-      </div>
+      <a href="bgp-weight.html"   class="bp-step active" title="#1 Weight">    <span class="bp-num">1</span><span class="bp-letter">W</span><span class="bp-name">Weight</span></a>
+      <a href="bgp-localpref.html" class="bp-step active" title="#2 LOCAL_PREF"><span class="bp-num">2</span><span class="bp-letter">L</span><span class="bp-name">Local Pref</span></a>
+      <div class="bp-step" title="#3 Locally Originated (NH=0.0.0.0)">         <span class="bp-num">3</span><span class="bp-letter">L</span><span class="bp-name">NH=0.0.0.0</span></div>
+      <div class="bp-step" title="#4 AS-PATH length">                           <span class="bp-num">4</span><span class="bp-letter">A</span><span class="bp-name">AS-PATH</span></div>
+      <a href="bgp-origin.html"   class="bp-step active" title="#5 Origin">    <span class="bp-num">5</span><span class="bp-letter">O</span><span class="bp-name">Origin</span></a>
+      <div class="bp-step" title="#6 MED">                                      <span class="bp-num">6</span><span class="bp-letter">M</span><span class="bp-name">MED</span></div>
+      <div class="bp-step" title="#7 eBGP préféré à iBGP">                     <span class="bp-num">7</span><span class="bp-letter">E</span><span class="bp-name">eBGP/iBGP</span></div>
+      <div class="bp-step" title="#8 IGP metric vers NEXT_HOP">                <span class="bp-num">8</span><span class="bp-letter">I</span><span class="bp-name">IGP metric</span></div>
+      <div class="bp-step" title="#9 AIGP (RFC 7311)">                         <span class="bp-num">9</span><span class="bp-letter">A</span><span class="bp-name">AIGP</span></div>
+      <div class="bp-step" title="#10 Oldest eBGP path">                       <span class="bp-num">10</span><span class="bp-letter">O</span><span class="bp-name">Oldest</span></div>
+      <div class="bp-step" title="#11 Lowest Router-ID">                       <span class="bp-num">11</span><span class="bp-letter">R</span><span class="bp-name">Router-ID</span></div>
+      <div class="bp-step" title="#12 Shortest Cluster-list (RR)">             <span class="bp-num">12</span><span class="bp-letter">C</span><span class="bp-name">Cluster-list</span></div>
+      <div class="bp-step" title="#13 Lowest Neighbor IP">                     <span class="bp-num">13</span><span class="bp-letter">N</span><span class="bp-name">Neighbor IP</span></div>
     </div>
   </div>
 
-  <!-- ATTRIBUTS & SÉLECTION -->
-  <div class="section-label">Attributs &amp; Sélection de chemin</div>
+  <!-- ════════════════════════════════════════════
+       BEST PATH — 13 CRITÈRES + PRÉALABLE
+       ════════════════════════════════════════════ -->
+  <div class="section-label">Sélection du meilleur chemin — Préalable &amp; 13 critères</div>
   <div class="grid">
 
-    <!-- Weight — DISPONIBLE -->
+    <!-- PRÉALABLE : NEXT_HOP -->
+    <div class="card disabled prereq">
+      <div class="card-header">
+        <div class="card-icon">➡️</div>
+        <span class="badge-prereq">PRÉALABLE</span>
+      </div>
+      <div class="card-title">NEXT_HOP</div>
+      <span class="attr-tag attr-wkm">Well-known Mandatory · type 3</span>
+      <div class="card-desc">Si le NEXT_HOP est injoignable via l'IGP → route invalide, ignorée. next-hop-self, next-hop-unchanged. NH=0.0.0.0 = route locally originated.</div>
+    </div>
+
+    <!-- #1 Weight -->
     <a href="bgp-weight.html" class="card">
       <div class="card-header">
         <div class="card-icon">⚖️</div>
         <span class="badge-dispo">DISPONIBLE</span>
       </div>
-      <div class="card-title">BGP Weight</div>
-      <span class="attr-tag attr-local">Cisco Local — non propagé</span>
-      <div class="card-desc">Priorité #1. Paramètre propriétaire Cisco, 16-bit (0-65535). 3 méthodes de config. Comparaison avec AIGP (RFC 7311).</div>
+      <div class="card-title">Weight <span class="card-num">· #1 · highest wins</span></div>
+      <span class="attr-tag attr-local">Cisco Local · non propagé</span>
+      <div class="card-desc">Paramètre propriétaire Cisco, 16-bit (0-65535). Default 32768 (local) / 0 (reçu). 3 méthodes de config.</div>
       <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </a>
 
-    <!-- LOCAL_PREF — DISPONIBLE -->
+    <!-- #2 LOCAL_PREF -->
     <a href="bgp-localpref.html" class="card">
       <div class="card-header">
         <div class="card-icon">📍</div>
         <span class="badge-dispo">DISPONIBLE</span>
       </div>
-      <div class="card-title">LOCAL_PREF</div>
+      <div class="card-title">LOCAL_PREF <span class="card-num">· #2 · highest wins</span></div>
       <span class="attr-tag attr-wkd">Well-known Discretionary · type 5</span>
-      <div class="card-desc">Critère #2. Propagé à tout l'AS via iBGP, jamais vers eBGP. Policy sortante AS-wide. Défaut 100.</div>
+      <div class="card-desc">Propagé à tout l'AS via iBGP, jamais vers eBGP. Policy sortante AS-wide. Default 100.</div>
       <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </a>
 
-    <!-- AS-PATH — bientôt -->
+    <!-- #3 Locally Originated -->
+    <div class="card disabled">
+      <div class="card-header">
+        <div class="card-icon">🏠</div>
+        <span class="badge-bientot">BIENTÔT</span>
+      </div>
+      <div class="card-title">Locally Originated <span class="card-num">· #3</span></div>
+      <span class="attr-tag attr-rule">Règle de sélection</span>
+      <div class="card-desc">Route injectée localement (network / aggregate / redistribute). NEXT_HOP = 0.0.0.0 dans show ip bgp. Préférée sur une route reçue d'un voisin.</div>
+    </div>
+
+    <!-- #4 AS-PATH -->
     <div class="card disabled">
       <div class="card-header">
         <div class="card-icon">🔗</div>
         <span class="badge-bientot">BIENTÔT</span>
       </div>
-      <div class="card-title">AS-PATH</div>
+      <div class="card-title">AS-PATH <span class="card-num">· #4 · shortest wins</span></div>
       <span class="attr-tag attr-wkm">Well-known Mandatory · type 2</span>
-      <div class="card-desc">Critère #4. Liste des AS traversés. AS-path prepending, regex filtering, allow-as-in.</div>
+      <div class="card-desc">Liste des AS traversés. AS-path prepending pour influencer le trafic entrant. Regex filtering, allow-as-in. Loop prevention.</div>
     </div>
 
-    <!-- ORIGIN — DISPONIBLE -->
+    <!-- #5 Origin -->
     <a href="bgp-origin.html" class="card">
       <div class="card-header">
         <div class="card-icon">🎯</div>
         <span class="badge-dispo">DISPONIBLE</span>
       </div>
-      <div class="card-title">Origin</div>
+      <div class="card-title">Origin <span class="card-num">· #5 · i &gt; e &gt; ?</span></div>
       <span class="attr-tag attr-wkm">Well-known Mandatory · type 1</span>
-      <div class="card-desc">Critère #5. Valeurs i / e / ?. Injection, route-map set origin, agrégation avec as-set.</div>
+      <div class="card-desc">3 valeurs : i (IGP), e (EGP), ? (incomplete). Injection, route-map set origin, agrégation avec as-set.</div>
       <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </a>
 
-    <!-- MED — bientôt -->
+    <!-- #6 MED -->
     <div class="card disabled">
       <div class="card-header">
         <div class="card-icon">📊</div>
         <span class="badge-bientot">BIENTÔT</span>
       </div>
-      <div class="card-title">MED</div>
+      <div class="card-title">MED <span class="card-num">· #6 · lowest wins</span></div>
       <span class="attr-tag attr-optn">Optional Non-Transitive · type 4</span>
-      <div class="card-desc">Critère #6. Hint vers l'AS voisin. always-compare-med, deterministic-med.</div>
+      <div class="card-desc">Hint vers l'AS voisin pour le point d'entrée préféré. Comparé uniquement entre routes du même AS voisin. always-compare-med, deterministic-med.</div>
     </div>
 
-    <!-- Communities — bientôt -->
+    <!-- #7 eBGP > iBGP -->
     <div class="card disabled">
       <div class="card-header">
-        <div class="card-icon">🏷️</div>
+        <div class="card-icon">🔀</div>
         <span class="badge-bientot">BIENTÔT</span>
       </div>
-      <div class="card-title">Communities</div>
-      <span class="attr-tag attr-opt">Optional Transitive · type 8/16/32</span>
-      <div class="card-desc">Standard, Extended, Large communities. no-export, no-advertise. Politiques inter-AS flexibles.</div>
+      <div class="card-title">eBGP &gt; iBGP <span class="card-num">· #7</span></div>
+      <span class="attr-tag attr-rule">Règle de sélection</span>
+      <div class="card-desc">Préférer les routes apprises via une session eBGP sur les routes iBGP. Indépendant de tout attribut configurable.</div>
     </div>
 
-    <!-- AIGP — bientôt -->
+    <!-- #8 IGP metric -->
+    <div class="card disabled">
+      <div class="card-header">
+        <div class="card-icon">📏</div>
+        <span class="badge-bientot">BIENTÔT</span>
+      </div>
+      <div class="card-title">IGP Metric <span class="card-num">· #8 · lowest wins</span></div>
+      <span class="attr-tag attr-rule">Règle de sélection</span>
+      <div class="card-desc">Coût IGP (OSPF/IS-IS/EIGRP) vers le NEXT_HOP BGP. Lowest wins. Base du BGP multipath avec maximum-paths.</div>
+    </div>
+
+    <!-- #9 AIGP -->
     <div class="card disabled">
       <div class="card-header">
         <div class="card-icon">🌐</div>
         <span class="badge-bientot">BIENTÔT</span>
       </div>
-      <div class="card-title">AIGP</div>
+      <div class="card-title">AIGP <span class="card-num">· #9 · lowest wins</span></div>
       <span class="attr-tag attr-optn">Optional Non-Transitive · type 26</span>
-      <div class="card-desc">RFC 7311. Accumulated IGP metric. Critère #9. BGP-free core, réseaux SP.</div>
+      <div class="card-desc">RFC 7311. Accumulated IGP metric propagé dans BGP. BGP-free core, réseaux SP. Comparable au Weight.</div>
+    </div>
+
+    <!-- #10 Oldest eBGP -->
+    <div class="card disabled">
+      <div class="card-header">
+        <div class="card-icon">⏱️</div>
+        <span class="badge-bientot">BIENTÔT</span>
+      </div>
+      <div class="card-title">Oldest eBGP <span class="card-num">· #10</span></div>
+      <span class="attr-tag attr-rule">Règle de sélection</span>
+      <div class="card-desc">Préférer la route eBGP la plus ancienne pour la stabilité. Évite les oscillations. Applicable uniquement aux routes eBGP.</div>
+    </div>
+
+    <!-- #11 Router-ID -->
+    <div class="card disabled">
+      <div class="card-header">
+        <div class="card-icon">🆔</div>
+        <span class="badge-bientot">BIENTÔT</span>
+      </div>
+      <div class="card-title">Router-ID <span class="card-num">· #11 · lowest wins</span></div>
+      <span class="attr-tag attr-rule">Règle de sélection</span>
+      <div class="card-desc">Lowest BGP Router-ID du peer qui a annoncé la route. Déterminé par loopback ou highest IP. bgp router-id.</div>
+    </div>
+
+    <!-- #12 Cluster-list -->
+    <div class="card disabled">
+      <div class="card-header">
+        <div class="card-icon">🔵</div>
+        <span class="badge-bientot">BIENTÔT</span>
+      </div>
+      <div class="card-title">Cluster-list <span class="card-num">· #12 · shortest wins</span></div>
+      <span class="attr-tag attr-optn">Optional Non-Transitive · type 10</span>
+      <div class="card-desc">Route Reflector uniquement. Longueur du Cluster-list la plus courte. Mécanisme anti-loop iBGP pour les RR.</div>
+    </div>
+
+    <!-- #13 Neighbor IP -->
+    <div class="card disabled">
+      <div class="card-header">
+        <div class="card-icon">🔢</div>
+        <span class="badge-bientot">BIENTÔT</span>
+      </div>
+      <div class="card-title">Neighbor IP <span class="card-num">· #13 · lowest wins</span></div>
+      <span class="attr-tag attr-rule">Règle de sélection</span>
+      <div class="card-desc">Lowest neighbor IP address. Dernier tiebreaker absolu. Utilisé quand tous les autres critères sont identiques.</div>
     </div>
 
   </div>
 
-  <!-- DESIGN & SCALABILITÉ -->
+  <!-- ════════════════════════════════════════════
+       ATTRIBUTS COMPLÉMENTAIRES
+       ════════════════════════════════════════════ -->
+  <hr class="divider"/>
+  <div class="section-label mt">Attributs BGP complémentaires</div>
+  <div class="grid">
+
+    <div class="card disabled">
+      <div class="card-header"><div class="card-icon">🏷️</div><span class="badge-bientot">BIENTÔT</span></div>
+      <div class="card-title">Communities</div>
+      <span class="attr-tag attr-opt">Optional Transitive · type 8 / 16 / 32</span>
+      <div class="card-desc">Standard, Extended, Large communities. no-export, no-advertise. Politiques inter-AS flexibles. Pas un critère de sélection direct.</div>
+    </div>
+
+    <div class="card disabled">
+      <div class="card-header"><div class="card-icon">⚛️</div><span class="badge-bientot">BIENTÔT</span></div>
+      <div class="card-title">Atomic Aggregate</div>
+      <span class="attr-tag attr-wkd">Well-known Discretionary · type 6</span>
+      <div class="card-desc">Indique qu'une route agrégée a été créée avec perte d'information. Positionné automatiquement lors d'une agrégation sans as-set.</div>
+    </div>
+
+    <div class="card disabled">
+      <div class="card-header"><div class="card-icon">🤝</div><span class="badge-bientot">BIENTÔT</span></div>
+      <div class="card-title">Aggregator</div>
+      <span class="attr-tag attr-opt">Optional Transitive · type 7</span>
+      <div class="card-desc">AS number et Router-ID du routeur ayant effectué l'agrégation. Complémentaire d'Atomic Aggregate.</div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       DESIGN & SCALABILITÉ
+       ════════════════════════════════════════════ -->
   <hr class="divider"/>
   <div class="section-label mt">Design &amp; Scalabilité</div>
   <div class="grid">
@@ -328,7 +416,7 @@
     <div class="card disabled">
       <div class="card-header"><div class="card-icon">🪞</div><span class="badge-bientot">BIENTÔT</span></div>
       <div class="card-title">Route Reflector</div>
-      <div class="card-desc">Suppression de la full-mesh iBGP. Cluster-ID, Originator-ID, règles anti-loop.</div>
+      <div class="card-desc">Suppression de la full-mesh iBGP. Cluster-ID, Originator-ID, règles anti-loop. Impact sur critères #11 et #12.</div>
     </div>
 
     <div class="card disabled">
@@ -346,12 +434,14 @@
     <div class="card disabled">
       <div class="card-header"><div class="card-icon">📦</div><span class="badge-bientot">BIENTÔT</span></div>
       <div class="card-title">Aggregation</div>
-      <div class="card-desc">aggregate-address, summary-only, suppress-map, as-set. Atomic aggregate.</div>
+      <div class="card-desc">aggregate-address, summary-only, suppress-map, as-set. Atomic Aggregate (type 6) + Aggregator (type 7).</div>
     </div>
 
   </div>
 
-  <!-- SESSIONS & SÉCURITÉ -->
+  <!-- ════════════════════════════════════════════
+       SESSIONS & SÉCURITÉ
+       ════════════════════════════════════════════ -->
   <hr class="divider"/>
   <div class="section-label mt">Sessions &amp; Sécurité</div>
   <div class="grid">
@@ -359,7 +449,7 @@
     <div class="card disabled">
       <div class="card-header"><div class="card-icon">🤝</div><span class="badge-bientot">BIENTÔT</span></div>
       <div class="card-title">Sessions iBGP / eBGP</div>
-      <div class="card-desc">États FSM, TTL security, MD5, timers, next-hop-self, update-source loopback.</div>
+      <div class="card-desc">États FSM (6 états). TTL security, MD5, timers, next-hop-self, update-source loopback.</div>
     </div>
 
     <div class="card disabled">
@@ -371,7 +461,7 @@
     <div class="card disabled">
       <div class="card-header"><div class="card-icon">🚀</div><span class="badge-bientot">BIENTÔT</span></div>
       <div class="card-title">BGP Multipath</div>
-      <div class="card-desc">maximum-paths ibgp/ebgp. ECMP avec BGP. Conditions de load-balancing.</div>
+      <div class="card-desc">maximum-paths ibgp/ebgp. ECMP avec BGP. Conditions de load-balancing. Lien avec critère #8 IGP metric.</div>
     </div>
 
   </div>
