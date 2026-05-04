@@ -198,10 +198,10 @@
       <a href="bgp-weight.html"   class="bp-step active" title="#1 Weight">    <span class="bp-num">1</span><span class="bp-letter">W</span><span class="bp-name">Weight</span></a>
       <a href="bgp-localpref.html" class="bp-step active" title="#2 LOCAL_PREF"><span class="bp-num">2</span><span class="bp-letter">L</span><span class="bp-name">Local Pref</span></a>
       <a href="bgp-locally-originated.html" class="bp-step active" title="#3 Locally Originated (NH=0.0.0.0)"><span class="bp-num">3</span><span class="bp-letter">L</span><span class="bp-name">NH=0.0.0.0</span></a>
-      <div class="bp-step" title="#4 AS-PATH length">                           <span class="bp-num">4</span><span class="bp-letter">A</span><span class="bp-name">AS-PATH</span></div>
+      <a href="bgp-aspath.html" class="bp-step active" title="#4 AS-PATH length"><span class="bp-num">4</span><span class="bp-letter">A</span><span class="bp-name">AS-PATH</span></a>
       <a href="bgp-origin.html"   class="bp-step active" title="#5 Origin">    <span class="bp-num">5</span><span class="bp-letter">O</span><span class="bp-name">Origin</span></a>
-      <div class="bp-step" title="#6 MED">                                      <span class="bp-num">6</span><span class="bp-letter">M</span><span class="bp-name">MED</span></div>
-      <div class="bp-step" title="#7 eBGP préféré à iBGP">                     <span class="bp-num">7</span><span class="bp-letter">E</span><span class="bp-name">eBGP/iBGP</span></div>
+      <a href="bgp-med.html" class="bp-step active" title="#6 MED">            <span class="bp-num">6</span><span class="bp-letter">M</span><span class="bp-name">MED</span></a>
+      <a href="bgp-ebgp-ibgp.html" class="bp-step active" title="#7 eBGP > iBGP"><span class="bp-num">7</span><span class="bp-letter">E</span><span class="bp-name">eBGP/iBGP</span></a>
       <div class="bp-step" title="#8 IGP metric vers NEXT_HOP">                <span class="bp-num">8</span><span class="bp-letter">I</span><span class="bp-name">IGP metric</span></div>
       <div class="bp-step" title="#9 AIGP (RFC 7311)">                         <span class="bp-num">9</span><span class="bp-letter">A</span><span class="bp-name">AIGP</span></div>
       <div class="bp-step" title="#10 Oldest eBGP path">                       <span class="bp-num">10</span><span class="bp-letter">O</span><span class="bp-name">Oldest</span></div>
@@ -265,15 +265,16 @@
     </a>
 
     <!-- #4 AS-PATH -->
-    <div class="card disabled">
+    <a href="bgp-aspath.html" class="card">
       <div class="card-header">
         <div class="card-icon">🔗</div>
-        <span class="badge-bientot">BIENTÔT</span>
+        <span class="badge-dispo">DISPONIBLE</span>
       </div>
       <div class="card-title">AS-PATH <span class="card-num">· #4 · shortest wins</span></div>
       <span class="attr-tag attr-wkm">Well-known Mandatory · type 2</span>
-      <div class="card-desc">Liste des AS traversés. AS-path prepending pour influencer le trafic entrant. Regex filtering, allow-as-in. Loop prevention.</div>
-    </div>
+      <div class="card-desc">Liste des AS traversés. Prepending, regex filtering, allow-as-in, as-override, remove-private-as. Loop prevention.</div>
+      <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    </a>
 
     <!-- #5 Origin -->
     <a href="bgp-origin.html" class="card">
@@ -288,26 +289,28 @@
     </a>
 
     <!-- #6 MED -->
-    <div class="card disabled">
+    <a href="bgp-med.html" class="card">
       <div class="card-header">
         <div class="card-icon">📊</div>
-        <span class="badge-bientot">BIENTÔT</span>
+        <span class="badge-dispo">DISPO</span>
       </div>
       <div class="card-title">MED <span class="card-num">· #6 · lowest wins</span></div>
       <span class="attr-tag attr-optn">Optional Non-Transitive · type 4</span>
       <div class="card-desc">Hint vers l'AS voisin pour le point d'entrée préféré. Comparé uniquement entre routes du même AS voisin. always-compare-med, deterministic-med.</div>
-    </div>
+      <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    </a>
 
     <!-- #7 eBGP > iBGP -->
-    <div class="card disabled">
+    <a href="bgp-ebgp-ibgp.html" class="card">
       <div class="card-header">
         <div class="card-icon">🔀</div>
-        <span class="badge-bientot">BIENTÔT</span>
+        <span class="badge-dispo">DISPO</span>
       </div>
       <div class="card-title">eBGP &gt; iBGP <span class="card-num">· #7</span></div>
       <span class="attr-tag attr-rule">Règle de sélection</span>
       <div class="card-desc">Préférer les routes apprises via une session eBGP sur les routes iBGP. Indépendant de tout attribut configurable.</div>
-    </div>
+      <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    </a>
 
     <!-- #8 IGP metric -->
     <div class="card disabled">
