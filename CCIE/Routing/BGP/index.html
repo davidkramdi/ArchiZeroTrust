@@ -93,6 +93,33 @@
     footer { border-top: 1px solid var(--border); padding: 20px 32px; text-align: center; font-size: 12px; color: var(--text3); }
     footer a { color: var(--text2); text-decoration: none; }
     footer a:hover { color: var(--text); }
+
+    /* ── Best Path Strip ── */
+    .bp-strip-wrap { max-width: 860px; margin: 0 auto 28px; padding: 0 32px; }
+    .bp-strip-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--text3); text-transform: uppercase; margin-bottom: 10px; }
+    .bp-mnemonic { color: var(--blue-lt); font-family: 'Courier New', monospace; letter-spacing: 3px; }
+    .bp-strip {
+      display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .bp-step {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      min-width: 58px; padding: 8px 6px; border-radius: 8px;
+      background: var(--bg3); border: 1px solid var(--border);
+      text-decoration: none; color: var(--text3); cursor: default;
+      flex-shrink: 0; transition: border-color .2s, background .2s;
+    }
+    .bp-step.active {
+      background: rgba(27,114,190,.12); border-color: rgba(27,114,190,.4);
+      cursor: pointer; color: var(--text);
+    }
+    .bp-step.active:hover { background: rgba(27,114,190,.22); border-color: var(--blue-lt); }
+    .bp-num { font-size: 9px; font-weight: 700; color: var(--text3); line-height: 1; }
+    .bp-step.active .bp-num { color: var(--blue-lt); }
+    .bp-letter { font-size: 18px; font-weight: 800; line-height: 1.1; color: var(--text3); font-family: 'Courier New', monospace; }
+    .bp-step.active .bp-letter { color: var(--blue-lt); }
+    .bp-name { font-size: 9px; font-weight: 600; letter-spacing: .3px; color: var(--text3); text-align: center; line-height: 1.2; }
+    .bp-step.active .bp-name { color: var(--text2); }
   </style>
 </head>
 <body>
@@ -114,6 +141,78 @@
     <div class="hero-badge">BGP</div>
     <h1>Border Gateway Protocol</h1>
     <p class="hero-desc">Le protocole de routage inter-AS d'internet. Sélection du meilleur chemin, attributs, politiques de routage, filtrage et design avancé pour la certification CCIE.</p>
+  </div>
+
+  <!-- BEST PATH SELECTOR STRIP -->
+  <div class="bp-strip-wrap">
+    <div class="bp-strip-label">BGP Best Path Selection — <span class="bp-mnemonic">W·L·L·A·O·M·E·I·A·O·R·C·N</span></div>
+    <div class="bp-strip">
+      <a href="bgp-weight.html" class="bp-step active" title="Weight">
+        <span class="bp-num">1</span>
+        <span class="bp-letter">W</span>
+        <span class="bp-name">Weight</span>
+      </a>
+      <a href="bgp-localpref.html" class="bp-step active" title="LOCAL_PREF">
+        <span class="bp-num">2</span>
+        <span class="bp-letter">L</span>
+        <span class="bp-name">Local Pref</span>
+      </a>
+      <div class="bp-step" title="Locally Originated">
+        <span class="bp-num">3</span>
+        <span class="bp-letter">L</span>
+        <span class="bp-name">Local Orig</span>
+      </div>
+      <div class="bp-step" title="AS-PATH length">
+        <span class="bp-num">4</span>
+        <span class="bp-letter">A</span>
+        <span class="bp-name">AS-PATH</span>
+      </div>
+      <a href="bgp-origin.html" class="bp-step active" title="Origin">
+        <span class="bp-num">5</span>
+        <span class="bp-letter">O</span>
+        <span class="bp-name">Origin</span>
+      </a>
+      <div class="bp-step" title="MED">
+        <span class="bp-num">6</span>
+        <span class="bp-letter">M</span>
+        <span class="bp-name">MED</span>
+      </div>
+      <div class="bp-step" title="eBGP over iBGP">
+        <span class="bp-num">7</span>
+        <span class="bp-letter">E</span>
+        <span class="bp-name">eBGP/iBGP</span>
+      </div>
+      <div class="bp-step" title="IGP metric">
+        <span class="bp-num">8</span>
+        <span class="bp-letter">I</span>
+        <span class="bp-name">IGP metric</span>
+      </div>
+      <div class="bp-step" title="AIGP">
+        <span class="bp-num">9</span>
+        <span class="bp-letter">A</span>
+        <span class="bp-name">AIGP</span>
+      </div>
+      <div class="bp-step" title="Oldest eBGP">
+        <span class="bp-num">10</span>
+        <span class="bp-letter">O</span>
+        <span class="bp-name">Oldest</span>
+      </div>
+      <div class="bp-step" title="Router-ID">
+        <span class="bp-num">11</span>
+        <span class="bp-letter">R</span>
+        <span class="bp-name">Router-ID</span>
+      </div>
+      <div class="bp-step" title="Cluster-list length">
+        <span class="bp-num">12</span>
+        <span class="bp-letter">C</span>
+        <span class="bp-name">Cluster-list</span>
+      </div>
+      <div class="bp-step" title="Neighbor IP">
+        <span class="bp-num">13</span>
+        <span class="bp-letter">N</span>
+        <span class="bp-name">Neighbor IP</span>
+      </div>
+    </div>
   </div>
 
   <!-- ATTRIBUTS & SÉLECTION -->
@@ -142,6 +241,16 @@
       <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </a>
 
+    <!-- AS-PATH — bientôt -->
+    <div class="card disabled">
+      <div class="card-header">
+        <div class="card-icon">🔗</div>
+        <span class="badge-bientot">BIENTÔT</span>
+      </div>
+      <div class="card-title">AS-PATH</div>
+      <div class="card-desc">Critère #4. Liste des AS traversés. AS-path prepending, regex filtering, allow-as-in.</div>
+    </div>
+
     <!-- ORIGIN — DISPONIBLE -->
     <a href="bgp-origin.html" class="card">
       <div class="card-header">
@@ -152,16 +261,6 @@
       <div class="card-desc">Critère #5. Well-known Mandatory (type 1). Valeurs i / e / ?. Injection, route-map set origin, agrégation avec as-set.</div>
       <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </a>
-
-    <!-- AS-PATH — bientôt -->
-    <div class="card disabled">
-      <div class="card-header">
-        <div class="card-icon">🔗</div>
-        <span class="badge-bientot">BIENTÔT</span>
-      </div>
-      <div class="card-title">AS-PATH</div>
-      <div class="card-desc">Critère #4. Liste des AS traversés. AS-path prepending, regex filtering, allow-as-in.</div>
-    </div>
 
     <!-- MED — bientôt -->
     <div class="card disabled">
