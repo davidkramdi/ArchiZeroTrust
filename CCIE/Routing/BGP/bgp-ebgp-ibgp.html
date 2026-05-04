@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP · eBGP > iBGP · Critère #7</title>
+<style>
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--surface3:#30363d;
+  --border:#30363d;--border2:#484f58;
+  --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+  --blue:#58a6ff;--green:#3fb950;--orange:#d29922;--red:#f85149;
+  --purple:#bc8cff;--teal:#76e4f7;--pink:#f778ba;--yellow:#e3b341;
+  --rule:#bc8cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* NAV */
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:8px;height:52px;position:sticky;top:0;z-index:100}
+.topnav a{color:var(--text2);font-size:13px;padding:4px 8px;border-radius:6px;transition:background .15s}
+.topnav a:hover{background:var(--surface2);color:var(--text);text-decoration:none}
+.topnav .sep{color:var(--border2)}
+.topnav .current{color:var(--text);font-weight:600}
+
+/* HERO */
+.hero{padding:40px 24px 32px;max-width:960px;margin:0 auto}
+.hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.4px}
+.badge-rule{background:rgba(188,140,255,.15);color:var(--rule);border:1px solid rgba(188,140,255,.3)}
+.badge-num{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
+.badge-no{background:rgba(110,118,129,.12);color:var(--text2);border:1px solid var(--border)}
+.hero h1{font-size:32px;font-weight:700;margin-bottom:8px}
+.hero h1 span{color:var(--rule)}
+.hero .subtitle{color:var(--text2);font-size:16px;max-width:680px}
+
+/* TABS */
+.tabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:99}
+.tabs{display:flex;gap:2px;padding:0 24px;max-width:960px;margin:0 auto;overflow-x:auto}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--text2);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--rule);border-bottom-color:var(--rule)}
+
+/* CONTENT */
+.content{max-width:960px;margin:0 auto;padding:32px 24px}
+.panel{display:none}
+.panel.active{display:block}
+
+/* CARDS GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:24px 0}
+.grid-2{grid-template-columns:repeat(auto-fill,minmax(380px,1fr))}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.card-icon{font-size:28px;margin-bottom:10px}
+
+/* PROFILE PILLS */
+.profile-grid{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+.pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px}
+.pill-label{color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.pill-value{color:var(--text);font-weight:600}
+.pill-value.rule{color:var(--rule)}
+.pill-value.blue{color:var(--blue)}
+.pill-value.green{color:var(--green)}
+.pill-value.orange{color:var(--orange)}
+.pill-value.red{color:var(--red)}
+.pill-value.no{color:var(--text3)}
+
+/* SECTION */
+.section{margin:28px 0}
+.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);color:var(--text2);font-weight:600;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.td-green{color:var(--green);font-weight:600}
+.td-blue{color:var(--blue);font-weight:600}
+.td-orange{color:var(--orange);font-weight:600}
+.td-red{color:var(--red);font-weight:600}
+.td-purple{color:var(--purple);font-weight:600}
+.td-teal{color:var(--teal);font-weight:600}
+
+/* CODE */
+pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px;line-height:1.7}
+code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px}
+.c-kw{color:#ff7b72}
+.c-cmd{color:var(--blue)}
+.c-val{color:var(--green)}
+.c-cmt{color:var(--text3)}
+.c-sel{color:var(--yellow)}
+.c-attr{color:var(--orange)}
+.c-ok{color:var(--green);font-weight:700}
+.c-bad{color:var(--red);font-weight:700}
+
+/* INFO/WARN/TIP BOXES */
+.info-box,.warn-box,.tip-box,.danger-box{border-radius:8px;padding:14px 16px;margin:14px 0;font-size:13.5px;display:flex;gap:10px}
+.info-box{background:rgba(88,166,255,.08);border:1px solid rgba(88,166,255,.25);color:#a8d8ff}
+.warn-box{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);color:#f0c060}
+.tip-box{background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.25);color:#7ee787}
+.danger-box{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);color:#ffa198}
+.box-icon{flex-shrink:0;font-size:16px}
+
+/* ALGO STRIP */
+.algo-strip{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0}
+.algo-step{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+.algo-step.active{background:rgba(188,140,255,.15);border-color:rgba(188,140,255,.4);color:var(--rule)}
+.algo-step.done{background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3);color:var(--blue)}
+.algo-num{background:var(--surface3);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.algo-step.active .algo-num{background:rgba(188,140,255,.3)}
+.algo-step.done .algo-num{background:rgba(88,166,255,.2)}
+
+/* COMPARE CARDS */
+.compare-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.cmp-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.cmp-card.ebgp{border-top:3px solid var(--green)}
+.cmp-card.ibgp{border-top:3px solid var(--blue)}
+.cmp-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.cmp-title.g{color:var(--green)}
+.cmp-title.b{color:var(--blue)}
+.cmp-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.cmp-row:last-child{border-bottom:none}
+.cmp-label{color:var(--text2)}
+.cmp-val{font-weight:600}
+
+/* BGP TABLE SIM */
+.bgp-table-sim{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0}
+.bgp-table-sim pre{border:none;border-radius:0;margin:0;background:transparent}
+
+/* FLASH CARDS */
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin:20px 0}
+.fc{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.fc:hover{border-color:var(--rule)}
+.fc-q{padding:16px;font-size:13.5px;font-weight:500;min-height:72px;display:flex;align-items:center}
+.fc-a{padding:14px 16px;background:rgba(188,140,255,.07);border-top:1px solid var(--border);font-size:13px;color:var(--rule);display:none}
+.fc.open .fc-a{display:block}
+.fc-hint{font-size:11px;color:var(--text3);margin-top:6px}
+
+/* TAG */
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin:2px}
+.tag-rule{background:rgba(188,140,255,.15);color:var(--rule)}
+.tag-good{background:rgba(63,185,80,.12);color:var(--green)}
+.tag-warn{background:rgba(210,153,34,.12);color:var(--orange)}
+.tag-bad{background:rgba(248,81,73,.12);color:var(--red)}
+.tag-info{background:rgba(88,166,255,.12);color:var(--blue)}
+
+/* STEP LIST */
+.step-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin:16px 0}
+.step-list li{display:flex;gap:12px;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13.5px}
+.step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.step-num.rule{background:rgba(188,140,255,.2);color:var(--rule)}
+.step-num.blue{background:rgba(88,166,255,.2);color:var(--blue)}
+.step-num.green{background:rgba(63,185,80,.2);color:var(--green)}
+.step-num.orange{background:rgba(210,153,34,.2);color:var(--orange)}
+
+/* TRAP CARDS */
+.trap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin:20px 0}
+.trap{background:var(--surface);border:1px solid rgba(248,81,73,.25);border-left:3px solid var(--red);border-radius:8px;padding:16px}
+.trap h4{color:var(--red);font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.trap p{color:var(--text2);font-size:13px;line-height:1.5}
+.trap code{font-size:11.5px}
+.good-practice{border-color:rgba(63,185,80,.25);border-left-color:var(--green)}
+.good-practice h4{color:var(--green)}
+
+@media(max-width:640px){
+  .compare-wrap{grid-template-columns:1fr}
+  .hero h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <a href="index.html">🏠 BGP</a>
+  <span class="sep">›</span>
+  <span class="current">eBGP &gt; iBGP · #7</span>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badges">
+    <span class="badge badge-rule">🔀 Règle de sélection</span>
+    <span class="badge badge-num">Critère #7</span>
+    <span class="badge badge-no">Pas d'attribut BGP</span>
+    <span class="badge badge-no">Non modifiable directement</span>
+  </div>
+  <h1>eBGP <span>&gt;</span> iBGP</h1>
+  <p class="subtitle">Critère #7 — Préférer les routes apprises via une session eBGP sur les routes iBGP, toutes choses égales par ailleurs (critères 1–6 identiques).</p>
+</div>
+
+<!-- TABS -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(this,'theorie')">① Théorie</button>
+    <button class="tab" onclick="showTab(this,'sessions')">② Sessions</button>
+    <button class="tab" onclick="showTab(this,'table')">③ Table BGP</button>
+    <button class="tab" onclick="showTab(this,'contournement')">④ Contournement</button>
+    <button class="tab" onclick="showTab(this,'confederation')">⑤ Confédération</button>
+    <button class="tab" onclick="showTab(this,'pieges')">⑥ Pièges</button>
+    <button class="tab" onclick="showTab(this,'flashcards')">⑦ Flash Cards</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════ ONGLET 1 : THÉORIE ═══════════════ -->
+<div class="panel active" id="theorie">
+
+  <div class="section">
+    <div class="section-title">Profil complet</div>
+    <div class="profile-grid">
+      <div class="pill"><div class="pill-label">Type code</div><div class="pill-value no">— aucun</div></div>
+      <div class="pill"><div class="pill-label">Catégorie</div><div class="pill-value rule">Règle de sélection</div></div>
+      <div class="pill"><div class="pill-label">Critère</div><div class="pill-value blue">#7</div></div>
+      <div class="pill"><div class="pill-label">Vecteur</div><div class="pill-value no">Non transporté dans UPDATE</div></div>
+      <div class="pill"><div class="pill-label">Modifiable</div><div class="pill-value red">❌ Pas directement</div></div>
+      <div class="pill"><div class="pill-label">Résultat</div><div class="pill-value green">eBGP gagne sur iBGP</div></div>
+    </div>
+
+    <div class="info-box"><span class="box-icon">ℹ️</span>
+      Ce critère n'est pas un attribut BGP. Il ne circule pas dans les messages UPDATE. C'est une règle locale au routeur : si deux chemins sont identiques sur les critères 1 à 6, le chemin appris d'un <strong>peer eBGP</strong> (AS différent) est préféré à celui appris d'un <strong>peer iBGP</strong> (même AS).
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Algorithme de sélection — position du critère #7</div>
+    <div class="algo-strip">
+      <div class="algo-step done"><span class="algo-num">1</span>Weight (Cisco local)</div>
+      <div class="algo-step done"><span class="algo-num">2</span>LOCAL_PREF</div>
+      <div class="algo-step done"><span class="algo-num">3</span>NH=0.0.0.0</div>
+      <div class="algo-step done"><span class="algo-num">4</span>AS-PATH</div>
+      <div class="algo-step done"><span class="algo-num">5</span>Origin</div>
+      <div class="algo-step done"><span class="algo-num">6</span>MED</div>
+      <div class="algo-step active"><span class="algo-num">7</span>eBGP &gt; iBGP ← ici</div>
+      <div class="algo-step"><span class="algo-num">8</span>IGP metric</div>
+      <div class="algo-step"><span class="algo-num">9</span>AIGP</div>
+      <div class="algo-step"><span class="algo-num">10</span>Oldest</div>
+      <div class="algo-step"><span class="algo-num">11</span>Router-ID</div>
+      <div class="algo-step"><span class="algo-num">12</span>Cluster-list</div>
+      <div class="algo-step"><span class="algo-num">13</span>Neighbor IP</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Pourquoi eBGP est-il préféré ?</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">🌍</div>
+        <h3>Logique topologique</h3>
+        <p style="color:var(--text2);font-size:13px">Une route apprise via eBGP vient d'un AS externe. Elle est supposée <strong>plus proche de la destination</strong> dans l'espace inter-AS. Un chemin iBGP est une route réfléchie à l'intérieur de l'AS, donc potentiellement moins direct.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚖️</div>
+        <h3>Administrative Distance</h3>
+        <p style="color:var(--text2);font-size:13px">eBGP AD = <strong style="color:var(--green)">20</strong>, iBGP AD = <strong style="color:var(--orange)">200</strong>. L'AD ne fait <em>pas</em> partie de l'algorithme de sélection BGP interne, mais elle reflète la même philosophie : une route eBGP est jugée plus fiable qu'une route iBGP.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <h3>Immuable par attribut</h3>
+        <p style="color:var(--text2);font-size:13px">Ce critère ne peut pas être modifié par un attribut BGP. La seule façon de renverser la décision est d'agir sur un critère supérieur (1–6) : Weight plus élevé, LOCAL_PREF plus élevé, AS-PATH plus court, meilleur Origin, ou MED plus bas sur le chemin iBGP.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <h3>Condition d'application</h3>
+        <p style="color:var(--text2);font-size:13px">S'applique uniquement si le routeur dispose de <strong>plusieurs chemins valides vers le même préfixe</strong>, dont au moins un eBGP et au moins un iBGP, et si tous les critères 1 à 6 sont <strong>strictement égaux</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Différences fondamentales eBGP vs iBGP</div>
+    <table>
+      <thead><tr><th>Caractéristique</th><th>eBGP</th><th>iBGP</th></tr></thead>
+      <tbody>
+        <tr><td>AS des peers</td><td class="td-green">AS différents</td><td class="td-blue">Même AS</td></tr>
+        <tr><td>Administrative Distance</td><td class="td-green">20</td><td class="td-orange">200</td></tr>
+        <tr><td>TTL par défaut</td><td class="td-green">1 (lien direct)</td><td class="td-blue">255 (pas de limite)</td></tr>
+        <tr><td>NEXT_HOP</td><td class="td-green">Modifié → IP du peer eBGP</td><td class="td-blue">Préservé (pas changé)</td></tr>
+        <tr><td>LOCAL_PREF</td><td class="td-orange">Non envoyé vers eBGP peers</td><td class="td-blue">Envoyé vers iBGP peers</td></tr>
+        <tr><td>MED</td><td class="td-green">Envoyé vers eBGP peers</td><td class="td-blue">Reçu des eBGP, propagé en iBGP</td></tr>
+        <tr><td>AS-PATH</td><td class="td-green">AS local ajouté (prepend)</td><td class="td-blue">AS local NON ajouté</td></tr>
+        <tr><td>Split horizon iBGP</td><td>N/A</td><td class="td-orange">Route iBGP NON re-annoncée à iBGP</td></tr>
+        <tr><td>Full mesh requis</td><td>N/A</td><td class="td-orange">Oui (ou RR / Confédération)</td></tr>
+        <tr><td>Critère #7</td><td class="td-green">✅ Gagne sur iBGP</td><td class="td-orange">❌ Perd face à eBGP</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /theorie -->
+
+<!-- ═══════════════ ONGLET 2 : SESSIONS ═══════════════ -->
+<div class="panel" id="sessions">
+
+  <div class="compare-wrap">
+    <div class="cmp-card ebgp">
+      <div class="cmp-title g">🌍 Session eBGP</div>
+      <div class="cmp-row"><span class="cmp-label">Peers</span><span class="cmp-val" style="color:var(--green)">AS différents</span></div>
+      <div class="cmp-row"><span class="cmp-label">TTL par défaut</span><span class="cmp-val">1</span></div>
+      <div class="cmp-row"><span class="cmp-label">AD</span><span class="cmp-val" style="color:var(--green)">20</span></div>
+      <div class="cmp-row"><span class="cmp-label">NEXT_HOP</span><span class="cmp-val">Changé → IP peer eBGP</span></div>
+      <div class="cmp-row"><span class="cmp-label">AS-PATH prepend</span><span class="cmp-val" style="color:var(--green)">Oui (AS local ajouté)</span></div>
+      <div class="cmp-row"><span class="cmp-label">LOCAL_PREF reçu</span><span class="cmp-val" style="color:var(--red)">Non (filtré)</span></div>
+      <div class="cmp-row"><span class="cmp-label">MED reçu</span><span class="cmp-val" style="color:var(--green)">Oui</span></div>
+      <div class="cmp-row"><span class="cmp-label">Route reflétée vers iBGP</span><span class="cmp-val" style="color:var(--green)">Oui</span></div>
+    </div>
+    <div class="cmp-card ibgp">
+      <div class="cmp-title b">🏠 Session iBGP</div>
+      <div class="cmp-row"><span class="cmp-label">Peers</span><span class="cmp-val" style="color:var(--blue)">Même AS</span></div>
+      <div class="cmp-row"><span class="cmp-label">TTL par défaut</span><span class="cmp-val">255</span></div>
+      <div class="cmp-row"><span class="cmp-label">AD</span><span class="cmp-val" style="color:var(--orange)">200</span></div>
+      <div class="cmp-row"><span class="cmp-label">NEXT_HOP</span><span class="cmp-val" style="color:var(--orange)">Préservé (souvent inaccessible !)</span></div>
+      <div class="cmp-row"><span class="cmp-label">AS-PATH prepend</span><span class="cmp-val" style="color:var(--orange)">Non (AS local non ajouté)</span></div>
+      <div class="cmp-row"><span class="cmp-label">LOCAL_PREF envoyé</span><span class="cmp-val" style="color:var(--green)">Oui</span></div>
+      <div class="cmp-row"><span class="cmp-label">Split horizon</span><span class="cmp-val" style="color:var(--red)">Oui (route iBGP non re-annoncée)</span></div>
+      <div class="cmp-row"><span class="cmp-label">Full mesh ou RR</span><span class="cmp-val" style="color:var(--orange)">Requis</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Commandes et configurations clés</div>
+
+    <div style="margin-bottom:20px">
+      <p style="color:var(--text2);font-size:13.5px;margin-bottom:10px"><strong style="color:var(--text)">ebgp-multihop</strong> — eBGP sur loopbacks (TTL &gt; 1)</p>
+      <pre><span class="c-cmt">! Par défaut TTL=1 : seul un peer directement connecté peut établir eBGP
+! Pour eBGP entre loopbacks (recommandé en production) :</span>
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">10.255.1.2</span> <span class="c-kw">remote-as</span> <span class="c-val">65002</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">10.255.1.2</span> <span class="c-kw">ebgp-multihop</span> <span class="c-val">2</span>    <span class="c-cmt">! TTL=2</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">10.255.1.2</span> <span class="c-kw">update-source</span> <span class="c-val">Loopback0</span></pre>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <p style="color:var(--text2);font-size:13.5px;margin-bottom:10px"><strong style="color:var(--text)">next-hop-self</strong> — Résoudre le problème NEXT_HOP iBGP</p>
+      <pre><span class="c-cmt">! Problème : iBGP préserve le NEXT_HOP du peer eBGP (ex: 203.0.113.1)
+! Les routeurs internes ne connaissent pas cette adresse → route invalide
+! Solution : le border router annonce son propre IP comme NEXT_HOP</span>
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">192.168.1.2</span> <span class="c-kw">remote-as</span> <span class="c-val">65001</span>   <span class="c-cmt">! iBGP peer</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">192.168.1.2</span> <span class="c-kw">next-hop-self</span>            <span class="c-cmt">! Force NH = propre IP</span></pre>
+    </div>
+
+    <div>
+      <p style="color:var(--text2);font-size:13.5px;margin-bottom:10px"><strong style="color:var(--text)">iBGP full mesh</strong> — Requis par le split horizon</p>
+      <pre><span class="c-cmt">! iBGP split horizon : une route apprise via iBGP N'EST PAS re-annoncée
+! à un autre iBGP peer. Solution : full mesh (n*(n-1)/2 sessions)
+! ou Route Reflector / Confédération (voir onglet Confédération)</span>
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmt">! Full mesh R1-R2-R3 (3 routeurs = 3 sessions)</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">10.0.0.2</span> <span class="c-kw">remote-as</span> <span class="c-val">65001</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">10.0.0.3</span> <span class="c-kw">remote-as</span> <span class="c-val">65001</span></pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">NEXT_HOP : comportement par type de session</div>
+    <table>
+      <thead><tr><th>Scénario</th><th>NEXT_HOP annoncé</th><th>Problème potentiel</th><th>Solution</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>eBGP → eBGP peer</td>
+          <td class="td-green">IP propre (interface eBGP)</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>eBGP reçu → re-annoncé iBGP</td>
+          <td class="td-orange">IP du peer eBGP externe</td>
+          <td class="td-red">NH inaccessible pour routeurs internes</td>
+          <td><code>next-hop-self</code> ou IGP redistrib.</td>
+        </tr>
+        <tr>
+          <td>iBGP → iBGP peer</td>
+          <td class="td-orange">Préservé (NH original)</td>
+          <td class="td-orange">Même NH potentiellement inaccessible</td>
+          <td><code>next-hop-self</code> sur border router</td>
+        </tr>
+        <tr>
+          <td>Route Reflector → client</td>
+          <td class="td-orange">Préservé (NH original)</td>
+          <td class="td-red">NH externe non connu des clients</td>
+          <td><code>next-hop-self</code> sur RR</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /sessions -->
+
+<!-- ═══════════════ ONGLET 3 : TABLE BGP ═══════════════ -->
+<div class="panel" id="table">
+
+  <div class="section">
+    <div class="section-title">Topologie de référence</div>
+    <div class="card" style="font-size:13px;color:var(--text2)">
+      <pre style="border:none;padding:0;background:transparent;font-size:12.5px">
+   AS 65100 (ISP-A)          AS 65001 (nous)            AS 65200 (ISP-B)
+   ┌──────────┐      eBGP    ┌────────────────┐   eBGP   ┌──────────┐
+   │  R-ISP-A │─────────────►│ R1 (border-1)  │          │  R-ISP-B │
+   │10.1.1.1  │              │ 10.1.1.2       │          │10.2.1.1  │
+   └──────────┘              │                │◄─────────│          │
+                             └────────┬───────┘          └──────────┘
+                                      │ iBGP                  │ eBGP
+                             ┌────────▼───────┐               │
+                             │ R2 (border-2)  │◄──────────────┘
+                             │ 10.2.1.2       │
+                             └────────────────┘
+
+   Préfixe annoncé : 172.16.0.0/24 (depuis AS 65100 ET AS 65200)
+   R1 : reçoit via eBGP (AS 65100)
+   R2 : reçoit via eBGP (AS 65200) + via iBGP depuis R1</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">show ip bgp sur R2</div>
+    <div class="bgp-table-sim">
+      <pre>R2# <span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/24</span>
+BGP routing table entry for 172.16.0.0/24, version 5
+Paths: (2 available, best #2, table Default-IP-Routing-Table)
+  Advertised to update-groups:
+     1
+  65100                              <span class="c-cmt">← chemin 1 : via R1 (iBGP)</span>
+    10.1.1.1 (metric 10) from 10.0.0.1 (10.0.0.1)
+      Origin IGP, metric 0, localpref 100, valid, <span class="c-attr">internal</span>
+      Community: 65001:100
+  65200                              <span class="c-cmt">← chemin 2 : via ISP-B (eBGP)</span>
+    10.2.1.1 from 10.2.1.1 (10.2.1.1)
+      Origin IGP, metric 0, localpref 100, valid, <span class="c-ok">external</span>, best  <span class="c-cmt">← ✅ critère #7</span></pre>
+    </div>
+
+    <div class="info-box"><span class="box-icon">🔍</span>
+      Les deux chemins ont <strong>localpref 100</strong>, <strong>AS-PATH length = 1</strong>, <strong>Origin = IGP</strong>, <strong>MED = 0</strong>. Critères 1–6 identiques → critère #7 s'applique. Le chemin <code>external</code> (eBGP) gagne sur <code>internal</code> (iBGP).
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Analyse critère par critère</div>
+    <table>
+      <thead><tr><th>Critère</th><th>Chemin iBGP (via R1)</th><th>Chemin eBGP (direct)</th><th>Résultat</th></tr></thead>
+      <tbody>
+        <tr><td>#1 Weight</td><td>32768 (défaut)</td><td>32768 (défaut)</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#2 LOCAL_PREF</td><td>100</td><td>100</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#3 NH=0.0.0.0</td><td>Non (route reçue)</td><td>Non (route reçue)</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#4 AS-PATH</td><td>1 hop (65100)</td><td>1 hop (65200)</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#5 Origin</td><td>IGP (i)</td><td>IGP (i)</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#6 MED</td><td>0</td><td>0</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td><strong>#7 eBGP/iBGP</strong></td><td>internal</td><td><strong>external</strong></td><td class="td-green">✅ eBGP gagne</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Identification dans show ip bgp</div>
+    <table>
+      <thead><tr><th>Marqueur</th><th>Signification</th></tr></thead>
+      <tbody>
+        <tr><td><code>&gt;</code> (chevron en début de ligne)</td><td class="td-green">Best path sélectionné</td></tr>
+        <tr><td><code>valid, external, best</code></td><td class="td-green">Route eBGP, sélectionnée</td></tr>
+        <tr><td><code>valid, internal</code></td><td class="td-orange">Route iBGP, valide mais non sélectionnée</td></tr>
+        <tr><td><code>i</code> en début de ligne (table summary)</td><td class="td-blue">Route iBGP (interne)</td></tr>
+        <tr><td><code>metric X</code> sur route iBGP</td><td>IGP metric vers le NEXT_HOP (critère #8)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /table -->
+
+<!-- ═══════════════ ONGLET 4 : CONTOURNEMENT ═══════════════ -->
+<div class="panel" id="contournement">
+
+  <div class="warn-box"><span class="box-icon">⚠️</span>
+    Le critère #7 n'est pas modifiable par un attribut BGP. Pour favoriser un chemin iBGP sur un chemin eBGP, il faut <strong>agir sur un critère supérieur (1–6)</strong> avant que le critère #7 soit évalué.
+  </div>
+
+  <div class="section">
+    <div class="section-title">Méthodes pour forcer un chemin iBGP à gagner</div>
+
+    <ul class="step-list">
+      <li>
+        <span class="step-num blue">1</span>
+        <div>
+          <strong>Weight (critère #1)</strong> — Appliquer un Weight plus élevé sur le chemin iBGP. S'applique localement sur le routeur recevant les deux chemins.<br>
+          <code style="display:block;margin-top:6px;font-size:12px">neighbor 10.0.0.1 weight 200  ← iBGP peer (défaut=0 pour iBGP reçu)</code>
+        </div>
+      </li>
+      <li>
+        <span class="step-num green">2</span>
+        <div>
+          <strong>LOCAL_PREF (critère #2)</strong> — Augmenter la LOCAL_PREF de la route reçue via iBGP (définie sur le border router eBGP entrant, propagée en iBGP). Portée AS-wide.<br>
+          <code style="display:block;margin-top:6px;font-size:12px">route-map RM-PREFER-IBGP permit 10 → set local-preference 200</code>
+        </div>
+      </li>
+      <li>
+        <span class="step-num orange">3</span>
+        <div>
+          <strong>AS-PATH prepend (critère #4)</strong> — Allonger l'AS-PATH du chemin eBGP indésirable via <code>set as-path prepend</code> dans une route-map sur le peer eBGP entrant.
+        </div>
+      </li>
+      <li>
+        <span class="step-num rule" style="background:rgba(188,140,255,.2);color:var(--rule)">4</span>
+        <div>
+          <strong>Origin (critère #5)</strong> — Changer l'Origin du chemin iBGP en <code>i</code> (IGP) s'il est actuellement <code>?</code> ou <code>e</code>. Le chemin iBGP gagnera sur critère #5 avant d'atteindre #7.
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Exemple — Forcer iBGP via Weight (local)</div>
+    <pre><span class="c-cmt">! Sur R2, favoriser le chemin reçu via iBGP (depuis R1) sur le chemin eBGP direct</span>
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">10.0.0.1</span> <span class="c-kw">remote-as</span> <span class="c-val">65001</span>           <span class="c-cmt">! iBGP peer R1</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">10.0.0.1</span> <span class="c-kw">route-map</span> <span class="c-val">RM-WEIGHT-HIGH</span> <span class="c-kw">in</span>
+
+<span class="c-kw">route-map</span> <span class="c-val">RM-WEIGHT-HIGH</span> <span class="c-kw">permit</span> <span class="c-val">10</span>
+  <span class="c-cmd">match ip address prefix-list</span> <span class="c-val">PL-172-16</span>
+  <span class="c-cmd">set weight</span> <span class="c-val">200</span>         <span class="c-cmt">! Weight 200 > 0 (défaut eBGP) → iBGP gagne en #1</span>
+
+<span class="c-cmt">! Vérification</span>
+<span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/24</span>
+<span class="c-cmt">!  → weight 200 sur chemin iBGP : "best" apparaît sur ce chemin</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Exemple — Forcer iBGP via LOCAL_PREF (portée AS)</div>
+    <pre><span class="c-cmt">! Sur R1 (border eBGP vers ISP-A), dégrader la LOCAL_PREF des routes ISP-A
+! R2 recevra LOCAL_PREF=50 pour ces routes → LOCAL_PREF 100 du chemin iBGP gagne</span>
+
+<span class="c-kw">route-map</span> <span class="c-val">RM-ISP-A-IN</span> <span class="c-kw">permit</span> <span class="c-val">10</span>
+  <span class="c-cmd">set local-preference</span> <span class="c-val">50</span>
+
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">10.1.1.1</span> <span class="c-kw">route-map</span> <span class="c-val">RM-ISP-A-IN</span> <span class="c-kw">in</span>   <span class="c-cmt">! eBGP peer ISP-A</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Cas d'usage légitimes</div>
+    <div class="grid">
+      <div class="card">
+        <h3>🔧 Maintenance eBGP</h3>
+        <p style="font-size:13px;color:var(--text2)">Pendant une maintenance sur un lien eBGP, élever la LOCAL_PREF du chemin iBGP alternatif pour forcer le trafic à passer par l'autre border router.</p>
+      </div>
+      <div class="card">
+        <h3>🏗️ Route Reflector préféré</h3>
+        <p style="font-size:13px;color:var(--text2)">Dans une architecture RR, forcer les clients à utiliser un chemin iBGP spécifique via Weight sur le RR, même si un chemin eBGP direct est disponible.</p>
+      </div>
+      <div class="card">
+        <h3>💰 Politique de coût</h3>
+        <p style="font-size:13px;color:var(--text2)">ISP-A moins cher qu'ISP-B : augmenter LOCAL_PREF des routes reçues de ISP-A afin que tous les routeurs internes préfèrent ce chemin, même s'ils ont un accès eBGP direct à ISP-B.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /contournement -->
+
+<!-- ═══════════════ ONGLET 5 : CONFÉDÉRATION ═══════════════ -->
+<div class="panel" id="confederation">
+
+  <div class="danger-box"><span class="box-icon">🚨</span>
+    <div><strong>Piège CCIE majeur :</strong> Dans une confédération BGP, les sessions entre sous-AS (CONFED eBGP) sont traitées comme des sessions <strong>iBGP</strong> pour le critère #7. Une route reçue d'un sub-AS différent ne gagne <em>pas</em> sur une route iBGP au titre du critère #7.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Confédération BGP — rappel</div>
+    <div class="card" style="font-size:13px;color:var(--text2)">
+      <pre style="border:none;padding:0;background:transparent;font-size:12px">
+ AS 65001 (AS public confédéré)
+ ┌─────────────────────────────────────────────────┐
+ │  Sub-AS 65100          Sub-AS 65200              │
+ │  ┌──────────┐  CONFED  ┌──────────┐             │
+ │  │  R1      │◄────────►│  R3      │             │
+ │  │          │  eBGP    │          │             │
+ │  └──────────┘          └──────────┘             │
+ │  R1-R2 : iBGP (même sub-AS 65100)               │
+ └─────────────────────────────────────────────────┘
+ 
+ Session R1-R3 : CONFED eBGP (sub-AS différents)
+ → AS_CONFED_SEQUENCE utilisé dans AS-PATH
+ → Traité comme iBGP pour critère #7</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Comportement du critère #7 en confédération</div>
+    <table>
+      <thead><tr><th>Type de session</th><th>Traitement critère #7</th><th>AS-PATH type</th></tr></thead>
+      <tbody>
+        <tr><td>eBGP externe (vers autre AS)</td><td class="td-green">✅ Traité comme eBGP → gagne en #7</td><td>AS_SEQUENCE</td></tr>
+        <tr><td>iBGP (même sub-AS)</td><td class="td-orange">❌ Traité comme iBGP → perd en #7</td><td>AS_SEQUENCE</td></tr>
+        <tr><td>CONFED eBGP (sub-AS différent)</td><td class="td-orange">⚠️ Traité comme <strong>iBGP</strong> en #7</td><td>AS_CONFED_SEQUENCE</td></tr>
+      </tbody>
+    </table>
+    <div class="warn-box" style="margin-top:12px"><span class="box-icon">⚠️</span>
+      Une route reçue via CONFED eBGP (sub-AS 65200 → sub-AS 65100) ne gagnera <strong>pas</strong> en critère #7 face à une route iBGP du même sub-AS. Il faut agir sur les critères 1–6 (ex: LOCAL_PREF, Weight) pour établir la préférence.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Route Reflector et critère #7</div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>🔄 Route Reflector — comportement</h3>
+        <p style="font-size:13px;color:var(--text2);line-height:1.6">Le RR reflète les routes iBGP vers ses clients. Quand un client RR reçoit une route réfléchie, elle reste une route <strong>iBGP</strong> pour le critère #7. Si le client a aussi un chemin eBGP direct pour le même préfixe, le chemin eBGP gagne toujours en critère #7.</p>
+        <br>
+        <p style="font-size:13px;color:var(--text2)">Attributs ajoutés par le RR :</p>
+        <ul style="font-size:13px;color:var(--text2);padding-left:16px;margin-top:6px">
+          <li><strong style="color:var(--blue)">ORIGINATOR_ID</strong> (type 9) — Router-ID de l'annonceur original</li>
+          <li><strong style="color:var(--teal)">CLUSTER_LIST</strong> (type 10) — Liste des clusters traversés (anti-boucle)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>📋 Critère #12 — Cluster-list</h3>
+        <p style="font-size:13px;color:var(--text2);line-height:1.6">Si deux routes iBGP arrivent au critère #12 (après avoir passé #7, #8, #9, #10, #11 à égalité), la route avec la <strong>CLUSTER_LIST la plus courte</strong> est préférée. Cela favorise les routes passant par moins de Route Reflectors.</p>
+        <br>
+        <div class="tip-box" style="margin:0"><span class="box-icon">💡</span>Conséquence : un RR bien positionné (entre l'eBGP et les clients) minimise les sauts de cluster et favorise les meilleures routes.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Configuration confédération — rappel</div>
+    <pre><span class="c-cmd">router bgp</span> <span class="c-val">65100</span>                         <span class="c-cmt">! Sub-AS local</span>
+  <span class="c-cmd">bgp confederation identifier</span> <span class="c-val">65001</span>   <span class="c-cmt">! AS public confédéré</span>
+  <span class="c-cmd">bgp confederation peers</span> <span class="c-val">65200</span>        <span class="c-cmt">! Autres sub-AS</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">10.0.0.3</span> <span class="c-kw">remote-as</span> <span class="c-val">65200</span>   <span class="c-cmt">! CONFED eBGP (traité comme iBGP en #7)</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">10.0.0.2</span> <span class="c-kw">remote-as</span> <span class="c-val">65100</span>   <span class="c-cmt">! iBGP classique (même sub-AS)</span></pre>
+  </div>
+
+</div><!-- /confederation -->
+
+<!-- ═══════════════ ONGLET 6 : PIÈGES ═══════════════ -->
+<div class="panel" id="pieges">
+
+  <div class="trap-grid">
+
+    <div class="trap">
+      <h4>⚡ NEXT_HOP iBGP inaccessible</h4>
+      <p>Le NEXT_HOP d'une route iBGP est préservé (IP du peer eBGP externe). Les routeurs internes ne connaissent pas cette adresse → route invalide, jamais installée.<br><br>
+      <strong>Solution :</strong> <code>next-hop-self</code> sur le border router, ou redistribuer la route du peer eBGP dans l'IGP.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ iBGP split horizon — routes non propagées</h4>
+      <p>R1 apprend 172.16.0.0/24 via iBGP depuis R2. R1 ne re-annonce PAS cette route à R3 (autre iBGP peer). R3 ne connaît jamais le préfixe.<br><br>
+      <strong>Solution :</strong> full mesh iBGP, ou déployer un Route Reflector / Confédération.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ Confusion AD et critère #7</h4>
+      <p>L'Administrative Distance (eBGP=20, iBGP=200) n'est <strong>pas</strong> un critère de l'algorithme de sélection BGP. Elle est utilisée lors de la comparaison <em>inter-protocoles</em> (BGP vs OSPF, etc.). Elle n'intervient jamais entre deux routes BGP.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ ebgp-multihop oublié sur loopback</h4>
+      <p>Session eBGP entre loopbacks (recommandé pour la stabilité) : TTL=1 par défaut → session ne s'établit jamais si les loopbacks ne sont pas directement connectées.<br><br>
+      <strong>Solution :</strong> <code>neighbor X.X.X.X ebgp-multihop 2</code> + <code>update-source Loopback0</code>.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ CONFED eBGP confondu avec eBGP réel</h4>
+      <p>En confédération, une session vers un sub-AS différent utilise <code>remote-as</code> d'un autre sub-AS → ressemble à eBGP. Mais pour le critère #7, cette session est traitée comme <strong>iBGP</strong>. La route ne bénéficiera pas de la priorité eBGP en #7.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ Route reflétée écrase le chemin eBGP local</h4>
+      <p>Un client RR avec session eBGP directe reçoit aussi la même route via le RR (iBGP). Il choisit son chemin eBGP direct en #7. OK. Mais si le chemin eBGP tombe, la route réfléchie prend le relais → convergence correcte. Ne pas filtrer les routes iBGP réfléchies inutilement.</p>
+    </div>
+
+    <div class="trap good-practice">
+      <h4>✅ Bonne pratique — always use next-hop-self</h4>
+      <p>Sur tous les border routers eBGP qui re-annoncent en iBGP, configurer systématiquement <code>next-hop-self</code> vers les peers iBGP. Cela garantit que le NEXT_HOP est toujours résolvable par les routeurs internes, quelle que soit la topologie IGP.</p>
+    </div>
+
+    <div class="trap good-practice">
+      <h4>✅ Bonne pratique — Weight = 0 sur routes iBGP</h4>
+      <p>Le Weight par défaut est 32768 pour les routes localement originées et <strong>0</strong> pour les routes reçues (eBGP et iBGP). Ne pas confondre : une route eBGP reçue a Weight=0 par défaut, pas 32768. Le Weight 32768 ne s'applique qu'aux routes injectées localement (<code>network</code>, <code>redistribute</code>).</p>
+    </div>
+
+  </div>
+
+</div><!-- /pieges -->
+
+<!-- ═══════════════ ONGLET 7 : FLASH CARDS ═══════════════ -->
+<div class="panel" id="flashcards">
+
+  <p style="color:var(--text2);font-size:13.5px;margin-bottom:20px">Cliquez sur une carte pour révéler la réponse.</p>
+
+  <div class="fc-grid">
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quel est le critère #7 de sélection BGP et que compare-t-il ?</div>
+      <div class="fc-a">Préférence <strong>eBGP > iBGP</strong> : si deux chemins sont égaux sur les critères 1–6, le chemin appris via une session externe (AS différent) est préféré au chemin appris via une session interne (même AS).
+        <div class="fc-hint">→ Règle de sélection, pas un attribut BGP</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quelle est l'Administrative Distance d'eBGP ? D'iBGP ?</div>
+      <div class="fc-a"><strong>eBGP = 20</strong> · <strong>iBGP = 200</strong>. L'AD est utilisée pour comparer BGP avec d'autres protocoles de routage, elle n'intervient <em>pas</em> dans l'algorithme de sélection BGP interne.
+        <div class="fc-hint">→ AD ≠ critère de sélection BGP</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Comment forcer un chemin iBGP à être préféré à un chemin eBGP ?</div>
+      <div class="fc-a">Il faut agir sur un critère <strong>supérieur (#1–#6)</strong> : Weight plus élevé, LOCAL_PREF plus élevé, AS-PATH raccourci (sur l'eBGP), meilleur Origin (i vs e vs ?), ou MED plus bas. Le critère #7 lui-même ne peut pas être modifié.
+        <div class="fc-hint">→ Critère #7 non configurable directement</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Pourquoi une route iBGP peut-elle être invalide (non installée) ?</div>
+      <div class="fc-a">Le NEXT_HOP d'une route iBGP est préservé (IP du peer eBGP externe). Si cette IP n'est pas accessible via l'IGP, la route est invalide. <strong>Solution :</strong> <code>next-hop-self</code> sur le border router, ou redistribution IGP.
+        <div class="fc-hint">→ NEXT_HOP must be reachable</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Qu'est-ce que le split horizon iBGP et comment le contourner ?</div>
+      <div class="fc-a">Une route apprise via iBGP n'est <strong>pas re-annoncée</strong> à un autre peer iBGP. Cela empêche les boucles mais nécessite un <strong>full mesh</strong> (n*(n-1)/2 sessions) ou une solution scale : <strong>Route Reflector</strong> (ORIGINATOR_ID, CLUSTER_LIST) ou <strong>Confédération</strong>.
+        <div class="fc-hint">→ iBGP split horizon rule</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Dans une confédération, une session CONFED eBGP est-elle traitée comme eBGP pour le critère #7 ?</div>
+      <div class="fc-a"><strong>Non.</strong> Les sessions CONFED eBGP (entre sub-AS d'une même confédération) sont traitées comme <strong>iBGP</strong> pour le critère #7. Elles n'ont donc pas l'avantage eBGP. L'AS_CONFED_SEQUENCE est utilisé dans l'AS-PATH mais retiré en sortie de la confédération.
+        <div class="fc-hint">→ Piège CCIE classique</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quel est le TTL par défaut d'une session eBGP ? Comment le modifier ?</div>
+      <div class="fc-a">TTL par défaut = <strong>1</strong> (peer directement connecté uniquement). Pour eBGP sur loopbacks : <code>neighbor X ebgp-multihop 2</code> (ou plus) + <code>neighbor X update-source Loopback0</code>.
+        <div class="fc-hint">→ iBGP TTL = 255 (pas de limite)</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Que montrent les marqueurs "external" et "internal" dans show ip bgp ?</div>
+      <div class="fc-a"><code>valid, <strong>external</strong>, best</code> → route apprise via eBGP, sélectionnée.<br><code>valid, <strong>internal</strong></code> → route apprise via iBGP, valide mais non sélectionnée si un chemin eBGP existe.<br>Le marqueur <code>i</code> en début de ligne dans le summary indique aussi une route iBGP.
+        <div class="fc-hint">→ Identification critère #7 dans la table</div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /flashcards -->
+
+</div><!-- /content -->
+
+<script>
+function showTab(btn, id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>
