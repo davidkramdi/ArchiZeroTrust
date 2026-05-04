@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP AS-PATH — Référence CCIE / ENARSI</title>
+<style>
+  :root {
+    --bg:       #0d1117;
+    --bg2:      #111827;
+    --bg3:      #1a2235;
+    --bg4:      #202b3d;
+    --border:   #1e2d42;
+    --text:     #f0f4fa;
+    --text2:    #8aadca;
+    --text3:    #4a6070;
+    --blue:     #1b72be;
+    --blue-lt:  #4a9fd4;
+    --green:    #27ae60;
+    --green-lt: #2ecc71;
+    --orange:   #e67e22;
+    --orange-lt:#f39c12;
+    --red:      #e74c3c;
+    --teal:     #16a085;
+    --teal-lt:  #1abc9c;
+    --purple:   #8e44ad;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+  .topbar { background: linear-gradient(135deg,#0d1b2a,#1a2e42); padding: 14px 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); box-shadow: 0 2px 16px rgba(0,0,0,.5); flex-wrap: wrap; }
+  .topbar .logo { background: var(--blue); color: #fff; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 4px; letter-spacing: 1px; }
+  .topbar h1 { font-size: 16px; font-weight: 600; color: var(--text); }
+  .topbar .badge { background: var(--red); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 12px; }
+  .topbar .pos { margin-left: auto; font-size: 11px; color: var(--text3); font-weight: 600; }
+  .topbar .pos span { color: var(--orange-lt); }
+
+  .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 10px 20px 0; overflow-x: auto; border-bottom: 1px solid var(--border); }
+  .tab { padding: 8px 15px; font-size: 12px; font-weight: 600; color: var(--text2); cursor: pointer; border-radius: 6px 6px 0 0; border: none; background: transparent; white-space: nowrap; transition: all .2s; }
+  .tab:hover { color: var(--text); background: var(--bg3); }
+  .tab.active { background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-bottom: 1px solid var(--bg3); }
+
+  .content { display: none; padding: 24px; max-width: 980px; margin: 0 auto; }
+  .content.active { display: block; }
+
+  .card { background: var(--bg2); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; border: 1px solid var(--border); border-left: 4px solid var(--blue); }
+  .card.warn   { border-left-color: var(--red); }
+  .card.green  { border-left-color: var(--green); }
+  .card.orange { border-left-color: var(--orange); }
+  .card.purple { border-left-color: var(--purple); }
+  .card.teal   { border-left-color: var(--teal); }
+  .card.grey   { border-left-color: var(--text3); }
+
+  h2 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  h3 { font-size: 12px; font-weight: 700; color: var(--blue-lt); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .6px; }
+  .card.warn h3   { color: #e57373; }
+  .card.green h3  { color: var(--green-lt); }
+  .card.orange h3 { color: var(--orange-lt); }
+  .card.teal h3   { color: var(--teal-lt); }
+  .card.purple h3 { color: #ba68c8; }
+  .card.grey h3   { color: var(--text3); }
+  p { line-height: 1.65; color: var(--text2); margin-bottom: 8px; }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+  .badge-tag { padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge-blue   { background: rgba(27,114,190,.15); color: var(--blue-lt); border: 1px solid rgba(27,114,190,.4); }
+  .badge-green  { background: rgba(39,174,96,.15);  color: var(--green-lt); border: 1px solid rgba(39,174,96,.4); }
+  .badge-orange { background: rgba(230,126,34,.15); color: var(--orange-lt); border: 1px solid rgba(230,126,34,.4); }
+  .badge-red    { background: rgba(231,76,60,.15);  color: #e57373; border: 1px solid rgba(231,76,60,.4); }
+  .badge-purple { background: rgba(142,68,173,.15); color: #ba68c8; border: 1px solid rgba(142,68,173,.4); }
+  .badge-teal   { background: rgba(22,160,133,.15); color: var(--teal-lt); border: 1px solid rgba(22,160,133,.4); }
+  .badge-grey   { background: rgba(74,96,128,.15);  color: var(--text3); border: 1px solid rgba(74,96,128,.3); }
+
+  pre { background: #0a0f1a; color: #a8d8ea; border-radius: 8px; padding: 15px 18px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.75; overflow-x: auto; margin: 10px 0; border: 1px solid var(--border); }
+  .kw  { color: #e2a44a; }
+  .val { color: #7ec8a0; }
+  .cmt { color: #3d5a70; font-style: italic; }
+  .hl  { color: var(--orange-lt); font-weight: bold; }
+  .hl2 { color: var(--teal-lt); font-weight: bold; }
+  .hl3 { color: #ba68c8; font-weight: bold; }
+  .ok  { color: var(--green-lt); font-weight: bold; }
+  .no  { color: #e57373; font-weight: bold; }
+  .rx  { color: #f39c12; font-weight: bold; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th { background: var(--bg4); color: var(--text2); padding: 10px 14px; font-size: 11px; font-weight: 700; text-align: left; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); }
+
+  .info-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+  .info-pill { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; padding: 8px 14px; font-size: 12px; color: var(--text); flex: 1; min-width: 130px; }
+  .info-pill strong { display: block; color: var(--blue-lt); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+
+  .section-intro { color: var(--text2); font-size: 13px; line-height: 1.65; margin-bottom: 16px; }
+
+  /* ALGO STEPS */
+  .algo-strip { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
+  .algo-step { display: flex; align-items: center; gap: 6px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; font-size: 11px; font-weight: 600; color: var(--text3); }
+  .algo-step.active { background: rgba(231,76,60,.12); border-color: rgba(231,76,60,.4); color: #e57373; }
+  .algo-step.done   { background: rgba(39,174,96,.08); border-color: rgba(39,174,96,.2); color: var(--green-lt); }
+  .algo-step .num   { font-family: 'Courier New', monospace; font-weight: 800; font-size: 12px; }
+
+  /* SEGMENT CARDS */
+  .seg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); gap: 12px; margin: 14px 0; }
+  .seg-card { border-radius: 10px; padding: 16px; border: 1px solid var(--border); }
+  .seg-card.seq  { background: rgba(39,174,96,.07);  border-color: rgba(39,174,96,.25); }
+  .seg-card.set  { background: rgba(74,159,212,.07); border-color: rgba(74,159,212,.25); }
+  .seg-card.cseq { background: rgba(155,89,182,.07); border-color: rgba(155,89,182,.25); }
+  .seg-card.cset { background: rgba(230,126,34,.07); border-color: rgba(230,126,34,.25); }
+  .seg-type { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
+  .seg-card.seq  .seg-type { color: var(--green-lt); }
+  .seg-card.set  .seg-type { color: var(--blue-lt); }
+  .seg-card.cseq .seg-type { color: #ba68c8; }
+  .seg-card.cset .seg-type { color: var(--orange-lt); }
+  .seg-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .seg-ex   { font-family: 'Courier New', monospace; font-size: 12px; margin-bottom: 8px; }
+  .seg-card.seq  .seg-ex { color: var(--green-lt); }
+  .seg-card.set  .seg-ex { color: var(--blue-lt); }
+  .seg-card.cseq .seg-ex { color: #ba68c8; }
+  .seg-card.cset .seg-ex { color: var(--orange-lt); }
+  .seg-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
+
+  /* PREPEND TOPOLOGY */
+  .topo { background: #0a0f1a; border-radius: 10px; padding: 20px; margin: 14px 0; border: 1px solid var(--border); font-family: 'Courier New', monospace; font-size: 12px; color: var(--text2); line-height: 2; overflow-x: auto; }
+
+  /* REGEX TABLE */
+  .rx-table td:first-child { font-family: 'Courier New', monospace; color: var(--orange-lt); font-weight: 700; font-size: 13px; }
+  .rx-table td:nth-child(2) { color: var(--text2); }
+  .rx-table td:nth-child(3) { color: var(--teal-lt); font-family: 'Courier New', monospace; font-size: 11px; }
+
+  /* BGP TABLE */
+  .bgp-tbl { width: 100%; border-collapse: collapse; font-family: 'Courier New', monospace; font-size: 12px; }
+  .bgp-tbl th { background: #0a0f1a; color: var(--text2); padding: 7px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); font-family: 'Segoe UI', sans-serif; }
+  .bgp-tbl td { padding: 7px 12px; border-bottom: 1px solid rgba(30,45,66,.5); color: var(--text2); }
+  .bgp-tbl tr:last-child td { border-bottom: none; }
+  .bgp-tbl .best td { background: rgba(39,174,96,.07); }
+  .bgp-tbl .best td:first-child { color: var(--green-lt); font-weight: 700; }
+  .bgp-tbl .lose td { color: var(--text3); }
+  .bgp-tbl .lose2 td { color: var(--text3); opacity: .7; }
+
+  /* TRAP */
+  .trap { background: rgba(230,126,34,.08); border: 1px solid rgba(230,126,34,.2); border-left: 3px solid var(--orange); border-radius: 8px; padding: 14px 18px; margin-bottom: 10px; }
+  .trap h3 { color: var(--orange-lt); font-size: 12px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .trap p { color: #c8a875; }
+  .trap code { background: rgba(230,126,34,.2); color: var(--orange-lt); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; }
+  .trap.green-trap { background: rgba(39,174,96,.08); border-color: rgba(39,174,96,.2); border-left-color: var(--green); }
+  .trap.green-trap h3 { color: var(--green-lt); }
+  .trap.green-trap p { color: #7ecf9a; }
+  .trap.red-trap { background: rgba(231,76,60,.08); border-color: rgba(231,76,60,.2); border-left-color: var(--red); }
+  .trap.red-trap h3 { color: #e57373; }
+  .trap.red-trap p { color: #c88080; }
+  .trap.red-trap code { background: rgba(231,76,60,.2); color: #e57373; }
+
+  /* FLASH */
+  .flash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+  .flash { background: var(--bg3); border-radius: 10px; padding: 18px; text-align: center; border: 1px solid var(--border); cursor: pointer; transition: border-color .2s; }
+  .flash:hover { border-color: var(--blue-lt); }
+  .flash .q { font-size: 12px; color: var(--text2); line-height: 1.5; min-height: 52px; }
+  .flash .a { display: none; font-size: 12px; color: var(--green-lt); line-height: 1.5; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-weight: 600; }
+  .flash.revealed .a { display: block; }
+  .flash .hint { font-size: 10px; color: var(--text3); margin-top: 8px; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo">CISCO</span>
+  <h1>BGP AS-PATH</h1>
+  <span class="badge">CCIE / ENARSI</span>
+  <span class="pos">Best Path Critère <span>#4</span> · shortest wins</span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('theo',this)">① Théorie</button>
+  <button class="tab" onclick="show('prepend',this)">② AS-PATH Prepending</button>
+  <button class="tab" onclick="show('filter',this)">③ Filtrage &amp; Regex</button>
+  <button class="tab" onclick="show('table',this)">④ Table BGP</button>
+  <button class="tab" onclick="show('special',this)">⑤ Cas spéciaux</button>
+  <button class="tab" onclick="show('pieges',this)">⑥ Pièges</button>
+  <button class="tab" onclick="show('flash',this)">⑦ Flash Cards</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ① THÉORIE
+     ═══════════════════════════════════════════════════ -->
+<div id="theo" class="content active">
+
+  <div class="card">
+    <h3>Profil de l'attribut</h3>
+    <div class="info-row">
+      <div class="info-pill"><strong>Type Code BGP</strong>2</div>
+      <div class="info-pill"><strong>Catégorie</strong>Well-known Mandatory</div>
+      <div class="info-pill"><strong>Critère Best Path</strong>#4 — shortest wins</div>
+      <div class="info-pill"><strong>Propagation iBGP</strong>✅ Oui</div>
+      <div class="info-pill"><strong>Propagation eBGP</strong>✅ Oui (+ own AS ajouté)</div>
+      <div class="info-pill"><strong>Loop Prevention</strong>✅ Own AS → route rejetée</div>
+      <div class="info-pill"><strong>Modifiable</strong>✅ set as-path prepend</div>
+    </div>
+    <div class="badges">
+      <span class="badge-tag badge-red">Well-known Mandatory</span>
+      <span class="badge-tag badge-blue">Type code 2</span>
+      <span class="badge-tag badge-green">Shortest wins</span>
+      <span class="badge-tag badge-orange">Loop prevention</span>
+      <span class="badge-tag badge-teal">Critère #4</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Définition et rôle</h3>
+    <p>L'attribut <strong>AS-PATH</strong> contient la liste ordonnée des numéros d'AS traversés pour atteindre un préfixe. Chaque routeur eBGP qui reannonce une route <strong>ajoute son propre numéro d'AS</strong> en tête du path.</p>
+    <p>BGP préfère le chemin avec le <strong>nombre d'AS le plus court</strong> (critère #4). C'est aussi le mécanisme principal de <strong>loop prevention</strong> : si un routeur reçoit une route contenant son propre AS dans le path, il la rejette silencieusement.</p>
+    <pre>
+<span class="cmt">! Route annoncée par AS65003 vers Internet :</span>
+<span class="cmt">! AS65003 → AS65002 → AS65001 (vous)</span>
+<span class="cmt">!</span>
+<span class="cmt">! Ce que vous voyez dans show ip bgp :</span>
+   Network       Next Hop     Metric  LocPrf  Weight  Path
+*> 10.0.0.0/8   192.0.2.1                         0  <span class="hl">65001 65002 65003</span> i
+                                                      <span class="cmt">  ↑ votre AS  ↑ AS final</span>
+<span class="cmt">! Longueur AS-PATH = 3 AS (compte les AS, pas les octets)</span></pre>
+  </div>
+
+  <!-- SEGMENTS -->
+  <div class="card teal">
+    <h3>Les 4 types de segments AS-PATH</h3>
+    <div class="seg-grid">
+      <div class="seg-card seq">
+        <div class="seg-type">Type 2 — AS_SEQUENCE</div>
+        <div class="seg-name">Liste ordonnée</div>
+        <div class="seg-ex">65001 65002 65003</div>
+        <div class="seg-desc">Format normal. Chaque AS traversé. Compte 1 par AS dans la longueur.</div>
+      </div>
+      <div class="seg-card set">
+        <div class="seg-type">Type 1 — AS_SET</div>
+        <div class="seg-name">Ensemble non ordonné</div>
+        <div class="seg-ex">{65001 65002 65003}</div>
+        <div class="seg-desc">Créé par agrégation avec <code>as-set</code>. Compte pour <strong>1</strong> dans la longueur, quel que soit le nombre d'AS.</div>
+      </div>
+      <div class="seg-card cseq">
+        <div class="seg-type">Type 3 — AS_CONFED_SEQUENCE</div>
+        <div class="seg-name">Confederation — séquence</div>
+        <div class="seg-ex">(65001 65002)</div>
+        <div class="seg-desc">AS internes à la confédération. <strong>Non comptés</strong> dans la longueur externe.</div>
+      </div>
+      <div class="seg-card cset">
+        <div class="seg-type">Type 4 — AS_CONFED_SET</div>
+        <div class="seg-name">Confederation — ensemble</div>
+        <div class="seg-ex">(65001 65002) {65003}</div>
+        <div class="seg-desc">AS confédération non ordonnés. Non comptés dans la longueur externe.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOOP PREVENTION -->
+  <div class="card warn">
+    <h3>Loop Prevention — mécanisme automatique</h3>
+    <p>Quand un routeur BGP reçoit une UPDATE contenant son propre numéro d'AS dans le AS-PATH, il <strong>rejette silencieusement la route</strong>. Ce mécanisme est actif par défaut et ne peut pas être désactivé globalement.</p>
+    <pre>
+<span class="cmt">! AS65001 annonce 10.0.0.0/8 vers AS65002</span>
+<span class="cmt">! AS65002 reannonce vers AS65001 avec path "65002 65001"</span>
+<span class="cmt">! AS65001 reçoit la route → voit son propre AS 65001 → REJET</span>
+
+<span class="cmt">! Vérification :</span>
+R1# <span class="hl">show ip bgp 10.0.0.0/8</span>
+<span class="cmt">! Route absente ou marquée invalid si loop détectée</span>
+
+<span class="cmt">! Contournement (cas MPLS/VPN uniquement) :</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">10.0.0.1</span> <span class="hl">allow-as-in</span> <span class="val">3</span>   <span class="cmt">! accepte jusqu'à 3 occurrences de own-AS</span></pre>
+  </div>
+
+  <!-- POSITION ALGO -->
+  <div class="card green">
+    <h3>Position dans le Best Path Algorithm</h3>
+    <div class="algo-strip">
+      <div class="algo-step done"><span class="num">1</span> Weight</div>
+      <div class="algo-step done"><span class="num">2</span> LOCAL_PREF</div>
+      <div class="algo-step done"><span class="num">3</span> Locally Originated</div>
+      <div class="algo-step active"><span class="num">4</span> ★ AS-PATH length</div>
+      <div class="algo-step"><span class="num">5</span> Origin</div>
+      <div class="algo-step"><span class="num">6</span> MED</div>
+      <div class="algo-step"><span class="num">7</span> eBGP/iBGP</div>
+      <div class="algo-step"><span class="num">8</span> IGP metric</div>
+      <div class="algo-step"><span class="num">9</span> AIGP</div>
+      <div class="algo-step"><span class="num">10</span> Oldest</div>
+      <div class="algo-step"><span class="num">11</span> Router-ID</div>
+      <div class="algo-step"><span class="num">12</span> Cluster-list</div>
+      <div class="algo-step"><span class="num">13</span> Neighbor IP</div>
+    </div>
+    <p style="margin-top:10px">C'est le premier critère <strong>réellement configurable</strong> sur la route reçue (via prepending). Contrairement à Weight et LOCAL_PREF qui sont modifiés localement, AS-PATH prepending agit sur la sélection <strong>chez les autres AS</strong>.</p>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ② AS-PATH PREPENDING
+     ═══════════════════════════════════════════════════ -->
+<div id="prepend" class="content">
+
+  <p class="section-intro">L'AS-PATH prepending consiste à <strong>répéter son propre numéro d'AS</strong> plusieurs fois dans le path pour allonger artificiellement la longueur et rendre le chemin moins attractif. C'est la technique principale pour influencer le <strong>trafic entrant</strong> (inbound).</p>
+
+  <div class="card orange">
+    <h3>Topologie de référence — Dual ISP</h3>
+    <div class="topo">
+                    ┌──────────────────────────────────┐
+                    │           AS 65001               │
+                    │                                  │
+         eBGP       │  ┌──────────┐   ┌──────────┐   │
+  ISP1 ─────────────┼──│   R1     │───│   R2     │   │
+  (AS 100)          │  │ 10.0.0.1 │   │ 10.0.0.2 │   │
+                    │  └──────────┘   └──────────┘   │
+  ISP2 ─────────────┼──│   R3     │                  │
+  (AS 200)   eBGP   │  │ 10.0.0.3 │                  │
+                    │  └──────────┘                   │
+                    └──────────────────────────────────┘
+
+  <span class="cmt">Objectif : ISP1 = chemin principal, ISP2 = backup</span>
+  <span class="cmt">Action   : allonger AS-PATH annoncé à ISP2 → ISP2 préfère envoyer via ISP1</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Configuration — set as-path prepend</h3>
+    <pre>
+<span class="cmt">! Sur R3 (connecté à ISP2) — allonger le path annoncé à ISP2</span>
+<span class="kw">route-map</span> <span class="val">PREPEND-ISP2</span> permit <span class="val">10</span>
+ <span class="kw">set as-path prepend</span> <span class="hl">65001 65001 65001</span>   <span class="cmt">! répète 3 fois l'AS local</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">10.0.0.3</span> route-map <span class="val">PREPEND-ISP2</span> <span class="hl">out</span>  <span class="cmt">! appliqué OUTBOUND vers ISP2</span></pre>
+  </div>
+
+  <div class="card teal">
+    <h3>Résultat — ce que chaque ISP voit</h3>
+    <table class="bgp-tbl">
+      <tr><th>ISP</th><th>Préfixe</th><th>AS-PATH reçu</th><th>Longueur</th><th>Préférence</th></tr>
+      <tr class="best">
+        <td>ISP1 (AS100)</td>
+        <td>192.0.2.0/24</td>
+        <td style="color:var(--green-lt);font-family:monospace">65001</td>
+        <td style="color:var(--green-lt);font-weight:700">1</td>
+        <td style="color:var(--green-lt);font-weight:700">★ Préféré — chemin court</td>
+      </tr>
+      <tr class="lose">
+        <td>ISP2 (AS200)</td>
+        <td>192.0.2.0/24</td>
+        <td style="color:#e57373;font-family:monospace">65001 65001 65001 65001</td>
+        <td style="color:#e57373;font-weight:700">4</td>
+        <td style="color:#e57373">Backup — chemin allongé</td>
+      </tr>
+    </table>
+    <p style="margin-top:8px;font-size:12px;color:var(--text3)">ISP2 reçoit un path de longueur 4 → préfère envoyer le trafic via ISP1. En cas de panne d'ISP1, ISP2 devient le seul chemin disponible.</p>
+  </div>
+
+  <div class="card">
+    <h3>Prepending sur un sous-ensemble de préfixes</h3>
+    <pre>
+<span class="cmt">! Allonger uniquement pour certains préfixes via prefix-list</span>
+<span class="kw">ip prefix-list</span> <span class="val">PFX-BACKUP</span> permit <span class="val">192.0.2.0/24</span>
+<span class="cmt">!</span>
+<span class="kw">route-map</span> <span class="val">PREPEND-SELECTIVE</span> permit <span class="val">10</span>
+ <span class="kw">match ip address prefix-list</span> <span class="val">PFX-BACKUP</span>
+ <span class="kw">set as-path prepend</span> <span class="hl">65001 65001</span>
+<span class="cmt">!</span>
+<span class="kw">route-map</span> <span class="val">PREPEND-SELECTIVE</span> permit <span class="val">20</span>   <span class="cmt">! laisser passer le reste sans modification</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">10.0.0.3</span> route-map <span class="val">PREPEND-SELECTIVE</span> out</pre>
+  </div>
+
+  <div class="card green">
+    <h3>Prepending inbound — influencer le choix local</h3>
+    <pre>
+<span class="cmt">! Un peer peut vous envoyer des routes avec un path déjà allongé</span>
+<span class="cmt">! Vous pouvez aussi allonger EN ENTRÉE pour réduire la préférence locale</span>
+<span class="kw">route-map</span> <span class="val">DEPREFER-ISP2</span> permit <span class="val">10</span>
+ <span class="kw">set as-path prepend</span> <span class="hl">last-as 3</span>           <span class="cmt">! répète le DERNIER AS du path reçu (IOS XE)</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">10.0.0.3</span> route-map <span class="val">DEPREFER-ISP2</span> <span class="hl">in</span>
+
+<span class="cmt">! last-as = pratique car on n'a pas besoin de connaître l'AS du peer</span></pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ③ FILTRAGE & REGEX
+     ═══════════════════════════════════════════════════ -->
+<div id="filter" class="content">
+
+  <p class="section-intro">Le filtrage AS-PATH utilise des <strong>expressions régulières</strong> (regex) Cisco pour matcher des patterns dans le chemin. La commande <code>ip as-path access-list</code> définit les patterns, appliqués avec <code>neighbor filter-list</code>.</p>
+
+  <div class="card">
+    <h3>Syntaxe de base</h3>
+    <pre>
+<span class="cmt">! Définition d'un AS-PATH access-list</span>
+<span class="kw">ip as-path access-list</span> <span class="val">1</span> permit <span class="rx">^$</span>                <span class="cmt">! locally originated</span>
+<span class="kw">ip as-path access-list</span> <span class="val">2</span> permit <span class="rx">^65001$</span>           <span class="cmt">! direct peer uniquement</span>
+<span class="kw">ip as-path access-list</span> <span class="val">3</span> deny   <span class="rx">_65002_</span>           <span class="cmt">! bloquer si AS65002 anywhere</span>
+<span class="kw">ip as-path access-list</span> <span class="val">3</span> permit <span class="rx">.*</span>               <span class="cmt">! laisser passer le reste</span>
+<span class="cmt">!</span>
+<span class="cmt">! Application sur un voisin</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">10.0.0.1</span> <span class="hl">filter-list</span> <span class="val">1</span> <span class="hl">out</span>           <span class="cmt">! annonce uniquement routes locales</span>
+ <span class="kw">neighbor</span> <span class="val">10.0.0.2</span> <span class="hl">filter-list</span> <span class="val">3</span> <span class="hl">in</span>            <span class="cmt">! filtre routes passant par AS65002</span></pre>
+  </div>
+
+  <!-- REGEX REFERENCE TABLE -->
+  <div class="card teal">
+    <h3>Patterns Regex — référence CCIE</h3>
+    <table class="rx-table">
+      <tr><th>Pattern</th><th>Signification</th><th>Exemple de match</th></tr>
+      <tr>
+        <td>^$</td>
+        <td>Path vide — locally originated</td>
+        <td>Route injectée en local (network/aggregate)</td>
+      </tr>
+      <tr>
+        <td>.*</td>
+        <td>N'importe quoi (tout)</td>
+        <td>Toutes les routes</td>
+      </tr>
+      <tr>
+        <td>^65001$</td>
+        <td>Exactement AS65001, rien d'autre</td>
+        <td><code>65001</code></td>
+      </tr>
+      <tr>
+        <td>_65001_</td>
+        <td>AS65001 n'importe où dans le path</td>
+        <td><code>100 65001 200</code> ou <code>65001</code></td>
+      </tr>
+      <tr>
+        <td>^65001</td>
+        <td>Path commence par AS65001</td>
+        <td><code>65001 65002 65003</code></td>
+      </tr>
+      <tr>
+        <td>65001$</td>
+        <td>Path se termine par AS65001</td>
+        <td><code>65003 65002 65001</code></td>
+      </tr>
+      <tr>
+        <td>^65001_</td>
+        <td>Premier AS = 65001 (direct peer)</td>
+        <td><code>65001</code> ou <code>65001 65002</code></td>
+      </tr>
+      <tr>
+        <td>_65001$</td>
+        <td>Dernier AS = 65001 (originator)</td>
+        <td><code>65003 65002 65001</code></td>
+      </tr>
+      <tr>
+        <td>^(65001|65002)$</td>
+        <td>Direct peer = AS65001 OU AS65002</td>
+        <td><code>65001</code> ou <code>65002</code></td>
+      </tr>
+      <tr>
+        <td>^[0-9]+$</td>
+        <td>Un seul AS (longueur = 1)</td>
+        <td><code>65001</code></td>
+      </tr>
+    </table>
+    <p style="margin-top:10px;font-size:12px;color:var(--text3)">⚠ Le caractère <strong>_</strong> (underscore) est un métacaractère Cisco qui matche : espace, virgule, début de string, fin de string, { ou }. Il permet de matcher un AS en tant que mot entier.</p>
+  </div>
+
+  <div class="card orange">
+    <h3>Vérification — show ip bgp regexp</h3>
+    <pre>
+<span class="cmt">! Tester un regex directement sur la table BGP</span>
+R1# <span class="hl">show ip bgp regexp ^$</span>
+<span class="cmt">! → affiche toutes les routes locally originated</span>
+
+R1# <span class="hl">show ip bgp regexp _65002_</span>
+<span class="cmt">! → affiche toutes les routes passant par AS65002</span>
+
+R1# <span class="hl">show ip bgp regexp ^65001$</span>
+<span class="cmt">! → affiche les routes annoncées directement par AS65001</span>
+
+<span class="cmt">! Vérifier qu'un AS-PATH access-list fonctionne :</span>
+R1# <span class="hl">show ip bgp filter-list 1</span>
+<span class="cmt">! → affiche les routes matchées par l'access-list 1</span></pre>
+  </div>
+
+  <div class="card">
+    <h3>Cas pratique — ne publier que vos propres préfixes vers un peer</h3>
+    <pre>
+<span class="cmt">! Empêcher le transit : n'annoncer que les routes locales vers ISP</span>
+<span class="kw">ip as-path access-list</span> <span class="val">10</span> permit <span class="rx">^$</span>    <span class="cmt">! uniquement locally originated</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">203.0.113.1</span> filter-list <span class="val">10</span> out
+<span class="cmt">!</span>
+<span class="cmt">! Sans cette config, vous pourriez propager des routes apprises</span>
+<span class="cmt">! d'autres AS → trafic transit non désiré</span></pre>
+  </div>
+
+  <div class="card green">
+    <h3>AS-PATH access-list nommé (IOS XE)</h3>
+    <pre>
+<span class="cmt">! IOS XE supporte les listes nommées (plus lisible)</span>
+<span class="kw">ip as-path access-list</span> <span class="val">LOCAL-ONLY</span> permit <span class="rx">^$</span>
+<span class="kw">ip as-path access-list</span> <span class="val">BLOCK-AS65002</span> deny  <span class="rx">_65002_</span>
+<span class="kw">ip as-path access-list</span> <span class="val">BLOCK-AS65002</span> permit <span class="rx">.*</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">10.0.0.1</span> filter-list <span class="val">LOCAL-ONLY</span> out
+ <span class="kw">neighbor</span> <span class="val">10.0.0.2</span> filter-list <span class="val">BLOCK-AS65002</span> in</pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ④ TABLE BGP
+     ═══════════════════════════════════════════════════ -->
+<div id="table" class="content">
+
+  <p class="section-intro">La colonne <strong>Path</strong> dans <code>show ip bgp</code> affiche l'AS-PATH complet. La longueur est calculée automatiquement pour le best path selection au critère #4.</p>
+
+  <div class="card">
+    <h3>show ip bgp — même préfixe, 3 chemins différents</h3>
+    <pre>
+R1# <span class="hl">show ip bgp</span>
+BGP table version is 12, local router ID is <span class="val">1.1.1.1</span>
+Status codes: s suppressed, d damped, h history, * valid, > best, i internal
+Origin codes: i - IGP, e - EGP, ? - incomplete
+
+   Network          Next Hop       Metric  LocPrf  Weight  Path
+<span class="ok">*> 10.0.0.0/8       203.0.113.1                         0  65002 i</span>
+*                   203.0.113.2                         0  65003 65002 i
+*                   203.0.113.3                         0  65004 65005 65002 i
+
+<span class="cmt">! Critère #4 : longueurs AS-PATH :</span>
+<span class="cmt">!   Via ISP1 : 65002           → longueur 1  ← BEST ★</span>
+<span class="cmt">!   Via ISP2 : 65003 65002     → longueur 2</span>
+<span class="cmt">!   Via ISP3 : 65004 65005 65002 → longueur 3</span></pre>
+  </div>
+
+  <div class="card teal">
+    <h3>Comparaison best path — critère #4</h3>
+    <table class="bgp-tbl">
+      <tr><th>Status</th><th>Network</th><th>Next Hop</th><th>AS-PATH</th><th>Longueur</th><th>Résultat</th></tr>
+      <tr class="best">
+        <td>*&gt;</td>
+        <td>10.0.0.0/8</td>
+        <td style="font-family:monospace">203.0.113.1</td>
+        <td style="font-family:monospace;color:var(--green-lt)">65002</td>
+        <td style="color:var(--green-lt);font-weight:700">1</td>
+        <td style="color:var(--green-lt);font-weight:700">★ BEST</td>
+      </tr>
+      <tr class="lose">
+        <td>*</td>
+        <td>10.0.0.0/8</td>
+        <td style="font-family:monospace">203.0.113.2</td>
+        <td style="font-family:monospace">65003 65002</td>
+        <td>2</td>
+        <td>—</td>
+      </tr>
+      <tr class="lose2">
+        <td>*</td>
+        <td>10.0.0.0/8</td>
+        <td style="font-family:monospace">203.0.113.3</td>
+        <td style="font-family:monospace">65004 65005 65002</td>
+        <td>3</td>
+        <td>—</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card orange">
+    <h3>Impact du prepending — avant/après</h3>
+    <pre>
+<span class="cmt">! AVANT prepending sur R3 (connecté ISP2)</span>
+   Network       Next Hop       Path
+<span class="ok">*> 10.0.0.0/8   203.0.113.1    65002 i</span>          <span class="cmt">← longueur 1 via ISP1</span>
+*               203.0.113.2    65002 i             <span class="cmt">← longueur 1 via ISP2 → TIE → critère #5+</span>
+
+<span class="cmt">! APRÈS prepending (set as-path prepend 65001 65001 65001) sur ISP2 outbound</span>
+   Network       Next Hop       Path
+<span class="ok">*> 10.0.0.0/8   203.0.113.1    65002 i</span>          <span class="cmt">← longueur 1 via ISP1  ← BEST ★</span>
+*               203.0.113.2    <span class="hl">65001 65001 65001</span> 65002 i  <span class="cmt">← longueur 4 via ISP2</span></pre>
+  </div>
+
+  <div class="card">
+    <h3>show ip bgp — détail d'une route</h3>
+    <pre>
+R1# <span class="hl">show ip bgp 10.0.0.0/8</span>
+BGP routing table entry for 10.0.0.0/8, version 5
+Paths: (2 available, best #1, table default)
+  <span class="ok">65002</span>
+    203.0.113.1 from 203.0.113.1 (<span class="val">203.0.113.1</span>)
+      Origin IGP, valid, external, <span class="ok">best</span>
+      <span class="hl2">AS-path length: 1</span>
+      Last update: 00:02:14 ago
+  <span class="cmt">65003 65002</span>
+    203.0.113.2 from 203.0.113.2 (<span class="val">203.0.113.2</span>)
+      Origin IGP, valid, external
+      <span class="hl2">AS-path length: 2</span>
+      Last update: 00:08:33 ago</pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ⑤ CAS SPÉCIAUX
+     ═══════════════════════════════════════════════════ -->
+<div id="special" class="content">
+
+  <div class="card orange">
+    <h3>allow-as-in — bypass de la loop prevention</h3>
+    <p>Utilisé dans les topologies <strong>MPLS/VPN</strong> où le même AS client est connecté à plusieurs PE. Sans cette commande, le CE refuserait les routes contenant son propre AS retournées par le PE.</p>
+    <pre>
+<span class="cmt">! Topologie MPLS VPN : CE1 (AS65001) et CE2 (AS65001) connectés au même PE</span>
+<span class="cmt">! CE2 reçoit la route de CE1 avec path "65001" → REJET par défaut</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>          <span class="cmt">! sur le routeur CE</span>
+ <span class="kw">neighbor</span> <span class="val">10.1.1.1</span> <span class="hl">allow-as-in</span> <span class="val">1</span>   <span class="cmt">! accepte 1 occurrence de own-AS (max 10)</span>
+
+<span class="cmt">! ⚠ Attention : bypass complet de la loop prevention</span>
+<span class="cmt">! Ne pas utiliser dans un réseau internet sans contrôle supplémentaire</span></pre>
+  </div>
+
+  <div class="card">
+    <h3>as-override — provider remplace l'AS client</h3>
+    <p>Alternative à <code>allow-as-in</code>. Configuré sur le PE. Le PE <strong>remplace l'AS du customer</strong> dans le path par son propre AS avant d'envoyer au CE. Transparent pour le CE.</p>
+    <pre>
+<span class="cmt">! Sur le PE (côté provider) :</span>
+<span class="kw">router bgp</span> <span class="val">65000</span>          <span class="cmt">! AS du provider</span>
+ <span class="kw">neighbor</span> <span class="val">10.1.1.2</span> <span class="hl">as-override</span>
+<span class="cmt">!</span>
+<span class="cmt">! CE1 annonce 10.0.0.0/8 → path "65001"</span>
+<span class="cmt">! PE reçoit, remplace 65001 par 65000 → path "65000"</span>
+<span class="cmt">! CE2 reçoit path "65000" → pas de loop detection → accepte</span></pre>
+  </div>
+
+  <div class="card teal">
+    <h3>remove-private-as — nettoyage avant internet</h3>
+    <p>Supprime les numéros d'AS privés (64512–65534 et 4200000000–4294967294) du path avant d'annoncer vers un peer public. Utilisé sur les routers de bordure ISP.</p>
+    <pre>
+<span class="cmt">! Plages AS privées :</span>
+<span class="cmt">! 2 octets : 64512 – 65534</span>
+<span class="cmt">! 4 octets : 4200000000 – 4294967294</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">neighbor</span> <span class="val">203.0.113.1</span> <span class="hl">remove-private-as</span>
+<span class="cmt">!</span>
+<span class="cmt">! Path reçu  : 64512 65001  (64512 = AS privé client)</span>
+<span class="cmt">! Path envoyé: 65001         (64512 supprimé)</span>
+<span class="cmt">!</span>
+<span class="cmt">! Option all : supprimer TOUS les AS privés même si public AS présent</span>
+ <span class="kw">neighbor</span> <span class="val">203.0.113.1</span> <span class="hl">remove-private-as all</span></pre>
+  </div>
+
+  <div class="card purple">
+    <h3>AS 4 octets — RFC 6793 (anciennement 4893)</h3>
+    <p>Les AS numbers 4 octets (32-bit) permettent d'aller au-delà des 65535 AS 2-octets. La transition utilise <strong>AS_TRANS = 23456</strong> pour la compatibilité avec les vieux équipements.</p>
+    <pre>
+<span class="cmt">! Plage AS 4 octets : 1 – 4294967295</span>
+<span class="cmt">! AS_TRANS (23456) : utilisé dans les messages BGP vers peers 2-octets</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">131072</span>          <span class="cmt">! AS 4 octets (notation décimale)</span>
+<span class="cmt">! ou notation dotted :</span>
+<span class="kw">router bgp</span> <span class="val">2.0</span>             <span class="cmt">! = 131072 en notation X.Y</span>
+<span class="cmt">!</span>
+<span class="cmt">! Peer 2-octets reçoit AS_TRANS=23456 à la place du vrai AS</span>
+<span class="cmt">! Attribut NEW_AS_PATH (optionnel transitive) transporte le vrai AS 4-octets</span></pre>
+  </div>
+
+  <div class="card warn">
+    <h3>Confederation — AS_CONFED_SEQ non comptés</h3>
+    <p>Dans une confédération BGP, les AS membres internes sont affichés entre parenthèses dans l'AS-PATH. Ils ne sont <strong>pas comptés</strong> dans la longueur AS-PATH visible depuis l'extérieur.</p>
+    <pre>
+<span class="cmt">! Path visible en interne à la confédération :</span>
+<span class="cmt">! (65001 65002) 65003 i</span>
+<span class="cmt">!  ↑ sous-AS confédération (non comptés externellement)</span>
+<span class="cmt">!</span>
+<span class="cmt">! Path visible par un peer externe :</span>
+<span class="cmt">! 65010 65003 i   (65010 = AS public de la confédération)</span>
+<span class="cmt">! Longueur externe = 2 (pas 4)</span></pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ⑥ PIÈGES
+     ═══════════════════════════════════════════════════ -->
+<div id="pieges" class="content">
+
+  <div class="trap red-trap">
+    <h3>⚡ Piège #1 — AS_SET compte pour 1 dans la longueur</h3>
+    <p>Un <code>AS_SET</code> créé par <code>aggregate-address ... as-set</code> ne compte que pour <strong>1</strong> dans la longueur AS-PATH, peu importe le nombre d'AS dans l'ensemble. Exemple : <code>65001 {65002 65003 65004}</code> = longueur <strong>2</strong>, pas 4. Piège classique CCIE sur les questions de best path après une agrégation.</p>
+    <pre>
+<span class="cmt">! aggregate-address 10.0.0.0/8 as-set</span>
+<span class="cmt">! Composantes : 10.1/16 (path: 65001), 10.2/16 (path: 65002), 10.3/16 (path: 65003)</span>
+<span class="cmt">! Path agrégat : {65001 65002 65003}  → longueur = 1 !</span></pre>
+  </div>
+
+  <div class="trap">
+    <h3>⚡ Piège #2 — Prepending n'affecte que le trafic ENTRANT</h3>
+    <p>L'AS-PATH prepending est configuré <code>out</code> sur le routeur local, mais son effet est de rendre le chemin moins attractif <strong>pour les AS distants</strong> qui reçoivent l'annonce. Il n'affecte pas le trafic sortant de votre AS. Pour influencer le trafic sortant, utiliser <code>LOCAL_PREF</code> ou <code>Weight</code>.</p>
+  </div>
+
+  <div class="trap red-trap">
+    <h3>⚡ Piège #3 — allow-as-in bypass total de la loop prevention</h3>
+    <p><code>allow-as-in</code> supprime la protection contre les boucles BGP. Configuré sans précaution dans un réseau multi-homed public, il peut créer des boucles de routage. Réserver strictement aux topologies MPLS/VPN où le comportement est attendu et contrôlé.</p>
+  </div>
+
+  <div class="trap">
+    <h3>⚡ Piège #4 — remove-private-as échoue si AS public mélangé</h3>
+    <p>La commande <code>remove-private-as</code> ne supprime les AS privés que si le path ne contient <strong>que</strong> des AS privés avant le premier AS public. Si un AS public apparaît avant un AS privé dans le path, le privé n'est pas supprimé. Utiliser <code>remove-private-as all</code> pour forcer la suppression dans tous les cas.</p>
+    <pre>
+<span class="cmt">! Path : 65001 64512 65002</span>
+<span class="cmt">! remove-private-as normal → 65001 64512 65002 (64512 conservé car AS public avant)</span>
+<span class="cmt">! remove-private-as all   → 65001 65002        (64512 supprimé)</span></pre>
+  </div>
+
+  <div class="trap red-trap">
+    <h3>⚡ Piège #5 — Confederation AS non comptés, mais visibles en interne</h3>
+    <p>Les AS de confédération (affichés entre parenthèses) ne sont pas comptés dans la longueur externe, mais <strong>sont comptés dans la longueur interne</strong> au sein de la confédération. Un path <code>(65001 65002) 100 i</code> a une longueur interne de 3 et externe de 2. Attention lors du troubleshooting de best path dans un environnement confederation.</p>
+  </div>
+
+  <div class="trap">
+    <h3>⚡ Piège #6 — underscore _ dans les regex : comportement spécial</h3>
+    <p>Le caractère <code>_</code> dans les AS-PATH regex Cisco n'est PAS un underscore littéral. Il matche : <strong>espace, virgule, début de ligne, fin de ligne, { ou }</strong>. C'est pourquoi <code>_65001_</code> matche AS65001 en tant que mot entier (pas comme sous-chaîne). Utiliser <code>\65001\</code> (avec backslash) si vous voulez vraiment un underscore littéral.</p>
+  </div>
+
+  <div class="trap green-trap">
+    <h3>✓ Bonne pratique — tester les regex avant déploiement</h3>
+    <p>Toujours valider un regex avec <code>show ip bgp regexp &lt;pattern&gt;</code> avant d'appliquer un filter-list sur un voisin. Un regex incorrect peut filtrer trop de routes ou pas assez, avec impact immédiat sur le routage.</p>
+    <pre>
+R1# <span class="hl2">show ip bgp regexp ^65001_</span>     <span class="cmt">! voir ce qui serait matché</span>
+R1# <span class="hl2">show ip bgp filter-list 10</span>      <span class="cmt">! voir les routes matchées par la liste</span></pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ⑦ FLASH CARDS
+     ═══════════════════════════════════════════════════ -->
+<div id="flash" class="content">
+
+  <p class="section-intro" style="margin-bottom:16px">Cliquer sur une carte pour révéler la réponse.</p>
+
+  <div class="flash-grid">
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Quel est le type code BGP de l'attribut AS-PATH ?</div>
+      <div class="a">Type code <strong>2</strong> — Well-known Mandatory. Présent dans tous les messages UPDATE.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Un AS_SET de 5 AS — quelle longueur compte dans le best path ?</div>
+      <div class="a"><strong>1</strong> — un AS_SET compte toujours pour 1 dans la longueur, peu importe le nombre d'AS dans l'ensemble.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Quel regex matche uniquement les routes locally originated ?</div>
+      <div class="a"><code>^$</code> — path vide = route injectée localement via network ou aggregate.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Sur quel sens agit le prepending : entrant ou sortant ?</div>
+      <div class="a">Configuré <strong>out</strong> sur le routeur local, il influence le trafic <strong>entrant</strong> en rendant le chemin moins attractif pour les AS distants.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Quelle commande permet d'accepter une route contenant son propre AS ?</div>
+      <div class="a"><code>neighbor X allow-as-in [nombre]</code> — bypass la loop prevention. Usage principal : topologies MPLS/VPN site-to-site même AS.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Que signifie le caractère _ dans une regex AS-PATH Cisco ?</div>
+      <div class="a">Métacaractère qui matche : espace, virgule, début de ligne, fin de ligne, { ou }. Permet de matcher un AS en tant que mot entier.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Les AS de confédération sont-ils comptés dans la longueur externe ?</div>
+      <div class="a"><strong>Non</strong> — AS_CONFED_SEQUENCE et AS_CONFED_SET ne sont pas comptés dans la longueur AS-PATH vue par les peers externes à la confédération.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Quelle est la valeur AS_TRANS utilisée pour la compatibilité 4-octets / 2-octets ?</div>
+      <div class="a"><strong>23456</strong> — RFC 6793. Les anciens équipements 2-octets voient 23456 à la place du vrai AS 4-octets. Le vrai AS est transporté dans l'attribut optionnel NEW_AS_PATH.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
