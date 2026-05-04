@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP Origin — Référence CCIE / ENARSI</title>
+<style>
+  :root {
+    --bg:       #0d1117;
+    --bg2:      #111827;
+    --bg3:      #1a2235;
+    --bg4:      #202b3d;
+    --border:   #1e2d42;
+    --text:     #f0f4fa;
+    --text2:    #8aadca;
+    --text3:    #4a6070;
+    --blue:     #1b72be;
+    --blue-lt:  #4a9fd4;
+    --green:    #27ae60;
+    --green-lt: #2ecc71;
+    --orange:   #e67e22;
+    --orange-lt:#f39c12;
+    --red:      #e74c3c;
+    --teal:     #16a085;
+    --teal-lt:  #1abc9c;
+    --purple:   #8e44ad;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+  .topbar { background: linear-gradient(135deg,#0d1b2a,#1a2e42); padding: 14px 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); box-shadow: 0 2px 16px rgba(0,0,0,.5); }
+  .topbar .logo { background: var(--blue); color: #fff; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 4px; letter-spacing: 1px; }
+  .topbar h1 { font-size: 16px; font-weight: 600; color: var(--text); }
+  .topbar .badge { background: var(--red); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 12px; }
+  .topbar .pos { margin-left: auto; font-size: 11px; color: var(--text3); font-weight: 600; }
+  .topbar .pos span { color: var(--orange-lt); }
+
+  .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 10px 20px 0; overflow-x: auto; border-bottom: 1px solid var(--border); }
+  .tab { padding: 8px 15px; font-size: 12px; font-weight: 600; color: var(--text2); cursor: pointer; border-radius: 6px 6px 0 0; border: none; background: transparent; white-space: nowrap; transition: all .2s; }
+  .tab:hover { color: var(--text); background: var(--bg3); }
+  .tab.active { background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-bottom: 1px solid var(--bg3); }
+
+  .content { display: none; padding: 24px; max-width: 980px; margin: 0 auto; }
+  .content.active { display: block; }
+
+  .card { background: var(--bg2); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; border: 1px solid var(--border); border-left: 4px solid var(--blue); }
+  .card.warn   { border-left-color: var(--red); }
+  .card.green  { border-left-color: var(--green); }
+  .card.orange { border-left-color: var(--orange); }
+  .card.purple { border-left-color: var(--purple); }
+  .card.teal   { border-left-color: var(--teal); }
+
+  h2 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  h3 { font-size: 12px; font-weight: 700; color: var(--blue-lt); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .6px; }
+  .card.warn h3   { color: #e57373; }
+  .card.green h3  { color: var(--green-lt); }
+  .card.orange h3 { color: var(--orange-lt); }
+  .card.teal h3   { color: var(--teal-lt); }
+  .card.purple h3 { color: #ba68c8; }
+  p { line-height: 1.65; color: var(--text2); margin-bottom: 8px; }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+  .badge-tag { padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge-blue   { background: rgba(27,114,190,.15); color: var(--blue-lt); border: 1px solid rgba(27,114,190,.4); }
+  .badge-green  { background: rgba(39,174,96,.15);  color: var(--green-lt); border: 1px solid rgba(39,174,96,.4); }
+  .badge-orange { background: rgba(230,126,34,.15); color: var(--orange-lt); border: 1px solid rgba(230,126,34,.4); }
+  .badge-red    { background: rgba(231,76,60,.15);  color: #e57373; border: 1px solid rgba(231,76,60,.4); }
+  .badge-purple { background: rgba(142,68,173,.15); color: #ba68c8; border: 1px solid rgba(142,68,173,.4); }
+  .badge-teal   { background: rgba(22,160,133,.15); color: var(--teal-lt); border: 1px solid rgba(22,160,133,.4); }
+
+  pre { background: #0a0f1a; color: #a8d8ea; border-radius: 8px; padding: 15px 18px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.75; overflow-x: auto; margin: 10px 0; border: 1px solid var(--border); }
+  .kw  { color: #e2a44a; }
+  .val { color: #7ec8a0; }
+  .cmt { color: #3d5a70; font-style: italic; }
+  .hl  { color: var(--orange-lt); font-weight: bold; }
+  .hl2 { color: var(--teal-lt); font-weight: bold; }
+  .hl3 { color: #ba68c8; font-weight: bold; }
+  .o-i { color: var(--green-lt); font-weight: bold; }
+  .o-e { color: var(--orange-lt); font-weight: bold; }
+  .o-q { color: #e57373; font-weight: bold; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th { background: var(--bg4); color: var(--text2); padding: 10px 14px; font-size: 11px; font-weight: 700; text-align: left; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text2); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); }
+  .w-high   { color: var(--green-lt); font-weight: 700; }
+  .w-zero   { color: #e57373; font-weight: 600; }
+  .w-orange { color: var(--orange-lt); font-weight: 700; }
+
+  .info-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+  .info-pill { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; padding: 8px 14px; font-size: 12px; color: var(--text); flex: 1; min-width: 120px; }
+  .info-pill strong { display: block; color: var(--blue-lt); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+
+  .section-intro { color: var(--text2); font-size: 13px; line-height: 1.65; margin-bottom: 16px; }
+
+  /* ORIGIN VALUE CARDS */
+  .origin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 14px 0; }
+  .origin-card { border-radius: 10px; padding: 20px; border: 1px solid var(--border); text-align: center; }
+  .origin-card.igp  { background: rgba(39,174,96,.08);  border-color: rgba(39,174,96,.3); }
+  .origin-card.egp  { background: rgba(230,126,34,.08); border-color: rgba(230,126,34,.3); }
+  .origin-card.inc  { background: rgba(231,76,60,.08);  border-color: rgba(231,76,60,.3); }
+  .origin-code { font-size: 48px; font-weight: 900; font-family: 'Courier New', monospace; line-height: 1; margin-bottom: 8px; }
+  .origin-card.igp  .origin-code { color: var(--green-lt); }
+  .origin-card.egp  .origin-code { color: var(--orange-lt); }
+  .origin-card.inc  .origin-code { color: #e57373; }
+  .origin-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .origin-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .origin-pref { font-size: 10px; font-weight: 700; margin-top: 10px; padding: 3px 10px; border-radius: 10px; display: inline-block; }
+  .origin-card.igp  .origin-pref { background: rgba(39,174,96,.2); color: var(--green-lt); }
+  .origin-card.egp  .origin-pref { background: rgba(230,126,34,.2); color: var(--orange-lt); }
+  .origin-card.inc  .origin-pref { background: rgba(231,76,60,.2); color: #e57373; }
+
+  /* INJECTION TABLE */
+  .inj-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; border: 1px solid var(--border); background: var(--bg3); flex-wrap: wrap; }
+  .inj-cmd  { font-family: 'Courier New', monospace; font-size: 12px; color: var(--teal-lt); min-width: 160px; }
+  .inj-arrow { color: var(--text3); }
+  .inj-result { font-weight: 700; font-size: 14px; font-family: monospace; }
+  .inj-note  { margin-left: auto; font-size: 11px; color: var(--text3); }
+
+  /* BGP TABLE */
+  .bgp-table-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
+  .bgp-tbl { width: 100%; border-collapse: collapse; font-family: 'Courier New', monospace; font-size: 12px; }
+  .bgp-tbl th { background: #0a0f1a; color: var(--text2); padding: 7px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); font-family: 'Segoe UI', sans-serif; }
+  .bgp-tbl td { padding: 7px 12px; border-bottom: 1px solid rgba(30,45,66,.5); color: var(--text2); }
+  .bgp-tbl tr:last-child td { border-bottom: none; }
+  .bgp-tbl .best td { background: rgba(39,174,96,.07); }
+  .bgp-tbl .best td:first-child { color: var(--green-lt); font-weight: 700; }
+  .bgp-tbl .mid td { background: rgba(230,126,34,.05); }
+  .bgp-tbl .bad td { color: var(--text3); }
+
+  /* TRAP */
+  .trap { background: rgba(230,126,34,.08); border: 1px solid rgba(230,126,34,.2); border-left: 3px solid var(--orange); border-radius: 8px; padding: 14px 18px; margin-bottom: 10px; }
+  .trap h3 { color: var(--orange-lt); font-size: 12px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .trap p { color: #c8a875; }
+  .trap code { background: rgba(230,126,34,.2); color: var(--orange-lt); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; }
+  .trap.green-trap { background: rgba(39,174,96,.08); border-color: rgba(39,174,96,.2); border-left-color: var(--green); }
+  .trap.green-trap h3 { color: var(--green-lt); }
+  .trap.green-trap p { color: #7ecf9a; }
+
+  /* FLASH */
+  .flash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .flash { background: var(--bg3); border-radius: 10px; padding: 16px; text-align: center; border: 1px solid var(--border); }
+  .flash .f-num { font-size: 26px; font-weight: 700; color: var(--orange-lt); font-family: 'Courier New', monospace; }
+  .flash .f-label { font-size: 10px; color: var(--text2); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+  .flash .f-desc { font-size: 12px; color: var(--text3); margin-top: 8px; line-height: 1.5; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo">CISCO</span>
+  <h1>BGP Origin</h1>
+  <span class="badge">CCIE / ENARSI</span>
+  <span class="pos">Best Path Critère <span>#5</span></span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('theory',this)">📋 Théorie</button>
+  <button class="tab" onclick="showTab('injection',this)">💉 Injection</button>
+  <button class="tab" onclick="showTab('config',this)">⚙️ Modifier</button>
+  <button class="tab" onclick="showTab('bgptable',this)">📊 Table BGP</button>
+  <button class="tab" onclick="showTab('aggregation',this)">📦 Aggregation</button>
+  <button class="tab" onclick="showTab('traps',this)">⚠️ Pièges Exam</button>
+  <button class="tab" onclick="showTab('flash',this)">⚡ Flash Cards</button>
+</div>
+
+<!-- ===== THEORY ===== -->
+<div id="tab-theory" class="content active">
+
+  <div class="card">
+    <h2>BGP Origin — Définition</h2>
+    <p class="section-intro">L'Origin indique <strong style="color:var(--text)">comment une route est entrée dans BGP</strong>. C'est le seul attribut qui répond à la question : "cette route vient-elle d'un réseau annoncé proprement, d'une redistribution, ou d'un vieux protocole ?"</p>
+    <div class="info-row">
+      <div class="info-pill"><strong>Attribute Name</strong>ORIGIN</div>
+      <div class="info-pill"><strong>Type Code</strong>1</div>
+      <div class="info-pill"><strong>Category</strong>Well-known Mandatory</div>
+      <div class="info-pill"><strong>Présent dans</strong>Chaque BGP UPDATE</div>
+      <div class="info-pill"><strong>Position Best Path</strong>Critère #5</div>
+      <div class="info-pill"><strong>Préférence</strong>i > e > ?</div>
+    </div>
+  </div>
+
+  <div class="card green">
+    <h3>✅ Well-known Mandatory — ce que ça signifie</h3>
+    <p><strong style="color:var(--text)">Well-known</strong> = tous les routeurs BGP doivent reconnaître cet attribut.</p>
+    <p style="margin-top:6px;"><strong style="color:var(--text)">Mandatory</strong> = doit être présent dans <strong style="color:var(--green-lt)">chaque BGP UPDATE</strong> sans exception. Contrairement à LOCAL_PREF (Discretionary) qui peut être absent.</p>
+    <div class="badges" style="margin-top:10px;">
+      <span class="badge-tag badge-green">Obligatoire dans chaque UPDATE</span>
+      <span class="badge-tag badge-blue">Type Code 1 — premier attribut RFC 4271</span>
+      <span class="badge-tag badge-orange">Propagé avec la route</span>
+    </div>
+  </div>
+
+  <!-- 3 VALEURS -->
+  <div class="card">
+    <h3>🎯 Les 3 valeurs possibles</h3>
+    <div class="origin-grid">
+      <div class="origin-card igp">
+        <div class="origin-code">i</div>
+        <div class="origin-name">IGP</div>
+        <div class="origin-desc">Route introduite via la commande <code style="background:rgba(39,174,96,.15);color:var(--green-lt);padding:1px 5px;border-radius:3px;">network</code> dans BGP. BGP connaît l'origine exacte.</div>
+        <div class="origin-pref">PRÉFÉRÉ — Best Path</div>
+      </div>
+      <div class="origin-card egp">
+        <div class="origin-code">e</div>
+        <div class="origin-name">EGP</div>
+        <div class="origin-desc">Route provenant de l'ancien protocole EGP (RFC 904). <strong>Quasi-inexistant aujourd'hui</strong> — historique uniquement.</div>
+        <div class="origin-pref">NEUTRE — désuet</div>
+      </div>
+      <div class="origin-card inc">
+        <div class="origin-code">?</div>
+        <div class="origin-name">INCOMPLETE</div>
+        <div class="origin-desc">Route issue d'une <code style="background:rgba(231,76,60,.15);color:#e57373;padding:1px 5px;border-radius:3px;">redistribution</code> ou d'une agrégation ambiguë. BGP ne peut pas certifier l'origine.</div>
+        <div class="origin-pref">MOINS PRÉFÉRÉ</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card orange">
+    <h3>📌 Ordre de préférence Best Path (critère #5)</h3>
+    <p>À égalité sur Weight, LOCAL_PREF, Locally Originated et AS-PATH length, BGP compare l'Origin :</p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin:14px 0;flex-wrap:wrap;">
+      <div style="background:rgba(39,174,96,.15);border:1px solid rgba(39,174,96,.3);border-radius:8px;padding:12px 24px;text-align:center;">
+        <div style="font-size:28px;font-weight:900;color:var(--green-lt);font-family:monospace;">i</div>
+        <div style="font-size:11px;color:var(--green-lt);margin-top:4px;">MEILLEUR</div>
+      </div>
+      <div style="font-size:20px;color:var(--text3);">›</div>
+      <div style="background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);border-radius:8px;padding:12px 24px;text-align:center;">
+        <div style="font-size:28px;font-weight:900;color:var(--orange-lt);font-family:monospace;">e</div>
+        <div style="font-size:11px;color:var(--orange-lt);margin-top:4px;">INTERMÉDIAIRE</div>
+      </div>
+      <div style="font-size:20px;color:var(--text3);">›</div>
+      <div style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:8px;padding:12px 24px;text-align:center;">
+        <div style="font-size:28px;font-weight:900;color:#e57373;font-family:monospace;">?</div>
+        <div style="font-size:11px;color:#e57373;margin-top:4px;">MOINS BON</div>
+      </div>
+    </div>
+    <p style="font-size:12px;text-align:center;">Une route <strong style="color:var(--green-lt)">network (i)</strong> battra toujours une route <strong style="color:#e57373">redistribuée (?)</strong> à égalité sur les critères 1→4.</p>
+  </div>
+
+</div>
+
+<!-- ===== INJECTION ===== -->
+<div id="tab-injection" class="content">
+  <div class="card">
+    <h2>Comment l'Origin naît — Méthodes d'injection</h2>
+    <p class="section-intro">L'Origin est assigné <strong style="color:var(--text)">automatiquement</strong> selon la méthode utilisée pour injecter la route dans BGP. Il n'est jamais calculé — il est déterminé par la commande.</p>
+
+    <div style="margin:14px 0;">
+      <div class="inj-row">
+        <span class="inj-cmd">network</span>
+        <span class="inj-arrow">→</span>
+        <span class="inj-result o-i">i</span>
+        <span class="inj-note">BGP sait exactement que c'est un réseau local annoncé</span>
+      </div>
+      <div class="inj-row">
+        <span class="inj-cmd">aggregate-address</span>
+        <span class="inj-arrow">→</span>
+        <span class="inj-result o-i">i</span>
+        <span class="inj-note">Par défaut — sauf si as-set avec composants ?</span>
+      </div>
+      <div class="inj-row">
+        <span class="inj-cmd">redistribute</span>
+        <span class="inj-arrow">→</span>
+        <span class="inj-result o-q">?</span>
+        <span class="inj-note">TOUJOURS incomplete — sans exception</span>
+      </div>
+      <div class="inj-row">
+        <span class="inj-cmd">Learned via BGP</span>
+        <span class="inj-arrow">→</span>
+        <span class="inj-result" style="color:var(--text2);font-size:13px;">conservé</span>
+        <span class="inj-note">L'origin de la route source est propagé tel quel</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🔍 Exemples concrets</h3>
+    <pre><span class="cmt">! network → Origin i</span>
+<span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">network</span> <span class="val">10.0.0.0</span> mask <span class="val">255.0.0.0</span>
+<span class="cmt">! → show ip bgp : Path = 65000 <span class="o-i">i</span></span>
+
+<span class="cmt">! redistribute → Origin ?</span>
+<span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">redistribute ospf</span> <span class="val">1</span>
+<span class="cmt">! → show ip bgp : Path = 65000 <span class="o-q">?</span>   (toujours !)</span>
+
+<span class="cmt">! même si OSPF a appris la route via "network" dans OSPF</span>
+<span class="cmt">! BGP ne peut pas remonter à l'origine IGP → forced ?</span></pre>
+  </div>
+
+  <div class="card warn">
+    <h3>⚠️ Redistribute donne TOUJOURS ?</h3>
+    <p>Peu importe la source : OSPF, EIGRP, static, connected — <strong style="color:var(--text)">redistribute donne systématiquement ?</strong>. BGP ne peut pas certifier qu'une route redistribuée a une origine IGP propre. C'est intentionnel dans la RFC.</p>
+    <p style="margin-top:8px;">Si tu veux <strong style="color:var(--text)">forcer l'origine à i</strong> sur des routes redistribuées → utilise une route-map avec <code style="background:rgba(231,76,60,.15);color:#e57373;padding:1px 5px;border-radius:3px;">set origin igp</code>.</p>
+  </div>
+</div>
+
+<!-- ===== CONFIG ===== -->
+<div id="tab-config" class="content">
+  <div class="card">
+    <h2>Modifier l'Origin avec route-map</h2>
+    <p class="section-intro">L'Origin peut être modifié via <code style="color:var(--teal-lt)">set origin</code> dans une route-map. Utile pour normaliser les routes redistribuées ou forcer une politique.</p>
+
+    <pre><span class="cmt">! Forcer Origin i sur des routes redistribuées</span>
+<span class="kw">route-map</span> FIX-ORIGIN permit <span class="val">10</span>
+ <span class="hl">set origin igp</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">redistribute ospf</span> <span class="val">1</span> route-map FIX-ORIGIN
+<span class="cmt">! → routes OSPF redistribuées avec Origin i au lieu de ?</span></pre>
+
+    <pre><span class="cmt">! Valeurs possibles pour set origin</span>
+<span class="kw">route-map</span> SET-ORIGIN permit <span class="val">10</span>
+ <span class="hl">set origin igp</span>        <span class="cmt">! → i (meilleur)</span>
+ <span class="hl">set origin egp</span>        <span class="cmt">! → e (historique)</span>
+ <span class="hl">set origin incomplete</span> <span class="cmt">! → ? (moins préféré)</span></pre>
+  </div>
+
+  <div class="card">
+    <h3>📋 Filtrage basé sur l'Origin</h3>
+    <p class="section-intro">Possible mais <strong style="color:var(--text)">rare en production</strong>. Peut être utile pour rejeter des routes redistribuées (?) d'un voisin ou forcer une politique de qualité de route.</p>
+    <pre><span class="cmt">! Accepter uniquement les routes avec Origin i</span>
+<span class="kw">route-map</span> FILTER-ORIGIN permit <span class="val">10</span>
+ <span class="kw">match origin</span> igp
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">neighbor</span> <span class="val">1.1.1.1</span> route-map FILTER-ORIGIN in
+<span class="cmt">! Routes avec Origin ? ou e → rejetées</span></pre>
+    <div class="badges">
+      <span class="badge-tag badge-orange">Rare en production</span>
+      <span class="badge-tag badge-blue">match origin igp / egp / incomplete</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BGP TABLE ===== -->
+<div id="tab-bgptable" class="content">
+  <div class="card">
+    <h2>Table BGP — Origin visible dans la colonne PATH</h2>
+    <p class="section-intro">L'Origin n'a <strong style="color:var(--text)">pas de colonne dédiée</strong> dans <code style="color:var(--teal-lt)">show ip bgp</code>. Il apparaît comme le <strong style="color:var(--text)">dernier caractère de la colonne PATH</strong> : <span class="o-i">i</span>, <span class="o-e">e</span>, ou <span class="o-q">?</span>.</p>
+
+    <div class="bgp-table-label">R1# show ip bgp — Trois routes avec origins différents</div>
+    <table class="bgp-tbl">
+      <tr><th>Status</th><th>Network</th><th>Next Hop</th><th>Metric</th><th>LocPrf</th><th>Weight</th><th>Path</th></tr>
+      <tr class="best">
+        <td>*&gt;</td><td>10.0.0.0/8</td><td>1.1.1.1</td><td>0</td><td>100</td><td>0</td>
+        <td>100 200 <span class="o-i">i</span></td>
+      </tr>
+      <tr class="mid">
+        <td>*&gt;</td><td>172.16.0.0/16</td><td>2.2.2.2</td><td>0</td><td>100</td><td>0</td>
+        <td>300 <span class="o-e">e</span></td>
+      </tr>
+      <tr class="bad">
+        <td>*</td><td>192.168.0.0/24</td><td>3.3.3.3</td><td>0</td><td>100</td><td>0</td>
+        <td>400 <span class="o-q">?</span></td>
+      </tr>
+    </table>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      <div style="background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);border-radius:8px;padding:10px 14px;flex:1;min-width:180px;">
+        <span style="font-family:monospace;font-size:18px;font-weight:900;color:var(--green-lt);">i</span>
+        <span style="font-size:12px;color:var(--text2);margin-left:8px;">→ Annoncé via <code style="color:var(--teal-lt)">network</code></span>
+      </div>
+      <div style="background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.2);border-radius:8px;padding:10px 14px;flex:1;min-width:180px;">
+        <span style="font-family:monospace;font-size:18px;font-weight:900;color:var(--orange-lt);">e</span>
+        <span style="font-size:12px;color:var(--text2);margin-left:8px;">→ Ancien protocole EGP</span>
+      </div>
+      <div style="background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);border-radius:8px;padding:10px 14px;flex:1;min-width:180px;">
+        <span style="font-family:monospace;font-size:18px;font-weight:900;color:#e57373;">?</span>
+        <span style="font-size:12px;color:var(--text2);margin-left:8px;">→ Redistribué depuis IGP</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🔍 show ip bgp — Détail d'une route</h3>
+    <pre>R1# <span class="kw">show ip bgp</span> <span class="val">10.0.0.0</span>
+
+BGP routing table entry for 10.0.0.0/8
+  Path: (1 available, best #1)
+    <span class="val">1.1.1.1</span> from <span class="val">1.1.1.1</span>
+    Origin <span class="o-i">IGP</span>, metric 0, localpref 100, valid, external, best
+    AS_PATH: <span class="val">100 200</span>
+
+R1# <span class="kw">show ip bgp</span> <span class="val">192.168.0.0</span>
+
+BGP routing table entry for 192.168.0.0/24
+  Path: (1 available, best #1)
+    <span class="val">3.3.3.3</span> from <span class="val">3.3.3.3</span>
+    Origin <span class="o-q">incomplete</span>, metric 0, localpref 100, valid, external, best
+    AS_PATH: <span class="val">400</span></pre>
+  </div>
+</div>
+
+<!-- ===== AGGREGATION ===== -->
+<div id="tab-aggregation" class="content">
+  <div class="card">
+    <h2>Origin et Aggregation — Cas important</h2>
+    <p class="section-intro">Le comportement de l'Origin lors d'une agrégation dépend de l'option <code style="color:var(--teal-lt)">as-set</code>. C'est un piège classique CCIE.</p>
+  </div>
+
+  <div class="card green">
+    <h3>✅ aggregate-address sans as-set → Origin i</h3>
+    <pre><span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">aggregate-address</span> <span class="val">10.10.0.0 255.255.0.0</span>
+ <span class="cmt">! → Origin forcé à i</span>
+ <span class="cmt">! peu importe l'origin des routes composantes</span></pre>
+    <p style="margin-top:10px;">BGP crée un <strong style="color:var(--text)">nouveau préfixe agrégé</strong> avec Origin <span class="o-i" style="font-size:16px;">i</span> par défaut. Les routes composantes (même redistribuées avec ?) sont "nettoyées".</p>
+    <div class="badges">
+      <span class="badge-tag badge-green">Origin → i (forcé)</span>
+      <span class="badge-tag badge-blue">AS_PATH vide (atomic aggregate)</span>
+    </div>
+  </div>
+
+  <div class="card warn">
+    <h3>⚠️ aggregate-address as-set → Origin hérité (?)</h3>
+    <pre><span class="kw">router bgp</span> <span class="val">65000</span>
+ <span class="kw">aggregate-address</span> <span class="val">10.10.0.0 255.255.0.0</span> <span class="hl">as-set</span>
+ <span class="cmt">! → Origin hérité du "pire" composant</span>
+ <span class="cmt">! Si 1 route composante est ?, l'agrégat devient ?</span></pre>
+    <p style="margin-top:10px;">Le <code style="color:var(--orange-lt)">as-set</code> inclut les AS-PATH des routes composantes pour éviter les boucles. En contrepartie, si <strong style="color:var(--text)">au moins une route composante a Origin ?</strong> (redistribuée), l'agrégat hérite du <span class="o-q" style="font-size:16px;">?</span>.</p>
+    <div class="badges">
+      <span class="badge-tag badge-red">Origin → ? si composant redistributed</span>
+      <span class="badge-tag badge-orange">AS_PATH = union des AS composants</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📊 Tableau récapitulatif Aggregation</h3>
+    <table>
+      <tr><th>Commande</th><th>Origin résultant</th><th>AS_PATH</th><th>Remarque</th></tr>
+      <tr>
+        <td><code style="color:var(--teal-lt)">aggregate-address</code></td>
+        <td class="w-high">i (forcé)</td>
+        <td style="color:var(--text3);">Vide (atomic)</td>
+        <td>Toujours i, indépendant des composants</td>
+      </tr>
+      <tr>
+        <td><code style="color:var(--teal-lt)">aggregate-address as-set</code></td>
+        <td class="w-orange">? si composant ?</td>
+        <td>Union des AS composants</td>
+        <td>Hérite du pire origin des composants</td>
+      </tr>
+      <tr>
+        <td><code style="color:var(--teal-lt)">aggregate-address as-set</code> (tous i)</td>
+        <td class="w-high">i</td>
+        <td>Union des AS composants</td>
+        <td>Si tous les composants sont i → agrégat i</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ===== TRAPS ===== -->
+<div id="tab-traps" class="content">
+  <div class="trap">
+    <h3>⚠️ PIÈGE #1 — redistribute donne TOUJOURS ?</h3>
+    <p>Sans exception. OSPF, EIGRP, static, connected, RIP — <strong>toujours ?</strong>. Même si OSPF a appris la route via <code>network</code>, BGP ne peut pas remonter à l'origine. Pour forcer i : <code>route-map set origin igp</code> appliquée à la redistribution.</p>
+  </div>
+  <div class="trap">
+    <h3>⚠️ PIÈGE #2 — Origin n'a pas de colonne dans show ip bgp</h3>
+    <p>L'Origin est le <strong>dernier caractère de la colonne PATH</strong>. Les candidats cherchent souvent une colonne "ORIGIN" — elle n'existe pas. <code>100 200 i</code> → i est l'origin, 100 200 est l'AS-PATH.</p>
+  </div>
+  <div class="trap">
+    <h3>⚠️ PIÈGE #3 — aggregate-address as-set hérite du pire origin</h3>
+    <p>Si une seule route composante de l'agrégat est redistribuée (?), l'agrégat avec <code>as-set</code> prend Origin <strong>?</strong>. Sans <code>as-set</code>, l'agrégat est toujours <strong>i</strong>.</p>
+  </div>
+  <div class="trap">
+    <h3>⚠️ PIÈGE #4 — Well-known Mandatory ≠ Always Present</h3>
+    <p>"Mandatory" signifie présent dans chaque UPDATE, mais BGP peut avoir des bugs d'implémentation. En théorie : toujours présent. Si absent → session BGP NOTIFICATION error.</p>
+  </div>
+  <div class="trap green-trap">
+    <h3>✅ RAPPEL — Ordre Best Path complet autour du critère #5</h3>
+    <p>Weight (#1) → LOCAL_PREF (#2) → Locally originated (#3) → AS-PATH length (#4) → <strong>Origin i > e > ? (#5)</strong> → MED (#6) → eBGP > iBGP (#7) → IGP metric (#8) → AIGP (#9) → …</p>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>🔍 Commandes de vérification</h3>
+    <pre><span class="kw">show ip bgp</span>                    <span class="cmt">! Origin en fin de colonne PATH</span>
+<span class="kw">show ip bgp</span> <span class="val">10.0.0.0</span>          <span class="cmt">! "Origin IGP/incomplete" dans le détail</span>
+<span class="kw">show ip bgp regexp</span> _65000_     <span class="cmt">! filtrer par AS</span>
+<span class="kw">show route-map</span> FIX-ORIGIN      <span class="cmt">! vérifier set origin</span></pre>
+  </div>
+</div>
+
+<!-- ===== FLASH ===== -->
+<div id="tab-flash" class="content">
+  <div class="flash-grid">
+    <div class="flash"><div class="f-num">1</div><div class="f-label">Type Code IANA</div><div class="f-desc">Premier attribut défini — RFC 4271</div></div>
+    <div class="flash"><div class="f-num">#5</div><div class="f-label">Position Best Path</div><div class="f-desc">Critère #5 — après AS-PATH length, avant MED</div></div>
+    <div class="flash"><div class="f-num" style="color:var(--green-lt);">i</div><div class="f-label">IGP — meilleur</div><div class="f-desc">network · aggregate-address (sans as-set)</div></div>
+    <div class="flash"><div class="f-num" style="color:var(--orange-lt);">e</div><div class="f-label">EGP — historique</div><div class="f-desc">Ancien protocole EGP — quasi inexistant aujourd'hui</div></div>
+    <div class="flash"><div class="f-num" style="color:#e57373;">?</div><div class="f-label">Incomplete — moins bon</div><div class="f-desc">redistribute — TOUJOURS ? sans exception</div></div>
+    <div class="flash"><div class="f-num">MAN</div><div class="f-label">Well-known Mandatory</div><div class="f-desc">Présent dans CHAQUE BGP UPDATE — obligatoire</div></div>
+    <div class="flash"><div class="f-num">PATH</div><div class="f-label">Colonne dans show</div><div class="f-desc">Dernier caractère de la colonne PATH — pas de colonne dédiée</div></div>
+    <div class="flash"><div class="f-num">AS-SET</div><div class="f-label">Aggregation + as-set</div><div class="f-desc">Hérite du pire origin des composants → ? si redistribué</div></div>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left-color:var(--orange-lt);">
+    <h3 style="color:var(--orange-lt);">🎓 Résumé Exam en 5 points</h3>
+    <ol style="padding-left:20px;line-height:2.4;font-size:13px;color:var(--text2);">
+      <li>Origin = Well-known <strong style="color:var(--text)">Mandatory</strong> · type code <strong style="color:var(--text)">1</strong> · présent dans chaque UPDATE</li>
+      <li>Critère <strong style="color:var(--text)">#5</strong> Best Path : <strong style="color:var(--green-lt)">i</strong> > <strong style="color:var(--orange-lt)">e</strong> > <strong style="color:#e57373;">?</strong></li>
+      <li><code style="color:var(--teal-lt)">network</code> → <strong style="color:var(--green-lt)">i</strong> · <code style="color:var(--teal-lt)">redistribute</code> → <strong style="color:#e57373;">?</strong> (toujours)</li>
+      <li>Visible en <strong style="color:var(--text)">dernier caractère de PATH</strong> dans show ip bgp</li>
+      <li><code style="color:var(--teal-lt)">aggregate as-set</code> → hérite du <strong style="color:var(--text)">pire origin</strong> des composants</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+function showTab(name, el) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
