@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP Locally Originated — Référence CCIE / ENARSI</title>
+<style>
+  :root {
+    --bg:       #0d1117;
+    --bg2:      #111827;
+    --bg3:      #1a2235;
+    --bg4:      #202b3d;
+    --border:   #1e2d42;
+    --text:     #f0f4fa;
+    --text2:    #8aadca;
+    --text3:    #4a6070;
+    --blue:     #1b72be;
+    --blue-lt:  #4a9fd4;
+    --green:    #27ae60;
+    --green-lt: #2ecc71;
+    --orange:   #e67e22;
+    --orange-lt:#f39c12;
+    --red:      #e74c3c;
+    --teal:     #16a085;
+    --teal-lt:  #1abc9c;
+    --purple:   #8e44ad;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+  .topbar { background: linear-gradient(135deg,#0d1b2a,#1a2e42); padding: 14px 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); box-shadow: 0 2px 16px rgba(0,0,0,.5); }
+  .topbar .logo { background: var(--blue); color: #fff; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 4px; letter-spacing: 1px; }
+  .topbar h1 { font-size: 16px; font-weight: 600; color: var(--text); }
+  .topbar .badge { background: rgba(155,89,182,.8); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 12px; }
+  .topbar .no-attr { background: rgba(74,159,212,.15); color: var(--blue-lt); border: 1px solid rgba(74,159,212,.3); font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 12px; }
+  .topbar .pos { margin-left: auto; font-size: 11px; color: var(--text3); font-weight: 600; }
+  .topbar .pos span { color: var(--orange-lt); }
+
+  .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 10px 20px 0; overflow-x: auto; border-bottom: 1px solid var(--border); }
+  .tab { padding: 8px 15px; font-size: 12px; font-weight: 600; color: var(--text2); cursor: pointer; border-radius: 6px 6px 0 0; border: none; background: transparent; white-space: nowrap; transition: all .2s; }
+  .tab:hover { color: var(--text); background: var(--bg3); }
+  .tab.active { background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-bottom: 1px solid var(--bg3); }
+
+  .content { display: none; padding: 24px; max-width: 980px; margin: 0 auto; }
+  .content.active { display: block; }
+
+  .card { background: var(--bg2); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; border: 1px solid var(--border); border-left: 4px solid var(--blue); }
+  .card.warn   { border-left-color: var(--red); }
+  .card.green  { border-left-color: var(--green); }
+  .card.orange { border-left-color: var(--orange); }
+  .card.purple { border-left-color: var(--purple); }
+  .card.teal   { border-left-color: var(--teal); }
+  .card.grey   { border-left-color: var(--text3); }
+
+  h2 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  h3 { font-size: 12px; font-weight: 700; color: var(--blue-lt); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .6px; }
+  .card.warn h3   { color: #e57373; }
+  .card.green h3  { color: var(--green-lt); }
+  .card.orange h3 { color: var(--orange-lt); }
+  .card.teal h3   { color: var(--teal-lt); }
+  .card.purple h3 { color: #ba68c8; }
+  .card.grey h3   { color: var(--text3); }
+  p { line-height: 1.65; color: var(--text2); margin-bottom: 8px; }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+  .badge-tag { padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge-blue   { background: rgba(27,114,190,.15); color: var(--blue-lt); border: 1px solid rgba(27,114,190,.4); }
+  .badge-green  { background: rgba(39,174,96,.15);  color: var(--green-lt); border: 1px solid rgba(39,174,96,.4); }
+  .badge-orange { background: rgba(230,126,34,.15); color: var(--orange-lt); border: 1px solid rgba(230,126,34,.4); }
+  .badge-red    { background: rgba(231,76,60,.15);  color: #e57373; border: 1px solid rgba(231,76,60,.4); }
+  .badge-purple { background: rgba(142,68,173,.15); color: #ba68c8; border: 1px solid rgba(142,68,173,.4); }
+  .badge-teal   { background: rgba(22,160,133,.15); color: var(--teal-lt); border: 1px solid rgba(22,160,133,.4); }
+  .badge-grey   { background: rgba(74,96,128,.15);  color: var(--text3); border: 1px solid rgba(74,96,128,.3); }
+
+  pre { background: #0a0f1a; color: #a8d8ea; border-radius: 8px; padding: 15px 18px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.75; overflow-x: auto; margin: 10px 0; border: 1px solid var(--border); }
+  .kw  { color: #e2a44a; }
+  .val { color: #7ec8a0; }
+  .cmt { color: #3d5a70; font-style: italic; }
+  .hl  { color: var(--orange-lt); font-weight: bold; }
+  .hl2 { color: var(--teal-lt); font-weight: bold; }
+  .hl3 { color: #ba68c8; font-weight: bold; }
+  .ok  { color: var(--green-lt); font-weight: bold; }
+  .no  { color: #e57373; font-weight: bold; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th { background: var(--bg4); color: var(--text2); padding: 10px 14px; font-size: 11px; font-weight: 700; text-align: left; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text2); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); }
+
+  .info-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+  .info-pill { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; padding: 8px 14px; font-size: 12px; color: var(--text); flex: 1; min-width: 130px; }
+  .info-pill strong { display: block; color: var(--blue-lt); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+
+  .section-intro { color: var(--text2); font-size: 13px; line-height: 1.65; margin-bottom: 16px; }
+
+  /* ALGO STEPS */
+  .algo-strip { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
+  .algo-step { display: flex; align-items: center; gap: 6px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; font-size: 11px; font-weight: 600; color: var(--text3); }
+  .algo-step.active { background: rgba(155,89,182,.12); border-color: rgba(155,89,182,.4); color: #ba68c8; }
+  .algo-step.done { background: rgba(39,174,96,.08); border-color: rgba(39,174,96,.2); color: var(--green-lt); }
+  .algo-step .num { font-family: 'Courier New', monospace; font-weight: 800; font-size: 12px; }
+
+  /* INJECTION METHOD CARDS */
+  .inj-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 14px 0; }
+  .inj-card { border-radius: 10px; padding: 18px; border: 1px solid var(--border); }
+  .inj-card.net  { background: rgba(39,174,96,.07);  border-color: rgba(39,174,96,.25); }
+  .inj-card.agg  { background: rgba(74,159,212,.07); border-color: rgba(74,159,212,.25); }
+  .inj-card.red  { background: rgba(231,76,60,.07);  border-color: rgba(231,76,60,.25); }
+  .inj-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .inj-cmd   { font-family: 'Courier New', monospace; font-size: 11px; color: var(--teal-lt); background: rgba(0,0,0,.3); padding: 2px 7px; border-radius: 4px; margin-bottom: 10px; display: inline-block; }
+  .inj-row   { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+  .inj-row:last-child { border-bottom: none; }
+  .inj-row .label { color: var(--text3); }
+  .inj-row .val-green { color: var(--green-lt); font-weight: 700; font-family: monospace; }
+  .inj-row .val-red   { color: #e57373; font-weight: 700; font-family: monospace; }
+  .inj-row .val-blue  { color: var(--blue-lt); font-weight: 700; font-family: monospace; }
+
+  /* BGP TABLE */
+  .bgp-tbl { width: 100%; border-collapse: collapse; font-family: 'Courier New', monospace; font-size: 12px; }
+  .bgp-tbl th { background: #0a0f1a; color: var(--text2); padding: 7px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); font-family: 'Segoe UI', sans-serif; }
+  .bgp-tbl td { padding: 7px 12px; border-bottom: 1px solid rgba(30,45,66,.5); color: var(--text2); }
+  .bgp-tbl tr:last-child td { border-bottom: none; }
+  .bgp-tbl .best td { background: rgba(39,174,96,.07); }
+  .bgp-tbl .best td:first-child { color: var(--green-lt); font-weight: 700; }
+  .bgp-tbl .lose td { color: var(--text3); }
+  .nh-zero { color: var(--orange-lt); font-weight: bold; }
+  .nh-ip   { color: var(--text2); }
+
+  /* TRAP */
+  .trap { background: rgba(230,126,34,.08); border: 1px solid rgba(230,126,34,.2); border-left: 3px solid var(--orange); border-radius: 8px; padding: 14px 18px; margin-bottom: 10px; }
+  .trap h3 { color: var(--orange-lt); font-size: 12px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .trap p { color: #c8a875; }
+  .trap code { background: rgba(230,126,34,.2); color: var(--orange-lt); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; }
+  .trap.green-trap { background: rgba(39,174,96,.08); border-color: rgba(39,174,96,.2); border-left-color: var(--green); }
+  .trap.green-trap h3 { color: var(--green-lt); }
+  .trap.green-trap p { color: #7ecf9a; }
+  .trap.red-trap { background: rgba(231,76,60,.08); border-color: rgba(231,76,60,.2); border-left-color: var(--red); }
+  .trap.red-trap h3 { color: #e57373; }
+  .trap.red-trap p { color: #c88080; }
+
+  /* FLASH */
+  .flash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .flash { background: var(--bg3); border-radius: 10px; padding: 18px; text-align: center; border: 1px solid var(--border); cursor: pointer; transition: border-color .2s; }
+  .flash:hover { border-color: var(--blue-lt); }
+  .flash .q { font-size: 12px; color: var(--text2); line-height: 1.5; min-height: 48px; }
+  .flash .a { display: none; font-size: 12px; color: var(--green-lt); line-height: 1.5; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-weight: 600; }
+  .flash.revealed .a { display: block; }
+  .flash .hint { font-size: 10px; color: var(--text3); margin-top: 8px; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo">CISCO</span>
+  <h1>BGP Locally Originated</h1>
+  <span class="badge">CCIE / ENARSI</span>
+  <span class="no-attr">PAS un attribut BGP</span>
+  <span class="pos">Best Path Critère <span>#3</span></span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('theo',this)">① Théorie</button>
+  <button class="tab" onclick="show('inj',this)">② Injection</button>
+  <button class="tab" onclick="show('table',this)">③ Table BGP</button>
+  <button class="tab" onclick="show('bestpath',this)">④ Best Path</button>
+  <button class="tab" onclick="show('prop',this)">⑤ Propagation</button>
+  <button class="tab" onclick="show('pieges',this)">⑥ Pièges</button>
+  <button class="tab" onclick="show('flash',this)">⑦ Flash Cards</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ① THÉORIE
+     ═══════════════════════════════════════════════════ -->
+<div id="theo" class="content active">
+
+  <div class="card purple">
+    <h3>⚠ Règle de sélection — pas un attribut BGP</h3>
+    <p>Contrairement à <strong>Weight</strong>, <strong>LOCAL_PREF</strong> ou <strong>Origin</strong>, le critère "Locally Originated" <strong>n'est pas un attribut BGP</strong>. Il n'a ni type code, ni RFC dédiée, ni champ transporté dans les messages UPDATE.</p>
+    <p>BGP l'identifie uniquement par le fait que le <strong>NEXT_HOP = 0.0.0.0</strong> dans la table BGP locale. C'est une règle interne au processus de sélection : le routeur préfère toujours une route qu'il a lui-même injectée dans BGP sur une route reçue d'un voisin, à condition que Weight (#1) et LOCAL_PREF (#2) soient identiques.</p>
+  </div>
+
+  <!-- PROFIL -->
+  <div class="card">
+    <h3>Profil du critère</h3>
+    <div class="info-row">
+      <div class="info-pill"><strong>Type Code BGP</strong>Aucun — pas un attribut</div>
+      <div class="info-pill"><strong>Catégorie</strong>Règle de sélection interne</div>
+      <div class="info-pill"><strong>Critère Best Path</strong>#3</div>
+      <div class="info-pill"><strong>Identifiable par</strong>NEXT_HOP = 0.0.0.0</div>
+      <div class="info-pill"><strong>Propagation</strong>❌ Non propagé</div>
+      <div class="info-pill"><strong>Configurable</strong>❌ Automatique</div>
+      <div class="info-pill"><strong>Valeur wins</strong>Route locale &gt; reçue</div>
+    </div>
+    <div class="badges">
+      <span class="badge-tag badge-purple">Règle de sélection</span>
+      <span class="badge-tag badge-grey">Pas de type code</span>
+      <span class="badge-tag badge-orange">NEXT_HOP = 0.0.0.0</span>
+      <span class="badge-tag badge-blue">Critère #3</span>
+    </div>
+  </div>
+
+  <!-- COMPARAISON AVEC LES VRAIS ATTRIBUTS -->
+  <div class="card teal">
+    <h3>Comparaison : attribut BGP vs règle de sélection</h3>
+    <table>
+      <tr><th>Caractéristique</th><th>Attribut BGP (ex: Origin)</th><th>Locally Originated (#3)</th></tr>
+      <tr><td>Type code</td><td>Oui (ex: type 1)</td><td style="color:#e57373;font-weight:700">Aucun</td></tr>
+      <tr><td>Transporté dans UPDATE</td><td>Oui</td><td style="color:#e57373;font-weight:700">Non</td></tr>
+      <tr><td>Visible dans show ip bgp</td><td>Dans la colonne Path</td><td style="color:#f39c12;font-weight:700">NEXT_HOP = 0.0.0.0</td></tr>
+      <tr><td>Modifiable par route-map</td><td>Oui (set origin, etc.)</td><td style="color:#e57373;font-weight:700">Non</td></tr>
+      <tr><td>RFC dédiée</td><td>RFC 4271 + spécifiques</td><td style="color:#e57373;font-weight:700">Comportement implicite</td></tr>
+      <tr><td>Propagé aux voisins</td><td>Oui (selon règles)</td><td style="color:#e57373;font-weight:700">Non — NH remplacé</td></tr>
+    </table>
+  </div>
+
+  <!-- POSITION DANS L'ALGO -->
+  <div class="card green">
+    <h3>Position dans le Best Path Algorithm</h3>
+    <div class="algo-strip">
+      <div class="algo-step done"><span class="num">1</span> Weight</div>
+      <div class="algo-step done"><span class="num">2</span> LOCAL_PREF</div>
+      <div class="algo-step active"><span class="num">3</span> ★ Locally Originated</div>
+      <div class="algo-step"><span class="num">4</span> AS-PATH</div>
+      <div class="algo-step"><span class="num">5</span> Origin</div>
+      <div class="algo-step"><span class="num">6</span> MED</div>
+      <div class="algo-step"><span class="num">7</span> eBGP/iBGP</div>
+      <div class="algo-step"><span class="num">8</span> IGP metric</div>
+      <div class="algo-step"><span class="num">9</span> AIGP</div>
+      <div class="algo-step"><span class="num">10</span> Oldest</div>
+      <div class="algo-step"><span class="num">11</span> Router-ID</div>
+      <div class="algo-step"><span class="num">12</span> Cluster-list</div>
+      <div class="algo-step"><span class="num">13</span> Neighbor IP</div>
+    </div>
+    <p style="margin-top:10px">Le critère #3 ne s'applique que si Weight (#1) et LOCAL_PREF (#2) sont strictement égaux entre la route locale et la route reçue. En pratique, Weight=32768 sur la route locale (default) gagne déjà au critère #1 — #3 joue uniquement si Weight a été explicitement mis à 0 sur la route locale.</p>
+  </div>
+
+  <!-- LES 3 MÉTHODES -->
+  <div class="card">
+    <h3>Les 3 méthodes d'injection — impact sur Origin</h3>
+    <table>
+      <tr><th>Méthode</th><th>Commande</th><th>Origin résultant</th><th>NEXT_HOP dans BGP</th><th>Condition</th></tr>
+      <tr>
+        <td><strong>network</strong></td>
+        <td><code style="font-family:monospace;color:var(--teal-lt)">network 10.0.0.0 mask 255.0.0.0</code></td>
+        <td style="color:var(--green-lt);font-weight:700">i (IGP)</td>
+        <td style="color:var(--orange-lt);font-weight:700">0.0.0.0</td>
+        <td>Préfixe exact doit exister dans la RIB</td>
+      </tr>
+      <tr>
+        <td><strong>aggregate-address</strong></td>
+        <td><code style="font-family:monospace;color:var(--teal-lt)">aggregate-address 10.0.0.0 255.0.0.0</code></td>
+        <td style="color:var(--green-lt);font-weight:700">i (IGP)</td>
+        <td style="color:var(--orange-lt);font-weight:700">0.0.0.0</td>
+        <td>Au moins une composante dans la table BGP</td>
+      </tr>
+      <tr>
+        <td><strong>redistribute</strong></td>
+        <td><code style="font-family:monospace;color:var(--teal-lt)">redistribute ospf 1</code></td>
+        <td style="color:#e57373;font-weight:700">? (incomplete)</td>
+        <td style="color:var(--orange-lt);font-weight:700">0.0.0.0</td>
+        <td>Toujours — même avec set origin igp en route-map</td>
+      </tr>
+    </table>
+    <p style="margin-top:8px;font-size:12px;color:var(--text3)">⚠ <code style="font-family:monospace">redistribute</code> positionne toujours Origin=? (incomplete). Utiliser <code style="font-family:monospace">set origin igp</code> dans une route-map pour forcer Origin=i si nécessaire.</p>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ② INJECTION
+     ═══════════════════════════════════════════════════ -->
+<div id="inj" class="content">
+
+  <p class="section-intro">Les 3 commandes qui rendent une route "locally originated" dans BGP. Dans tous les cas, le NEXT_HOP sera 0.0.0.0 dans la table BGP locale.</p>
+
+  <div class="inj-grid">
+
+    <div class="inj-card net">
+      <div class="inj-title">① network</div>
+      <div class="inj-cmd">network &lt;prefix&gt; mask &lt;mask&gt;</div>
+      <div class="inj-row"><span class="label">Origin</span><span class="val-green">i (IGP)</span></div>
+      <div class="inj-row"><span class="label">NEXT_HOP</span><span class="val-green">0.0.0.0</span></div>
+      <div class="inj-row"><span class="label">Condition</span><span class="val-blue">Préfixe exact dans RIB</span></div>
+      <div class="inj-row"><span class="label">Propagation</span><span class="val-green">Oui, vers tous voisins</span></div>
+    </div>
+
+    <div class="inj-card agg">
+      <div class="inj-title">② aggregate-address</div>
+      <div class="inj-cmd">aggregate-address &lt;prefix&gt; &lt;mask&gt;</div>
+      <div class="inj-row"><span class="label">Origin</span><span class="val-green">i (IGP)</span></div>
+      <div class="inj-row"><span class="label">NEXT_HOP</span><span class="val-green">0.0.0.0</span></div>
+      <div class="inj-row"><span class="label">Condition</span><span class="val-blue">Composante présente dans BGP</span></div>
+      <div class="inj-row"><span class="label">summary-only</span><span class="val-blue">Supprime les composantes</span></div>
+    </div>
+
+    <div class="inj-card red">
+      <div class="inj-title">③ redistribute</div>
+      <div class="inj-cmd">redistribute &lt;protocol&gt; &lt;instance&gt;</div>
+      <div class="inj-row"><span class="label">Origin</span><span class="val-red">? (incomplete)</span></div>
+      <div class="inj-row"><span class="label">NEXT_HOP</span><span class="val-green">0.0.0.0</span></div>
+      <div class="inj-row"><span class="label">Condition</span><span class="val-blue">Route présente dans RIB</span></div>
+      <div class="inj-row"><span class="label">Correctif Origin</span><span class="val-red">set origin igp en route-map</span></div>
+    </div>
+
+  </div>
+
+  <!-- CONFIG COMPLÈTE -->
+  <div class="card">
+    <h3>Config complète — méthode network</h3>
+    <pre>
+<span class="cmt">! Condition : 10.0.0.0/8 doit exister dans la RIB (statique ou IGP)</span>
+<span class="kw">ip route</span> <span class="val">10.0.0.0 255.0.0.0 Null0</span>          <span class="cmt">! route statique Null0 pour garantir la présence dans RIB</span>
+
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">network</span> <span class="val">10.0.0.0</span> mask <span class="val">255.0.0.0</span>          <span class="cmt">! préfixe exact requis</span>
+
+<span class="cmt">! Résultat dans show ip bgp :</span>
+<span class="cmt">! *> 10.0.0.0/8   0.0.0.0   0   32768 i    ← NH=0.0.0.0, locally originated</span></pre>
+  </div>
+
+  <div class="card orange">
+    <h3>Config complète — aggregate-address</h3>
+    <pre>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">network</span> <span class="val">10.1.0.0</span> mask <span class="val">255.255.0.0</span>        <span class="cmt">! composante dans BGP</span>
+ <span class="kw">network</span> <span class="val">10.2.0.0</span> mask <span class="val">255.255.0.0</span>        <span class="cmt">! composante dans BGP</span>
+ <span class="kw">aggregate-address</span> <span class="val">10.0.0.0 255.0.0.0</span> <span class="hl">summary-only</span>
+<span class="cmt">!</span>
+<span class="cmt">! summary-only : supprime 10.1/16 et 10.2/16 de l'annonce</span>
+<span class="cmt">! sans summary-only : agrégat ET composantes sont annoncés</span>
+<span class="cmt">!</span>
+<span class="cmt">! Résultat :</span>
+<span class="cmt">! *> 10.0.0.0/8   0.0.0.0   0   32768 i    ← NH=0.0.0.0, Atomic Aggregate positionné</span></pre>
+  </div>
+
+  <div class="card warn">
+    <h3>Config complète — redistribute (+ correctif Origin)</h3>
+    <pre>
+<span class="kw">route-map</span> <span class="val">REDIS-BGP</span> permit <span class="val">10</span>
+ <span class="kw">set origin igp</span>                             <span class="cmt">! force Origin=i au lieu de ?</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">redistribute ospf</span> <span class="val">1</span> route-map <span class="val">REDIS-BGP</span>
+<span class="cmt">!</span>
+<span class="cmt">! Sans route-map :</span>
+<span class="cmt">! *> 192.168.1.0   0.0.0.0   0   32768 ?    ← Origin=? (incomplete)</span>
+<span class="cmt">! Avec route-map + set origin igp :</span>
+<span class="cmt">! *> 192.168.1.0   0.0.0.0   0   32768 i    ← Origin=i</span></pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ③ TABLE BGP
+     ═══════════════════════════════════════════════════ -->
+<div id="table" class="content">
+
+  <p class="section-intro">Le seul moyen d'identifier une route "locally originated" dans <code style="font-family:monospace;color:var(--teal-lt)">show ip bgp</code> est le <strong>NEXT_HOP = 0.0.0.0</strong>. Il n'y a pas de flag dédié ni de colonne spécifique.</p>
+
+  <div class="card">
+    <h3>show ip bgp — lecture de la table</h3>
+    <pre>
+R1# <span class="hl">show ip bgp</span>
+BGP table version is 7, local router ID is <span class="val">1.1.1.1</span>
+Status codes: s suppressed, d damped, h history, * valid, > best, i internal
+Origin codes: i - IGP, e - EGP, ? - incomplete
+
+   Network          Next Hop         Metric  LocPrf  Weight  Path
+<span class="ok">*> 10.0.0.0/8       0.0.0.0               0           32768  i</span>    <span class="cmt">← network, locally originated</span>
+<span class="ok">*> 172.16.0.0/12    0.0.0.0               0           32768  i</span>    <span class="cmt">← aggregate-address, locally originated</span>
+<span class="ok">*> 192.168.10.0/24  0.0.0.0               0           32768  ?</span>    <span class="cmt">← redistribute, locally originated</span>
+   10.0.0.0/8       <span class="hl">10.0.0.1</span>            100       100      0  65001 i   <span class="cmt">← reçue d'un voisin eBGP</span>
+   192.168.10.0/24  <span class="hl">10.0.0.1</span>            100       100      0  65001 i   <span class="cmt">← reçue d'un voisin eBGP</span></pre>
+
+    <p style="margin-top:8px;font-size:12px;color:var(--text3)">
+      <strong style="color:var(--green-lt)">*&gt;</strong> = route valide et sélectionnée comme best path.
+      NEXT_HOP = <span style="color:var(--orange-lt);font-family:monospace;font-weight:700">0.0.0.0</span> = indicateur d'une route locally originated.
+      Les routes reçues des voisins ont le NEXT_HOP de l'interface du peer.
+    </p>
+  </div>
+
+  <div class="card teal">
+    <h3>Comparaison : route locale vs route reçue — même préfixe</h3>
+    <table class="bgp-tbl">
+      <tr>
+        <th>Status</th><th>Network</th><th>Next Hop</th><th>Metric</th><th>LocPrf</th><th>Weight</th><th>Path</th><th>Critère gagnant</th>
+      </tr>
+      <tr class="best">
+        <td>*&gt;</td>
+        <td>10.0.0.0/8</td>
+        <td class="nh-zero">0.0.0.0</td>
+        <td>0</td>
+        <td>—</td>
+        <td>32768</td>
+        <td>i</td>
+        <td style="color:var(--green-lt);font-weight:700">#1 Weight 32768</td>
+      </tr>
+      <tr class="lose">
+        <td>*</td>
+        <td>10.0.0.0/8</td>
+        <td class="nh-ip">10.0.0.1</td>
+        <td>100</td>
+        <td>100</td>
+        <td>0</td>
+        <td>65001 i</td>
+        <td>—</td>
+      </tr>
+    </table>
+    <p style="margin-top:10px;font-size:12px;color:var(--text3)">Ici c'est Weight (#1) qui gagne (32768 vs 0). Le critère #3 "Locally Originated" ne s'applique que si Weight et LOCAL_PREF sont identiques (voir onglet Best Path).</p>
+  </div>
+
+  <div class="card">
+    <h3>show ip bgp — route locally originated détaillée</h3>
+    <pre>
+R1# <span class="hl">show ip bgp 10.0.0.0/8</span>
+BGP routing table entry for 10.0.0.0/8, version 3
+Paths: (2 available, best #1, table default)
+  <span class="ok">Local</span>, (Received from a RR-client)
+    <span class="hl2">0.0.0.0</span> from <span class="hl2">0.0.0.0</span> (<span class="val">1.1.1.1</span>)          <span class="cmt">← NEXT_HOP 0.0.0.0 = locally originated</span>
+      Origin IGP, metric 0, weight 32768, valid, sourced, <span class="ok">local, best</span>
+      Last update: 00:05:12 ago
+  65001
+    10.0.0.1 from 10.0.0.1 (192.168.1.1)
+      Origin IGP, metric 100, localpref 100, valid, external
+      Last update: 00:12:44 ago</pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ④ BEST PATH
+     ═══════════════════════════════════════════════════ -->
+<div id="bestpath" class="content">
+
+  <p class="section-intro">Le critère #3 est rare dans la vraie vie — il ne joue que si Weight et LOCAL_PREF sont strictement égaux entre la route locale et la route reçue. Voici les scénarios concrets.</p>
+
+  <div class="card warn">
+    <h3>⚠ Quand le critère #3 ne joue PAS (cas le plus fréquent)</h3>
+    <pre>
+<span class="cmt">! Scénario : route locale VS route reçue d'un peer eBGP</span>
+<span class="cmt">! Route locale via network :</span>
+  Weight = <span class="hl">32768</span>   (valeur par défaut Cisco pour routes locales)
+
+<span class="cmt">! Route reçue d'un voisin eBGP :</span>
+  Weight = <span class="no">0</span>        (valeur par défaut pour routes reçues)
+
+<span class="cmt">! → Critère #1 Weight tranche : 32768 > 0</span>
+<span class="cmt">! → Critère #3 n'est jamais atteint</span></pre>
+  </div>
+
+  <div class="card green">
+    <h3>✓ Quand le critère #3 joue — scénario exact</h3>
+    <pre>
+<span class="cmt">! Conditions requises pour que #3 tranche :</span>
+<span class="cmt">! - Weight identique sur les deux routes (ex: les deux à 0)</span>
+<span class="cmt">! - LOCAL_PREF identique (ex: les deux à 100)</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">10.0.0.1</span> weight <span class="val">0</span>             <span class="cmt">! force Weight=0 pour la route reçue ET locale</span>
+ <span class="kw">network</span> <span class="val">10.0.0.0</span> mask <span class="val">255.0.0.0</span>
+<span class="cmt">!</span>
+<span class="cmt">! Résultat best path :</span>
+<span class="cmt">!  #1 Weight       : 0 = 0  → TIE</span>
+<span class="cmt">!  #2 LOCAL_PREF   : 100 = 100 → TIE</span>
+<span class="cmt">!  #3 Locally Orig : route locale NH=0.0.0.0 → GAGNE ★</span></pre>
+  </div>
+
+  <div class="card">
+    <h3>Décision pas à pas — les 3 premiers critères</h3>
+    <table>
+      <tr><th>Critère</th><th>Route locale (network)</th><th>Route reçue peer</th><th>Résultat</th></tr>
+      <tr>
+        <td><strong>#1 Weight</strong></td>
+        <td style="color:var(--orange-lt)">0 (forcé)</td>
+        <td style="color:var(--orange-lt)">0 (default)</td>
+        <td style="color:var(--text3)">TIE → suivant</td>
+      </tr>
+      <tr>
+        <td><strong>#2 LOCAL_PREF</strong></td>
+        <td style="color:var(--orange-lt)">100 (default)</td>
+        <td style="color:var(--orange-lt)">100 (default)</td>
+        <td style="color:var(--text3)">TIE → suivant</td>
+      </tr>
+      <tr>
+        <td><strong>#3 Locally Originated</strong></td>
+        <td style="color:var(--green-lt);font-weight:700">NH = 0.0.0.0 ✓</td>
+        <td style="color:#e57373;font-weight:700">NH = 10.0.0.1 ✗</td>
+        <td style="color:var(--green-lt);font-weight:700">ROUTE LOCALE GAGNE ★</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card teal">
+    <h3>Cas CCIE — iBGP peer redistribue aussi la même route</h3>
+    <pre>
+<span class="cmt">! Topologie : R1 et R2 dans AS65001 (iBGP full-mesh)</span>
+<span class="cmt">! R1 : network 10.0.0.0/8 → locally originated</span>
+<span class="cmt">! R2 : reçoit 10.0.0.0/8 via iBGP de R1, et aussi via eBGP de ISP</span>
+<span class="cmt">!</span>
+<span class="cmt">! Sur R2 :</span>
+<span class="cmt">!  Route de R1 (iBGP) : Weight=0, LP=100, NH=1.1.1.1 (R1)</span>
+<span class="cmt">!  Route ISP (eBGP)   : Weight=0, LP=100, NH=10.0.0.1</span>
+<span class="cmt">!</span>
+<span class="cmt">! → Critère #7 eBGP > iBGP tranche sur R2 (pas #3)</span>
+<span class="cmt">! → #3 ne s'applique que sur le routeur qui a injecté la route</span></pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ⑤ PROPAGATION
+     ═══════════════════════════════════════════════════ -->
+<div id="prop" class="content">
+
+  <p class="section-intro">Quand une route "locally originated" est annoncée aux voisins BGP, le NEXT_HOP 0.0.0.0 n'est jamais propagé tel quel — BGP le remplace automatiquement par l'adresse IP de l'interface source de la session.</p>
+
+  <div class="card">
+    <h3>Ce qui est annoncé aux voisins</h3>
+    <pre>
+<span class="cmt">! Sur R1 (AS65001) — table BGP locale :</span>
+<span class="ok">*> 10.0.0.0/8   0.0.0.0   0   32768 i</span>   <span class="cmt">← NH=0.0.0.0 visible en local</span>
+
+<span class="cmt">! Ce que R2 (voisin iBGP) reçoit :</span>
+<span class="ok">*>i 10.0.0.0/8  1.1.1.1   0   100   0 i</span> <span class="cmt">← NH remplacé par l'IP de R1 (update-source loopback)</span>
+
+<span class="cmt">! Ce que R3 (voisin eBGP) reçoit :</span>
+<span class="ok">*> 10.0.0.0/8   203.0.113.1  0  0 65001 i</span> <span class="cmt">← NH = IP interface eBGP de R1</span></pre>
+  </div>
+
+  <div class="card teal">
+    <h3>Règles de propagation du NEXT_HOP</h3>
+    <table>
+      <tr><th>Type de session</th><th>NH local (show ip bgp)</th><th>NH annoncé au voisin</th><th>Commande</th></tr>
+      <tr>
+        <td>Vers voisin <strong>eBGP</strong></td>
+        <td style="color:var(--orange-lt);font-family:monospace">0.0.0.0</td>
+        <td style="color:var(--green-lt);font-family:monospace">IP interface eBGP</td>
+        <td>Automatique</td>
+      </tr>
+      <tr>
+        <td>Vers voisin <strong>iBGP</strong></td>
+        <td style="color:var(--orange-lt);font-family:monospace">0.0.0.0</td>
+        <td style="color:var(--green-lt);font-family:monospace">IP source de la session</td>
+        <td>Automatique</td>
+      </tr>
+      <tr>
+        <td>iBGP avec <strong>next-hop-self</strong></td>
+        <td style="color:var(--orange-lt);font-family:monospace">0.0.0.0</td>
+        <td style="color:var(--teal-lt);font-family:monospace">IP locale (forcée)</td>
+        <td><code style="font-family:monospace">neighbor X next-hop-self</code></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card orange">
+    <h3>next-hop-self — interaction avec les routes localement originées</h3>
+    <pre>
+<span class="cmt">! next-hop-self force le NH pour toutes les routes annoncées aux iBGP peers</span>
+<span class="cmt">! y compris les routes locally originated (même si NH était déjà 0.0.0.0)</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">2.2.2.2</span> remote-as <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">2.2.2.2</span> <span class="hl">next-hop-self</span>         <span class="cmt">! NH annoncé = loopback/IP locale</span>
+ <span class="kw">network</span> <span class="val">10.0.0.0</span> mask <span class="val">255.0.0.0</span>
+<span class="cmt">!</span>
+<span class="cmt">! Sur R2 (peer iBGP) :</span>
+<span class="cmt">! *>i 10.0.0.0/8   1.1.1.1 ← NH = loopback de R1, pas 0.0.0.0</span></pre>
+    <p>⚠ <strong>next-hop-self ne rend pas la route "locally originated" sur R2</strong> — R2 la reçoit toujours comme une route iBGP avec un vrai NEXT_HOP (1.1.1.1). Seul R1 la voit avec NH=0.0.0.0.</p>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ⑥ PIÈGES
+     ═══════════════════════════════════════════════════ -->
+<div id="pieges" class="content">
+
+  <div class="trap red-trap">
+    <h3>⚡ Piège #1 — network sans correspondance exacte dans la RIB</h3>
+    <p>La commande <code>network 10.0.0.0 mask 255.0.0.0</code> n'injecte la route dans BGP <strong>que si 10.0.0.0/8 existe exactement dans la RIB</strong>. Un résumé plus spécifique (10.1.0.0/16) ne suffit pas. Solution : ajouter une route statique vers Null0.</p>
+    <pre>
+<span class="kw">ip route</span> <span class="val">10.0.0.0 255.0.0.0 Null0</span>   <span class="cmt">! garantit la présence dans la RIB</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">network</span> <span class="val">10.0.0.0</span> mask <span class="val">255.0.0.0</span></pre>
+  </div>
+
+  <div class="trap">
+    <h3>⚡ Piège #2 — redistribute génère toujours Origin=?</h3>
+    <p><code>redistribute</code> positionne Origin=<code>?</code> (incomplete) <strong>même avec une route-map set origin igp</strong> dans certaines versions IOS. Toujours vérifier avec <code>show ip bgp</code> que Origin=i est bien positionné. Préférer <code>network</code> quand c'est possible.</p>
+  </div>
+
+  <div class="trap red-trap">
+    <h3>⚡ Piège #3 — confondre "locally originated" avec next-hop-self</h3>
+    <p><code>next-hop-self</code> modifie le NEXT_HOP annoncé aux voisins iBGP, mais <strong>ne rend pas la route "locally originated" sur ces voisins</strong>. Le voisin reçoit la route avec un vrai IP comme NEXT_HOP — NH=0.0.0.0 n'est visible que sur le routeur qui a injecté la route via <code>network</code>, <code>aggregate</code> ou <code>redistribute</code>.</p>
+  </div>
+
+  <div class="trap">
+    <h3>⚡ Piège #4 — aggregate-address sans summary-only annonce les composantes</h3>
+    <p>Sans <code>summary-only</code>, <code>aggregate-address 10.0.0.0/8</code> crée l'agrégat ET continue d'annoncer 10.1.0.0/16, 10.2.0.0/16, etc. Utiliser <code>summary-only</code> pour supprimer les composantes. Attention au <code>suppress-map</code> pour une suppression sélective.</p>
+    <pre>
+<span class="kw">aggregate-address</span> <span class="val">10.0.0.0 255.0.0.0</span>              <span class="cmt">! agrégat + composantes annoncées</span>
+<span class="kw">aggregate-address</span> <span class="val">10.0.0.0 255.0.0.0</span> <span class="hl">summary-only</span>  <span class="cmt">! agrégat uniquement</span></pre>
+  </div>
+
+  <div class="trap red-trap">
+    <h3>⚡ Piège #5 — critère #3 masqué par Weight default</h3>
+    <p>Dans la quasi-totalité des déploiements, le critère #3 <strong>n'est jamais atteint</strong> car le Weight par défaut de 32768 sur les routes locales gagne déjà au critère #1. À l'exam CCIE, si une question porte sur "Locally Originated", vérifier que Weight et LOCAL_PREF sont <strong>explicitement</strong> égaux sur les routes comparées, sinon c'est #1 ou #2 qui tranche.</p>
+  </div>
+
+  <div class="trap green-trap">
+    <h3>✓ Bonne pratique — vérification dans show ip bgp</h3>
+    <p>Pour confirmer qu'une route est locally originated : <code>show ip bgp &lt;prefix&gt;</code> et vérifier <strong>NEXT_HOP = 0.0.0.0</strong> et <strong>weight 32768</strong> (ou la valeur configurée), ainsi que le mot clé <strong>"local"</strong> dans la sortie détaillée.</p>
+    <pre>
+R1# show ip bgp 10.0.0.0/8
+    <span class="ok">0.0.0.0</span> from <span class="ok">0.0.0.0</span> (1.1.1.1)
+      Origin IGP, weight 32768, valid, sourced, <span class="ok">local, best</span></pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ⑦ FLASH CARDS
+     ═══════════════════════════════════════════════════ -->
+<div id="flash" class="content">
+
+  <p class="section-intro" style="margin-bottom:16px">Cliquer sur une carte pour révéler la réponse.</p>
+
+  <div class="flash-grid">
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Comment identifier une route "locally originated" dans <code>show ip bgp</code> ?</div>
+      <div class="a">NEXT_HOP = 0.0.0.0 — c'est le seul indicateur visible dans la table BGP.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Quel est le type code BGP de "Locally Originated" ?</div>
+      <div class="a">Aucun. Ce n'est pas un attribut BGP — c'est une règle de sélection interne sans type code ni RFC dédiée.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Quelle méthode d'injection produit toujours Origin=? ?</div>
+      <div class="a"><code>redistribute</code> — toujours Origin=? (incomplete). Utiliser <code>set origin igp</code> dans une route-map pour corriger.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Dans quel cas le critère #3 tranche-t-il réellement ?</div>
+      <div class="a">Uniquement si Weight (#1) ET LOCAL_PREF (#2) sont strictement identiques entre la route locale et la route reçue. En pratique, Weight=32768 (default) gagne déjà au critère #1.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">NEXT_HOP=0.0.0.0 est-il propagé aux voisins BGP ?</div>
+      <div class="a">Non. BGP remplace automatiquement 0.0.0.0 par l'IP de l'interface source de la session avant d'annoncer la route au voisin.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Quelle commande garantit qu'un préfixe <code>network</code> soit injecté même sans IGP ?</div>
+      <div class="a"><code>ip route 10.0.0.0 255.0.0.0 Null0</code> — route statique vers Null0 pour assurer la présence du préfixe exact dans la RIB.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Quelle est la différence entre <code>aggregate-address</code> avec et sans <code>summary-only</code> ?</div>
+      <div class="a">Sans <code>summary-only</code> : agrégat + composantes annoncés. Avec <code>summary-only</code> : seul l'agrégat est annoncé, les composantes sont supprimées (s dans show ip bgp).</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Quel mot-clé apparaît dans <code>show ip bgp &lt;prefix&gt;</code> pour une route locally originated ?</div>
+      <div class="a">Le mot <strong>"local"</strong> dans la ligne de description : <code>valid, sourced, local, best</code>.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
