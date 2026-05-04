@@ -120,6 +120,25 @@
     .bp-step.active .bp-letter { color: var(--blue-lt); }
     .bp-name { font-size: 9px; font-weight: 600; letter-spacing: .3px; color: var(--text3); text-align: center; line-height: 1.2; }
     .bp-step.active .bp-name { color: var(--text2); }
+
+    /* ── Attribute category badges ── */
+    .attr-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 9px; font-weight: 700; letter-spacing: .4px;
+      padding: 2px 7px; border-radius: 6px; text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .attr-tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; display: block; flex-shrink: 0; }
+    .attr-wkm  { background: rgba(231,76,60,.12);  color: #e74c3c; border: 1px solid rgba(231,76,60,.3); }
+    .attr-wkm::before  { background: #e74c3c; }
+    .attr-wkd  { background: rgba(74,159,212,.12); color: #4a9fd4; border: 1px solid rgba(74,159,212,.3); }
+    .attr-wkd::before  { background: #4a9fd4; }
+    .attr-opt  { background: rgba(230,126,34,.12); color: #e6963a; border: 1px solid rgba(230,126,34,.3); }
+    .attr-opt::before  { background: #e6963a; }
+    .attr-optn { background: rgba(22,160,133,.12); color: #1abc9c; border: 1px solid rgba(22,160,133,.3); }
+    .attr-optn::before { background: #1abc9c; }
+    .attr-local{ background: rgba(138,173,202,.1);  color: #8aadca; border: 1px solid rgba(138,173,202,.2); }
+    .attr-local::before{ background: #8aadca; }
   </style>
 </head>
 <body>
@@ -226,7 +245,8 @@
         <span class="badge-dispo">DISPONIBLE</span>
       </div>
       <div class="card-title">BGP Weight</div>
-      <div class="card-desc">Paramètre local Cisco, priorité #1 dans le best path. Non propagé, 3 méthodes de config. Comparaison avec AIGP (RFC 7311).</div>
+      <span class="attr-tag attr-local">Cisco Local — non propagé</span>
+      <div class="card-desc">Priorité #1. Paramètre propriétaire Cisco, 16-bit (0-65535). 3 méthodes de config. Comparaison avec AIGP (RFC 7311).</div>
       <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </a>
 
@@ -237,7 +257,8 @@
         <span class="badge-dispo">DISPONIBLE</span>
       </div>
       <div class="card-title">LOCAL_PREF</div>
-      <div class="card-desc">Critère #2. Propagé à tout l'AS via iBGP. Policy sortante AS-wide. Table BGP avant/après. Valeur par défaut 100.</div>
+      <span class="attr-tag attr-wkd">Well-known Discretionary · type 5</span>
+      <div class="card-desc">Critère #2. Propagé à tout l'AS via iBGP, jamais vers eBGP. Policy sortante AS-wide. Défaut 100.</div>
       <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </a>
 
@@ -248,6 +269,7 @@
         <span class="badge-bientot">BIENTÔT</span>
       </div>
       <div class="card-title">AS-PATH</div>
+      <span class="attr-tag attr-wkm">Well-known Mandatory · type 2</span>
       <div class="card-desc">Critère #4. Liste des AS traversés. AS-path prepending, regex filtering, allow-as-in.</div>
     </div>
 
@@ -258,7 +280,8 @@
         <span class="badge-dispo">DISPONIBLE</span>
       </div>
       <div class="card-title">Origin</div>
-      <div class="card-desc">Critère #5. Well-known Mandatory (type 1). Valeurs i / e / ?. Injection, route-map set origin, agrégation avec as-set.</div>
+      <span class="attr-tag attr-wkm">Well-known Mandatory · type 1</span>
+      <div class="card-desc">Critère #5. Valeurs i / e / ?. Injection, route-map set origin, agrégation avec as-set.</div>
       <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
     </a>
 
@@ -269,7 +292,8 @@
         <span class="badge-bientot">BIENTÔT</span>
       </div>
       <div class="card-title">MED</div>
-      <div class="card-desc">Multi-Exit Discriminator — critère #6. Hint vers l'AS voisin. always-compare-med, deterministic-med.</div>
+      <span class="attr-tag attr-optn">Optional Non-Transitive · type 4</span>
+      <div class="card-desc">Critère #6. Hint vers l'AS voisin. always-compare-med, deterministic-med.</div>
     </div>
 
     <!-- Communities — bientôt -->
@@ -279,6 +303,7 @@
         <span class="badge-bientot">BIENTÔT</span>
       </div>
       <div class="card-title">Communities</div>
+      <span class="attr-tag attr-opt">Optional Transitive · type 8/16/32</span>
       <div class="card-desc">Standard, Extended, Large communities. no-export, no-advertise. Politiques inter-AS flexibles.</div>
     </div>
 
@@ -289,7 +314,8 @@
         <span class="badge-bientot">BIENTÔT</span>
       </div>
       <div class="card-title">AIGP</div>
-      <div class="card-desc">RFC 7311 · Type code 26. Accumulated IGP metric. Critère #9. BGP-free core, réseaux SP.</div>
+      <span class="attr-tag attr-optn">Optional Non-Transitive · type 26</span>
+      <div class="card-desc">RFC 7311. Accumulated IGP metric. Critère #9. BGP-free core, réseaux SP.</div>
     </div>
 
   </div>
