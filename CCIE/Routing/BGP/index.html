@@ -197,7 +197,7 @@
     <div class="bp-strip">
       <a href="bgp-weight.html"   class="bp-step active" title="#1 Weight">    <span class="bp-num">1</span><span class="bp-letter">W</span><span class="bp-name">Weight</span></a>
       <a href="bgp-localpref.html" class="bp-step active" title="#2 LOCAL_PREF"><span class="bp-num">2</span><span class="bp-letter">L</span><span class="bp-name">Local Pref</span></a>
-      <div class="bp-step" title="#3 Locally Originated (NH=0.0.0.0)">         <span class="bp-num">3</span><span class="bp-letter">L</span><span class="bp-name">NH=0.0.0.0</span></div>
+      <a href="bgp-locally-originated.html" class="bp-step active" title="#3 Locally Originated (NH=0.0.0.0)"><span class="bp-num">3</span><span class="bp-letter">L</span><span class="bp-name">NH=0.0.0.0</span></a>
       <div class="bp-step" title="#4 AS-PATH length">                           <span class="bp-num">4</span><span class="bp-letter">A</span><span class="bp-name">AS-PATH</span></div>
       <a href="bgp-origin.html"   class="bp-step active" title="#5 Origin">    <span class="bp-num">5</span><span class="bp-letter">O</span><span class="bp-name">Origin</span></a>
       <div class="bp-step" title="#6 MED">                                      <span class="bp-num">6</span><span class="bp-letter">M</span><span class="bp-name">MED</span></div>
@@ -253,15 +253,16 @@
     </a>
 
     <!-- #3 Locally Originated -->
-    <div class="card disabled">
+    <a href="bgp-locally-originated.html" class="card">
       <div class="card-header">
         <div class="card-icon">🏠</div>
-        <span class="badge-bientot">BIENTÔT</span>
+        <span class="badge-dispo">DISPONIBLE</span>
       </div>
       <div class="card-title">Locally Originated <span class="card-num">· #3</span></div>
-      <span class="attr-tag attr-rule">Règle de sélection</span>
+      <span class="attr-tag attr-rule">Règle de sélection · NH=0.0.0.0</span>
       <div class="card-desc">Route injectée localement (network / aggregate / redistribute). NEXT_HOP = 0.0.0.0 dans show ip bgp. Préférée sur une route reçue d'un voisin.</div>
-    </div>
+      <div class="card-arrow">Ouvrir <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    </a>
 
     <!-- #4 AS-PATH -->
     <div class="card disabled">
