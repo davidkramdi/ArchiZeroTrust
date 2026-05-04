@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP MED — Référence CCIE / ENARSI</title>
+<style>
+  :root {
+    --bg:       #0d1117;
+    --bg2:      #111827;
+    --bg3:      #1a2235;
+    --bg4:      #202b3d;
+    --border:   #1e2d42;
+    --text:     #f0f4fa;
+    --text2:    #8aadca;
+    --text3:    #4a6070;
+    --blue:     #1b72be;
+    --blue-lt:  #4a9fd4;
+    --green:    #27ae60;
+    --green-lt: #2ecc71;
+    --orange:   #e67e22;
+    --orange-lt:#f39c12;
+    --red:      #e74c3c;
+    --teal:     #16a085;
+    --teal-lt:  #1abc9c;
+    --purple:   #8e44ad;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+  .topbar { background: linear-gradient(135deg,#0d1b2a,#1a2e42); padding: 14px 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); box-shadow: 0 2px 16px rgba(0,0,0,.5); flex-wrap: wrap; }
+  .topbar .logo { background: var(--blue); color: #fff; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 4px; letter-spacing: 1px; }
+  .topbar h1 { font-size: 16px; font-weight: 600; color: var(--text); }
+  .topbar .badge { background: var(--teal); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 12px; }
+  .topbar .pos { margin-left: auto; font-size: 11px; color: var(--text3); font-weight: 600; }
+  .topbar .pos span { color: var(--orange-lt); }
+
+  .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 10px 20px 0; overflow-x: auto; border-bottom: 1px solid var(--border); }
+  .tab { padding: 8px 15px; font-size: 12px; font-weight: 600; color: var(--text2); cursor: pointer; border-radius: 6px 6px 0 0; border: none; background: transparent; white-space: nowrap; transition: all .2s; }
+  .tab:hover { color: var(--text); background: var(--bg3); }
+  .tab.active { background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-bottom: 1px solid var(--bg3); }
+
+  .content { display: none; padding: 24px; max-width: 980px; margin: 0 auto; }
+  .content.active { display: block; }
+
+  .card { background: var(--bg2); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; border: 1px solid var(--border); border-left: 4px solid var(--blue); }
+  .card.warn   { border-left-color: var(--red); }
+  .card.green  { border-left-color: var(--green); }
+  .card.orange { border-left-color: var(--orange); }
+  .card.purple { border-left-color: var(--purple); }
+  .card.teal   { border-left-color: var(--teal); }
+  .card.grey   { border-left-color: var(--text3); }
+
+  h2 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  h3 { font-size: 12px; font-weight: 700; color: var(--blue-lt); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .6px; }
+  .card.warn h3   { color: #e57373; }
+  .card.green h3  { color: var(--green-lt); }
+  .card.orange h3 { color: var(--orange-lt); }
+  .card.teal h3   { color: var(--teal-lt); }
+  .card.purple h3 { color: #ba68c8; }
+  .card.grey h3   { color: var(--text3); }
+  p { line-height: 1.65; color: var(--text2); margin-bottom: 8px; }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+  .badge-tag { padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge-blue   { background: rgba(27,114,190,.15); color: var(--blue-lt); border: 1px solid rgba(27,114,190,.4); }
+  .badge-green  { background: rgba(39,174,96,.15);  color: var(--green-lt); border: 1px solid rgba(39,174,96,.4); }
+  .badge-orange { background: rgba(230,126,34,.15); color: var(--orange-lt); border: 1px solid rgba(230,126,34,.4); }
+  .badge-red    { background: rgba(231,76,60,.15);  color: #e57373; border: 1px solid rgba(231,76,60,.4); }
+  .badge-purple { background: rgba(142,68,173,.15); color: #ba68c8; border: 1px solid rgba(142,68,173,.4); }
+  .badge-teal   { background: rgba(22,160,133,.15); color: var(--teal-lt); border: 1px solid rgba(22,160,133,.4); }
+  .badge-grey   { background: rgba(74,96,128,.15);  color: var(--text3); border: 1px solid rgba(74,96,128,.3); }
+
+  pre { background: #0a0f1a; color: #a8d8ea; border-radius: 8px; padding: 15px 18px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.75; overflow-x: auto; margin: 10px 0; border: 1px solid var(--border); }
+  .kw  { color: #e2a44a; }
+  .val { color: #7ec8a0; }
+  .cmt { color: #3d5a70; font-style: italic; }
+  .hl  { color: var(--orange-lt); font-weight: bold; }
+  .hl2 { color: var(--teal-lt); font-weight: bold; }
+  .hl3 { color: #ba68c8; font-weight: bold; }
+  .ok  { color: var(--green-lt); font-weight: bold; }
+  .no  { color: #e57373; font-weight: bold; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th { background: var(--bg4); color: var(--text2); padding: 10px 14px; font-size: 11px; font-weight: 700; text-align: left; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); }
+
+  .info-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+  .info-pill { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; padding: 8px 14px; font-size: 12px; color: var(--text); flex: 1; min-width: 130px; }
+  .info-pill strong { display: block; color: var(--blue-lt); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+
+  .section-intro { color: var(--text2); font-size: 13px; line-height: 1.65; margin-bottom: 16px; }
+
+  /* ALGO STEPS */
+  .algo-strip { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
+  .algo-step { display: flex; align-items: center; gap: 6px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; font-size: 11px; font-weight: 600; color: var(--text3); }
+  .algo-step.active { background: rgba(22,160,133,.12); border-color: rgba(22,160,133,.4); color: var(--teal-lt); }
+  .algo-step.done   { background: rgba(39,174,96,.08); border-color: rgba(39,174,96,.2); color: var(--green-lt); }
+  .algo-step .num   { font-family: 'Courier New', monospace; font-weight: 800; font-size: 12px; }
+
+  /* TOPOLOGY */
+  .topo { background: #0a0f1a; border-radius: 10px; padding: 20px; margin: 14px 0; border: 1px solid var(--border); font-family: 'Courier New', monospace; font-size: 12px; color: var(--text2); line-height: 2; overflow-x: auto; }
+
+  /* BGP TABLE */
+  .bgp-tbl { width: 100%; border-collapse: collapse; font-family: 'Courier New', monospace; font-size: 12px; }
+  .bgp-tbl th { background: #0a0f1a; color: var(--text2); padding: 7px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); font-family: 'Segoe UI', sans-serif; }
+  .bgp-tbl td { padding: 7px 12px; border-bottom: 1px solid rgba(30,45,66,.5); color: var(--text2); }
+  .bgp-tbl tr:last-child td { border-bottom: none; }
+  .bgp-tbl .best td { background: rgba(39,174,96,.07); }
+  .bgp-tbl .best td:first-child { color: var(--green-lt); font-weight: 700; }
+  .bgp-tbl .lose td { color: var(--text3); }
+  .bgp-tbl .skip td { color: var(--text3); opacity: .6; font-style: italic; }
+
+  /* COMPARE CARDS */
+  .cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+  @media(max-width:600px){ .cmp-grid { grid-template-columns: 1fr; } }
+  .cmp-card { border-radius: 10px; padding: 18px; border: 1px solid var(--border); }
+  .cmp-card.med  { background: rgba(22,160,133,.07); border-color: rgba(22,160,133,.25); }
+  .cmp-card.lp   { background: rgba(74,159,212,.07); border-color: rgba(74,159,212,.25); }
+  .cmp-title { font-size: 14px; font-weight: 800; margin-bottom: 12px; }
+  .cmp-card.med .cmp-title { color: var(--teal-lt); }
+  .cmp-card.lp  .cmp-title { color: var(--blue-lt); }
+  .cmp-row { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.04); gap: 8px; }
+  .cmp-row:last-child { border-bottom: none; }
+  .cmp-row .lbl { color: var(--text3); flex-shrink: 0; }
+  .cmp-row .val { color: var(--text2); text-align: right; font-weight: 600; }
+
+  /* TRAP */
+  .trap { background: rgba(230,126,34,.08); border: 1px solid rgba(230,126,34,.2); border-left: 3px solid var(--orange); border-radius: 8px; padding: 14px 18px; margin-bottom: 10px; }
+  .trap h3 { color: var(--orange-lt); font-size: 12px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .trap p { color: #c8a875; }
+  .trap code { background: rgba(230,126,34,.2); color: var(--orange-lt); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; }
+  .trap.green-trap { background: rgba(39,174,96,.08); border-color: rgba(39,174,96,.2); border-left-color: var(--green); }
+  .trap.green-trap h3 { color: var(--green-lt); }
+  .trap.green-trap p { color: #7ecf9a; }
+  .trap.green-trap code { background: rgba(39,174,96,.2); color: var(--green-lt); }
+  .trap.red-trap { background: rgba(231,76,60,.08); border-color: rgba(231,76,60,.2); border-left-color: var(--red); }
+  .trap.red-trap h3 { color: #e57373; }
+  .trap.red-trap p { color: #c88080; }
+  .trap.red-trap code { background: rgba(231,76,60,.2); color: #e57373; }
+
+  /* FLASH */
+  .flash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+  .flash { background: var(--bg3); border-radius: 10px; padding: 18px; text-align: center; border: 1px solid var(--border); cursor: pointer; transition: border-color .2s; }
+  .flash:hover { border-color: var(--teal-lt); }
+  .flash .q { font-size: 12px; color: var(--text2); line-height: 1.5; min-height: 52px; }
+  .flash .a { display: none; font-size: 12px; color: var(--teal-lt); line-height: 1.5; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-weight: 600; }
+  .flash.revealed .a { display: block; }
+  .flash .hint { font-size: 10px; color: var(--text3); margin-top: 8px; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo">CISCO</span>
+  <h1>BGP MED — Multi-Exit Discriminator</h1>
+  <span class="badge">CCIE / ENARSI</span>
+  <span class="pos">Best Path Critère <span>#6</span> · lowest wins</span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('theo',this)">① Théorie</button>
+  <button class="tab" onclick="show('comportement',this)">② Comportement</button>
+  <button class="tab" onclick="show('config',this)">③ Configuration</button>
+  <button class="tab" onclick="show('table',this)">④ Table BGP</button>
+  <button class="tab" onclick="show('vs',this)">⑤ MED vs LOCAL_PREF</button>
+  <button class="tab" onclick="show('pieges',this)">⑥ Pièges</button>
+  <button class="tab" onclick="show('flash',this)">⑦ Flash Cards</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ① THÉORIE
+     ═══════════════════════════════════════════════════ -->
+<div id="theo" class="content active">
+
+  <div class="card">
+    <h3>Profil de l'attribut</h3>
+    <div class="info-row">
+      <div class="info-pill"><strong>Type Code BGP</strong>4</div>
+      <div class="info-pill"><strong>Catégorie</strong>Optional Non-Transitive</div>
+      <div class="info-pill"><strong>Critère Best Path</strong>#6 — lowest wins</div>
+      <div class="info-pill"><strong>Propagation iBGP</strong>✅ Oui</div>
+      <div class="info-pill"><strong>Propagation eBGP</strong>❌ S'arrête à la frontière AS</div>
+      <div class="info-pill"><strong>Valeur par défaut</strong>Non envoyé (absent)</div>
+      <div class="info-pill"><strong>Plage de valeurs</strong>0 – 4 294 967 295 (32-bit)</div>
+      <div class="info-pill"><strong>Direction</strong>Inbound hint → AS voisin</div>
+    </div>
+    <div class="badges">
+      <span class="badge-tag badge-teal">Optional Non-Transitive</span>
+      <span class="badge-tag badge-blue">Type code 4</span>
+      <span class="badge-tag badge-green">Lowest wins</span>
+      <span class="badge-tag badge-orange">Critère #6</span>
+      <span class="badge-tag badge-grey">Non propagé au-delà de l'AS voisin</span>
+    </div>
+  </div>
+
+  <div class="card teal">
+    <h3>Définition et rôle</h3>
+    <p>Le MED (<em>Multi-Exit Discriminator</em>) est un <strong>hint</strong> envoyé à un AS voisin pour lui indiquer le point d'entrée préféré lorsqu'il existe plusieurs liens vers votre AS. Contrairement à LOCAL_PREF qui influence le trafic <strong>sortant</strong>, le MED influence le trafic <strong>entrant</strong> chez votre voisin.</p>
+    <p>C'est un attribut <strong>optionnel et non-transitif</strong> : si l'AS voisin le reçoit, il n'est <strong>pas propagé</strong> aux AS suivants. Il s'arrête à la frontière de l'AS qui le reçoit.</p>
+    <div class="topo">
+                    ┌──────────────────────────────────┐
+                    │           AS 65001 (vous)        │
+                    │                                  │
+         eBGP       │  ┌──────────┐                   │
+  ISP ──────────────┼──│   R1     │  MED=10 → ISP     │  ← ISP préfère entrer via R1
+  (AS 100)   link1  │  │ 10.1.1.1 │                   │
+                    │  └──────────┘                   │
+         eBGP       │  ┌──────────┐                   │
+  ISP ──────────────┼──│   R2     │  MED=100 → ISP    │  ← ISP évite R2 (MED élevé)
+  (AS 100)   link2  │  │ 10.1.1.2 │                   │
+                    │  └──────────┘                   │
+                    └──────────────────────────────────┘
+
+  <span class="cmt">MED=10 &lt; MED=100 → ISP préfère envoyer le trafic via le lien R1</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Optional Non-Transitive — conséquences pratiques</h3>
+    <table>
+      <tr><th>Comportement</th><th>Détail</th></tr>
+      <tr>
+        <td><strong>Optional</strong></td>
+        <td>Peut être absent d'un UPDATE. Un routeur qui ne comprend pas l'attribut l'ignore sans générer d'erreur.</td>
+      </tr>
+      <tr>
+        <td><strong>Non-Transitive</strong></td>
+        <td>L'AS voisin qui reçoit le MED <strong>ne le propage pas</strong> aux AS suivants. Le MED est local à la relation bilatérale.</td>
+      </tr>
+      <tr>
+        <td><strong>Absent = ?</strong></td>
+        <td>Si absent, traité comme 0 (best) par défaut, ou comme infini si <code>bgp bestpath missing-as-worst</code> est activé.</td>
+      </tr>
+      <tr>
+        <td><strong>Comparaison restreinte</strong></td>
+        <td>Par défaut, le MED n'est comparé qu'entre routes venant du <strong>même AS voisin</strong>. Routes de 2 AS différents → MED ignoré.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card green">
+    <h3>Position dans le Best Path Algorithm</h3>
+    <div class="algo-strip">
+      <div class="algo-step done"><span class="num">1</span> Weight</div>
+      <div class="algo-step done"><span class="num">2</span> LOCAL_PREF</div>
+      <div class="algo-step done"><span class="num">3</span> Locally Originated</div>
+      <div class="algo-step done"><span class="num">4</span> AS-PATH</div>
+      <div class="algo-step done"><span class="num">5</span> Origin</div>
+      <div class="algo-step active"><span class="num">6</span> ★ MED</div>
+      <div class="algo-step"><span class="num">7</span> eBGP/iBGP</div>
+      <div class="algo-step"><span class="num">8</span> IGP metric</div>
+      <div class="algo-step"><span class="num">9</span> AIGP</div>
+      <div class="algo-step"><span class="num">10</span> Oldest</div>
+      <div class="algo-step"><span class="num">11</span> Router-ID</div>
+      <div class="algo-step"><span class="num">12</span> Cluster-list</div>
+      <div class="algo-step"><span class="num">13</span> Neighbor IP</div>
+    </div>
+    <p style="margin-top:10px">Le MED est le premier critère qui représente un <strong>hint envoyé à l'extérieur</strong> de votre AS. Les critères #1–#5 agissent sur la sélection locale ou interne. Le MED agit sur la décision de l'AS voisin.</p>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ② COMPORTEMENT
+     ═══════════════════════════════════════════════════ -->
+<div id="comportement" class="content">
+
+  <p class="section-intro">Le comportement du MED est contrôlé par deux commandes clés : <code>always-compare-med</code> et <code>deterministic-med</code>. Mal comprises, elles sont source d'erreurs au CCIE.</p>
+
+  <div class="card warn">
+    <h3>Règle par défaut — même AS voisin uniquement</h3>
+    <p>Par défaut, le MED n'est comparé qu'entre routes annoncées par le <strong>même AS voisin</strong> (même premier AS dans le path). Si deux routes viennent de deux AS différents, le MED est <strong>ignoré</strong> et on passe au critère suivant.</p>
+    <pre>
+<span class="cmt">! Routes dans la table BGP de R1 :</span>
+*  10.0.0.0/8   10.1.1.1   MED=50   via AS100  <span class="cmt">← même AS voisin</span>
+*  10.0.0.0/8   10.1.1.2   MED=10   via AS100  <span class="cmt">← même AS voisin → MED comparé → MED=10 gagne</span>
+*  10.0.0.0/8   10.2.2.1   MED=5    via AS200  <span class="cmt">← AS différent → MED ignoré par défaut !</span></pre>
+    <p style="color:#c8a875">⚠ La route via AS200 (MED=5) n'est pas préférée automatiquement — MED n'est pas comparé entre AS100 et AS200 sans <code>always-compare-med</code>.</p>
+  </div>
+
+  <div class="card orange">
+    <h3>always-compare-med — comparer MED entre tous les AS</h3>
+    <p>Active la comparaison du MED même entre routes venant d'AS voisins différents. <strong>Doit être configuré sur tous les routeurs de l'AS</strong> pour cohérence.</p>
+    <pre>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">bgp always-compare-med</span>            <span class="cmt">! comparer MED quelle que soit l'origine AS</span>
+<span class="cmt">!</span>
+<span class="cmt">! Avec cette config :</span>
+*  10.0.0.0/8   10.1.1.1   MED=50   via AS100
+*  10.0.0.0/8   10.1.1.2   MED=10   via AS100
+<span class="ok">*> 10.0.0.0/8   10.2.2.1   MED=5    via AS200</span>  <span class="cmt">← MED=5 gagne maintenant</span></pre>
+  </div>
+
+  <div class="card purple">
+    <h3>deterministic-med — résultats cohérents</h3>
+    <p>Sans <code>deterministic-med</code>, le résultat du best path peut varier selon l'<strong>ordre d'arrivée</strong> des routes dans la table BGP. Cisco recommande d'activer les deux ensemble.</p>
+    <pre>
+<span class="cmt">! Problème sans deterministic-med :</span>
+<span class="cmt">! Route A (AS100, MED=20) arrive avant Route B (AS200, MED=5)</span>
+<span class="cmt">! Route C (AS100, MED=10) arrive après</span>
+<span class="cmt">! Comparaison : A vs B → AS différents → MED ignoré → B gagne (critère suivant)</span>
+<span class="cmt">! Comparaison : B vs C → AS différents → MED ignoré → résultat dépend de l'ordre !</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">bgp always-compare-med</span>
+ <span class="kw">bgp deterministic-med</span>             <span class="cmt">! regroupe d'abord par AS avant de comparer</span>
+<span class="cmt">!</span>
+<span class="cmt">! Avec deterministic-med : regroupe AS100 ensemble, compare MED, PUIS compare le</span>
+<span class="cmt">! gagnant AS100 avec AS200 → résultat déterministe quel que soit l'ordre d'arrivée</span></pre>
+  </div>
+
+  <div class="card">
+    <h3>missing-as-worst — traitement du MED absent</h3>
+    <pre>
+<span class="cmt">! Par défaut : MED absent = 0 (route FAVORISÉE)</span>
+<span class="cmt">! Avec missing-as-worst : MED absent = 4294967295 (route DÉFAVORISÉE)</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">bgp bestpath missing-as-worst</span>      <span class="cmt">! MED absent = valeur maximale (défavorisé)</span>
+<span class="cmt">!</span>
+<span class="cmt">! Cas pratique : un peer n'envoie pas de MED, un autre envoie MED=100</span>
+<span class="cmt">! Sans missing-as-worst : peer sans MED gagne (MED=0 implicite)</span>
+<span class="cmt">! Avec missing-as-worst : peer avec MED=100 gagne (absent = infini)</span></pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ③ CONFIGURATION
+     ═══════════════════════════════════════════════════ -->
+<div id="config" class="content">
+
+  <p class="section-intro">Le MED peut être défini localement avant l'annonce (<code>set metric</code>), reçu d'un voisin, ou dérivé de la métrique IGP avec <code>metric-type internal</code>.</p>
+
+  <div class="card">
+    <h3>Méthode 1 — set metric dans une route-map (recommandé)</h3>
+    <pre>
+<span class="cmt">! Envoyer MED=10 pour le lien principal, MED=100 pour le backup</span>
+<span class="kw">route-map</span> <span class="val">SET-MED-PRIMARY</span> permit <span class="val">10</span>
+ <span class="kw">set metric</span> <span class="val">10</span>                      <span class="cmt">! MED=10 sur le lien principal</span>
+<span class="cmt">!</span>
+<span class="kw">route-map</span> <span class="val">SET-MED-BACKUP</span> permit <span class="val">10</span>
+ <span class="kw">set metric</span> <span class="val">100</span>                     <span class="cmt">! MED=100 sur le lien backup</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">10.1.1.1</span> route-map <span class="val">SET-MED-PRIMARY</span> <span class="hl">out</span>
+ <span class="kw">neighbor</span> <span class="val">10.1.1.2</span> route-map <span class="val">SET-MED-BACKUP</span>  <span class="hl">out</span></pre>
+  </div>
+
+  <div class="card green">
+    <h3>Méthode 2 — bgp default metric (global)</h3>
+    <pre>
+<span class="cmt">! Applique un MED par défaut à toutes les routes redistribuées</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">default-metric</span> <span class="val">50</span>                  <span class="cmt">! MED=50 pour toutes les routes redistribuées</span>
+ <span class="kw">redistribute ospf</span> <span class="val">1</span>
+<span class="cmt">!</span>
+<span class="cmt">! ⚠ n'affecte que les routes redistribuées, pas les routes "network"</span></pre>
+  </div>
+
+  <div class="card orange">
+    <h3>Méthode 3 — metric-type internal (MED = IGP metric)</h3>
+    <p>Transmet la métrique IGP du routeur vers le prochain saut comme valeur MED. Permet à l'AS voisin de choisir le lien le plus proche topologiquement.</p>
+    <pre>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">10.1.1.1</span> route-map <span class="val">MED-IGP</span> out
+<span class="cmt">!</span>
+<span class="kw">route-map</span> <span class="val">MED-IGP</span> permit <span class="val">10</span>
+ <span class="kw">set metric-type internal</span>           <span class="cmt">! MED = coût IGP vers le next-hop BGP</span>
+<span class="cmt">!</span>
+<span class="cmt">! Résultat : MED varie dynamiquement avec la topologie IGP</span>
+<span class="cmt">! ⚠ Risque d'instabilité si la métrique IGP fluctue souvent</span></pre>
+  </div>
+
+  <div class="card teal">
+    <h3>Modifier le MED reçu — inbound route-map</h3>
+    <pre>
+<span class="cmt">! Forcer un MED spécifique sur les routes reçues d'un voisin</span>
+<span class="kw">route-map</span> <span class="val">FORCE-MED-IN</span> permit <span class="val">10</span>
+ <span class="kw">set metric</span> <span class="val">200</span>                     <span class="cmt">! écrase le MED reçu</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">10.2.2.1</span> route-map <span class="val">FORCE-MED-IN</span> <span class="hl">in</span>
+<span class="cmt">!</span>
+<span class="cmt">! Utile pour déprécier les routes reçues d'un lien backup</span>
+<span class="cmt">! en forçant un MED élevé localement avant sélection</span></pre>
+  </div>
+
+  <div class="card">
+    <h3>Vérification</h3>
+    <pre>
+R1# <span class="hl">show ip bgp</span>
+<span class="cmt">! La colonne Metric affiche le MED :</span>
+   Network       Next Hop     <span class="hl">Metric</span>  LocPrf  Weight  Path
+<span class="ok">*> 10.0.0.0/8   10.1.1.1        <span class="ok">10</span>            0  65100 i</span>
+*               10.1.1.2       <span class="hl">100</span>            0  65100 i
+
+R1# <span class="hl">show ip bgp 10.0.0.0/8</span>
+<span class="cmt">! Détail :</span>
+  65100
+    10.1.1.1 from 10.1.1.1
+      Origin IGP, <span class="hl2">metric 10</span>, valid, external, best
+  65100
+    10.1.1.2 from 10.1.1.2
+      Origin IGP, <span class="hl2">metric 100</span>, valid, external</pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ④ TABLE BGP
+     ═══════════════════════════════════════════════════ -->
+<div id="table" class="content">
+
+  <p class="section-intro">Scénario dual-link vers le même AS voisin. Le MED tranche au critère #6 après que Weight, LOCAL_PREF, Locally Originated, AS-PATH et Origin soient tous égaux.</p>
+
+  <div class="card">
+    <h3>Scénario — dual-link AS65001 → AS65100</h3>
+    <pre>
+<span class="cmt">! AS65001 (R1, R2) connecté à AS65100 via deux liens</span>
+<span class="cmt">! AS65100 envoie MED=10 via lien R1, MED=100 via lien R2</span>
+<span class="cmt">! Critères #1 à #5 tous égaux → MED tranche au critère #6</span>
+
+R1# <span class="hl">show ip bgp</span>
+   Network          Next Hop     Metric  LocPrf  Weight  Path
+<span class="ok">*> 10.0.0.0/8       10.1.1.1        <span class="ok">10</span>       100      0  65100 i</span>   <span class="cmt">← MED=10 BEST ★</span>
+*                   10.1.1.2       100       100      0  65100 i   <span class="cmt">← MED=100</span>
+<span class="cmt">!</span>
+<span class="cmt">! Même AS voisin (65100) → MED comparé → 10 &lt; 100 → R1 gagne</span></pre>
+  </div>
+
+  <div class="card teal">
+    <h3>Comparaison critère par critère</h3>
+    <table class="bgp-tbl">
+      <tr><th>Critère</th><th>Via R1 (10.1.1.1)</th><th>Via R2 (10.1.1.2)</th><th>Résultat</th></tr>
+      <tr><td>#1 Weight</td><td>0</td><td>0</td><td style="color:var(--text3)">TIE</td></tr>
+      <tr><td>#2 LOCAL_PREF</td><td>100</td><td>100</td><td style="color:var(--text3)">TIE</td></tr>
+      <tr><td>#3 Locally Originated</td><td>Non (reçue)</td><td>Non (reçue)</td><td style="color:var(--text3)">TIE</td></tr>
+      <tr><td>#4 AS-PATH length</td><td>1 (65100)</td><td>1 (65100)</td><td style="color:var(--text3)">TIE</td></tr>
+      <tr><td>#5 Origin</td><td>i</td><td>i</td><td style="color:var(--text3)">TIE</td></tr>
+      <tr class="best">
+        <td><strong>#6 MED</strong></td>
+        <td style="color:var(--green-lt);font-weight:700">10 ← lowest</td>
+        <td style="color:#e57373">100</td>
+        <td style="color:var(--green-lt);font-weight:700">★ Via R1 GAGNE</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card orange">
+    <h3>Scénario — 2 AS différents, MED ignoré par défaut</h3>
+    <pre>
+R1# <span class="hl">show ip bgp</span>
+   Network       Next Hop     Metric  LocPrf  Weight  Path
+<span class="ok">*> 10.0.0.0/8   10.1.1.1        <span class="ok">50</span>       100      0  65100 i</span>   <span class="cmt">← AS65100, MED=50</span>
+*               10.2.2.1         5       100      0  65200 i   <span class="cmt">← AS65200, MED=5</span>
+<span class="cmt">!</span>
+<span class="cmt">! MED=5 &lt; MED=50 mais AS différents → MED ignoré par défaut</span>
+<span class="cmt">! Critère #7 eBGP=eBGP TIE → critère #8 IGP → critère #11 Router-ID tranche</span>
+<span class="cmt">!</span>
+<span class="cmt">! Avec bgp always-compare-med :</span>
+*               10.1.1.1        50       100      0  65100 i
+<span class="ok">*> 10.0.0.0/8   10.2.2.1         <span class="ok">5</span>       100      0  65200 i</span>   <span class="cmt">← MED=5 gagne maintenant</span></pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ⑤ MED vs LOCAL_PREF
+     ═══════════════════════════════════════════════════ -->
+<div id="vs" class="content">
+
+  <p class="section-intro">MED et LOCAL_PREF sont souvent confondus car tous les deux influencent le choix du chemin. Mais ils agissent dans des directions opposées et ont des portées très différentes.</p>
+
+  <div class="cmp-grid">
+    <div class="cmp-card med">
+      <div class="cmp-title">📊 MED</div>
+      <div class="cmp-row"><span class="lbl">Type code</span><span class="val">4</span></div>
+      <div class="cmp-row"><span class="lbl">Catégorie</span><span class="val">Optional Non-Transitive</span></div>
+      <div class="cmp-row"><span class="lbl">Critère</span><span class="val">#6 — lowest wins</span></div>
+      <div class="cmp-row"><span class="lbl">Direction trafic</span><span class="val">Entrant (inbound)</span></div>
+      <div class="cmp-row"><span class="lbl">Qui configure</span><span class="val">Vous — envoyé au voisin</span></div>
+      <div class="cmp-row"><span class="lbl">Qui décide</span><span class="val">L'AS voisin</span></div>
+      <div class="cmp-row"><span class="lbl">Portée</span><span class="val">1 saut AS uniquement</span></div>
+      <div class="cmp-row"><span class="lbl">Propagation</span><span class="val">❌ Non transitif</span></div>
+      <div class="cmp-row"><span class="lbl">Valeur par défaut</span><span class="val">Absent (= 0 ou infini)</span></div>
+      <div class="cmp-row"><span class="lbl">Commande clé</span><span class="val">set metric</span></div>
+    </div>
+    <div class="cmp-card lp">
+      <div class="cmp-title">📍 LOCAL_PREF</div>
+      <div class="cmp-row"><span class="lbl">Type code</span><span class="val">5</span></div>
+      <div class="cmp-row"><span class="lbl">Catégorie</span><span class="val">Well-known Discretionary</span></div>
+      <div class="cmp-row"><span class="lbl">Critère</span><span class="val">#2 — highest wins</span></div>
+      <div class="cmp-row"><span class="lbl">Direction trafic</span><span class="val">Sortant (outbound)</span></div>
+      <div class="cmp-row"><span class="lbl">Qui configure</span><span class="val">Vous — reçu du voisin</span></div>
+      <div class="cmp-row"><span class="lbl">Qui décide</span><span class="val">Vous (votre AS)</span></div>
+      <div class="cmp-row"><span class="lbl">Portée</span><span class="val">Tout votre AS (iBGP)</span></div>
+      <div class="cmp-row"><span class="lbl">Propagation</span><span class="val">✅ Via iBGP, pas eBGP</span></div>
+      <div class="cmp-row"><span class="lbl">Valeur par défaut</span><span class="val">100</span></div>
+      <div class="cmp-row"><span class="lbl">Commande clé</span><span class="val">set local-preference</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Règle mnémotechnique</h3>
+    <table>
+      <tr><th>Objectif</th><th>Attribut à utiliser</th><th>Configured on</th></tr>
+      <tr>
+        <td>Je veux que <strong>mon AS</strong> sorte par un lien spécifique</td>
+        <td style="color:var(--blue-lt);font-weight:700">LOCAL_PREF (highest)</td>
+        <td>Route-map <strong>in</strong> sur le lien préféré</td>
+      </tr>
+      <tr>
+        <td>Je veux que <strong>l'AS voisin</strong> entre par un lien spécifique</td>
+        <td style="color:var(--teal-lt);font-weight:700">MED (lowest)</td>
+        <td>Route-map <strong>out</strong> sur le lien préféré</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card teal">
+    <h3>Scénario combiné — dual-ISP, contrôle complet</h3>
+    <pre>
+<span class="cmt">! AS65001 connecté à ISP1 (AS100) et ISP2 (AS200)</span>
+<span class="cmt">! Objectif : ISP1 = préféré dans les deux sens</span>
+<span class="cmt">!</span>
+<span class="cmt">! TRAFIC SORTANT → LOCAL_PREF (vous décidez)</span>
+<span class="kw">route-map</span> <span class="val">FROM-ISP1</span> permit <span class="val">10</span>
+ <span class="kw">set local-preference</span> <span class="val">200</span>           <span class="cmt">! préférer les routes ISP1</span>
+<span class="kw">route-map</span> <span class="val">FROM-ISP2</span> permit <span class="val">10</span>
+ <span class="kw">set local-preference</span> <span class="val">100</span>           <span class="cmt">! routes ISP2 moins préférées</span>
+<span class="cmt">!</span>
+<span class="cmt">! TRAFIC ENTRANT → MED (vous suggérez à ISP)</span>
+<span class="kw">route-map</span> <span class="val">TO-ISP1</span> permit <span class="val">10</span>
+ <span class="kw">set metric</span> <span class="val">10</span>                     <span class="cmt">! MED bas = entrée préférée via ISP1</span>
+<span class="kw">route-map</span> <span class="val">TO-ISP2</span> permit <span class="val">10</span>
+ <span class="kw">set metric</span> <span class="val">100</span>                    <span class="cmt">! MED élevé = entrée dépréciée via ISP2</span>
+<span class="cmt">!</span>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">neighbor</span> <span class="val">10.1.1.1</span> route-map <span class="val">FROM-ISP1</span> in
+ <span class="kw">neighbor</span> <span class="val">10.2.2.1</span> route-map <span class="val">FROM-ISP2</span> in
+ <span class="kw">neighbor</span> <span class="val">10.1.1.1</span> route-map <span class="val">TO-ISP1</span>   out
+ <span class="kw">neighbor</span> <span class="val">10.2.2.1</span> route-map <span class="val">TO-ISP2</span>   out</pre>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ⑥ PIÈGES
+     ═══════════════════════════════════════════════════ -->
+<div id="pieges" class="content">
+
+  <div class="trap red-trap">
+    <h3>⚡ Piège #1 — MED absent ≠ MED=0 (par défaut)</h3>
+    <p>Sans <code>bgp bestpath missing-as-worst</code>, un MED absent est traité comme <strong>MED=0</strong>, ce qui le rend <em>plus attractif</em> qu'une route avec MED=10. Une route sans MED peut donc gagner sur une route avec MED=10. Activer <code>missing-as-worst</code> si vous voulez que l'absence de MED soit défavorisante.</p>
+    <pre>
+<span class="cmt">! Route A : MED=10 (envoyé explicitement)</span>
+<span class="cmt">! Route B : MED absent → traité comme 0 → B GAGNE par défaut !</span>
+<span class="kw">bgp bestpath missing-as-worst</span>     <span class="cmt">! MED absent = 4294967295 → défavorisé</span></pre>
+  </div>
+
+  <div class="trap">
+    <h3>⚡ Piège #2 — Routes de 2 AS différents : MED ignoré par défaut</h3>
+    <p>Sans <code>always-compare-med</code>, le MED n'est comparé qu'entre routes du <strong>même AS voisin</strong>. Si ISP1 envoie MED=1000 et ISP2 envoie MED=1, le MED est ignoré et c'est le critère #7 (eBGP>iBGP) ou suivant qui tranche. À l'exam, toujours vérifier si <code>always-compare-med</code> est actif.</p>
+  </div>
+
+  <div class="trap red-trap">
+    <h3>⚡ Piège #3 — always-compare-med sans deterministic-med → non déterministe</h3>
+    <p>Activer <code>always-compare-med</code> seul peut produire des résultats qui changent selon l'ordre d'arrivée des routes dans la table. Toujours combiner avec <code>bgp deterministic-med</code>. Ces deux commandes nécessitent un <code>clear ip bgp * soft</code> pour prendre effet sans reset des sessions.</p>
+    <pre>
+<span class="kw">router bgp</span> <span class="val">65001</span>
+ <span class="kw">bgp always-compare-med</span>
+ <span class="kw">bgp deterministic-med</span>   <span class="cmt">! toujours ensemble</span></pre>
+  </div>
+
+  <div class="trap">
+    <h3>⚡ Piège #4 — metric-type internal crée de l'instabilité</h3>
+    <p>Avec <code>set metric-type internal</code>, le MED annoncé suit la métrique IGP vers le next-hop. Tout changement de topologie IGP (flap de lien, modification de coût OSPF) modifie le MED annoncé au voisin → UPDATE BGP → recalcul best path chez le voisin. Dans un réseau à topologie instable, éviter cette méthode.</p>
+  </div>
+
+  <div class="trap red-trap">
+    <h3>⚡ Piège #5 — MED non transitif : le voisin ne le propage pas</h3>
+    <p>Le MED est <strong>optional non-transitive</strong> : l'AS qui le reçoit ne le reannonce pas aux AS suivants. Si AS65001 envoie MED=10 à AS65100, AS65100 ne transmettra pas ce MED à AS65200. Ne pas compter sur le MED pour influencer des AS au-delà du voisin direct.</p>
+  </div>
+
+  <div class="trap">
+    <h3>⚡ Piège #6 — Confusion MED (inbound) vs LOCAL_PREF (outbound)</h3>
+    <p>MED influence le trafic <strong>entrant</strong> chez votre voisin (vous configurez <code>out</code>). LOCAL_PREF influence le trafic <strong>sortant</strong> de votre AS (vous configurez <code>in</code>). La confusion fréquente à l'exam : utiliser MED pour contrôler le trafic sortant — ça n'a aucun effet direct sur le choix de sortie de votre propre AS.</p>
+  </div>
+
+  <div class="trap green-trap">
+    <h3>✓ Bonne pratique — ordre de préférence des outils inbound</h3>
+    <p>Pour influencer le trafic entrant, par ordre d'efficacité décroissante : <code>LOCAL_PREF chez le voisin</code> (si accord) > <strong>MED</strong> > AS-PATH prepending. Le MED est "polite" — le voisin peut l'ignorer ou utiliser <code>always-compare-med</code> différemment. L'AS-PATH prepending est plus brutal mais plus universellement respecté.</p>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ⑦ FLASH CARDS
+     ═══════════════════════════════════════════════════ -->
+<div id="flash" class="content">
+
+  <p class="section-intro" style="margin-bottom:16px">Cliquer sur une carte pour révéler la réponse.</p>
+
+  <div class="flash-grid">
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Quel est le type code BGP du MED ?</div>
+      <div class="a">Type code <strong>4</strong> — Optional Non-Transitive.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">MED lowest ou highest wins ?</div>
+      <div class="a"><strong>Lowest wins</strong> — contrairement à Weight et LOCAL_PREF. MED=10 est préféré à MED=100.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Par défaut, le MED est comparé entre routes de 2 AS différents ?</div>
+      <div class="a"><strong>Non</strong> — comparé uniquement entre routes du même AS voisin. Activer <code>bgp always-compare-med</code> pour comparer entre AS différents.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Que vaut un MED absent par défaut ?</div>
+      <div class="a"><strong>0</strong> (le plus attractif) par défaut. Avec <code>bgp bestpath missing-as-worst</code> : 4 294 967 295 (le moins attractif).</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">MED influence le trafic entrant ou sortant ?</div>
+      <div class="a"><strong>Entrant</strong> — vous envoyez un MED à votre voisin pour lui suggérer par quel lien entrer dans votre AS. Configuré <code>out</code> sur votre routeur.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Pourquoi combiner always-compare-med avec deterministic-med ?</div>
+      <div class="a">Sans <code>deterministic-med</code>, le résultat du best path peut varier selon l'ordre d'arrivée des routes. Les deux ensemble garantissent un résultat cohérent et reproductible.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Le MED est-il propagé au-delà de l'AS voisin ?</div>
+      <div class="a"><strong>Non</strong> — Optional Non-Transitive. L'AS qui reçoit le MED ne le propage pas aux AS suivants. Portée limitée à la relation bilatérale.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+    <div class="flash" onclick="this.classList.toggle('revealed')">
+      <div class="q">Quelle commande transmet la métrique IGP comme valeur MED ?</div>
+      <div class="a"><code>set metric-type internal</code> dans une route-map. ⚠ Risque d'instabilité si la métrique IGP fluctue.</div>
+      <div class="hint">Cliquer pour révéler</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
