@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP · Oldest eBGP · Critère #10</title>
+<style>
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--surface3:#30363d;
+  --border:#30363d;--border2:#484f58;
+  --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+  --blue:#58a6ff;--green:#3fb950;--orange:#d29922;--red:#f85149;
+  --purple:#bc8cff;--teal:#76e4f7;--pink:#f778ba;--yellow:#e3b341;
+  --rule:#bc8cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:8px;height:52px;position:sticky;top:0;z-index:100}
+.topnav a{color:var(--text2);font-size:13px;padding:4px 8px;border-radius:6px}
+.topnav a:hover{background:var(--surface2);color:var(--text);text-decoration:none}
+.topnav .sep{color:var(--border2)}
+.topnav .current{color:var(--text);font-weight:600}
+
+.hero{padding:40px 24px 32px;max-width:960px;margin:0 auto}
+.hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.4px}
+.badge-rule{background:rgba(188,140,255,.15);color:var(--rule);border:1px solid rgba(188,140,255,.3)}
+.badge-num{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
+.badge-no{background:rgba(110,118,129,.12);color:var(--text2);border:1px solid var(--border)}
+.badge-warn{background:rgba(210,153,34,.12);color:var(--orange);border:1px solid rgba(210,153,34,.3)}
+
+.hero h1{font-size:32px;font-weight:700;margin-bottom:8px}
+.hero h1 span{color:var(--orange)}
+.hero .subtitle{color:var(--text2);font-size:16px;max-width:680px}
+
+.tabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:99}
+.tabs{display:flex;gap:2px;padding:0 24px;max-width:960px;margin:0 auto;overflow-x:auto}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--text2);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+
+.content{max-width:960px;margin:0 auto;padding:32px 24px}
+.panel{display:none}
+.panel.active{display:block}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:24px 0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.card-icon{font-size:28px;margin-bottom:10px}
+
+.profile-grid{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+.pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px}
+.pill-label{color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.pill-value{color:var(--text);font-weight:600}
+.pill-value.orange{color:var(--orange)}
+.pill-value.blue{color:var(--blue)}
+.pill-value.green{color:var(--green)}
+.pill-value.red{color:var(--red)}
+.pill-value.rule{color:var(--rule)}
+.pill-value.no{color:var(--text3)}
+
+.section{margin:28px 0}
+.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);color:var(--text2);font-weight:600;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.td-green{color:var(--green);font-weight:600}
+.td-blue{color:var(--blue);font-weight:600}
+.td-orange{color:var(--orange);font-weight:600}
+.td-red{color:var(--red);font-weight:600}
+.td-teal{color:var(--teal);font-weight:600}
+.td-purple{color:var(--purple);font-weight:600}
+
+pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px;line-height:1.7}
+code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px}
+.c-kw{color:#ff7b72}
+.c-cmd{color:var(--blue)}
+.c-val{color:var(--green)}
+.c-cmt{color:var(--text3)}
+.c-ok{color:var(--green);font-weight:700}
+.c-bad{color:var(--red);font-weight:700}
+.c-hi{color:var(--yellow);font-weight:700}
+.c-orange{color:var(--orange);font-weight:700}
+
+.info-box,.warn-box,.tip-box,.danger-box{border-radius:8px;padding:14px 16px;margin:14px 0;font-size:13.5px;display:flex;gap:10px}
+.info-box{background:rgba(88,166,255,.08);border:1px solid rgba(88,166,255,.25);color:#a8d8ff}
+.warn-box{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);color:#f0c060}
+.tip-box{background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.25);color:#7ee787}
+.danger-box{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);color:#ffa198}
+.box-icon{flex-shrink:0;font-size:16px}
+
+.algo-strip{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0}
+.algo-step{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+.algo-step.active{background:rgba(210,153,34,.12);border-color:rgba(210,153,34,.4);color:var(--orange)}
+.algo-step.done{background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3);color:var(--blue)}
+.algo-step.skip{background:rgba(248,81,73,.07);border-color:rgba(248,81,73,.2);color:var(--red);text-decoration:line-through}
+.algo-num{background:var(--surface3);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.algo-step.active .algo-num{background:rgba(210,153,34,.25)}
+.algo-step.done .algo-num{background:rgba(88,166,255,.2)}
+
+.bgp-table-sim{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0}
+.bgp-table-sim pre{border:none;border-radius:0;margin:0;background:transparent}
+
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin:20px 0}
+.fc{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.fc:hover{border-color:var(--orange)}
+.fc-q{padding:16px;font-size:13.5px;font-weight:500;min-height:72px;display:flex;align-items:center}
+.fc-a{padding:14px 16px;background:rgba(210,153,34,.07);border-top:1px solid var(--border);font-size:13px;color:var(--orange);display:none}
+.fc.open .fc-a{display:block}
+.fc-hint{font-size:11px;color:var(--text3);margin-top:6px}
+
+.trap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin:20px 0}
+.trap{background:var(--surface);border:1px solid rgba(248,81,73,.25);border-left:3px solid var(--red);border-radius:8px;padding:16px}
+.trap h4{color:var(--red);font-size:13px;font-weight:700;margin-bottom:8px}
+.trap p{color:var(--text2);font-size:13px;line-height:1.5}
+.trap code{font-size:11.5px}
+.good-practice{border-color:rgba(63,185,80,.25);border-left-color:var(--green)}
+.good-practice h4{color:var(--green)}
+
+/* Decision flow */
+.decision-flow{margin:20px 0}
+.df-row{display:flex;align-items:stretch;margin-bottom:0}
+.df-box{border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13px;flex:1}
+.df-box.question{background:var(--surface2);color:var(--text)}
+.df-box.yes{background:rgba(63,185,80,.07);border-color:rgba(63,185,80,.3);color:var(--green)}
+.df-box.no{background:rgba(248,81,73,.07);border-color:rgba(248,81,73,.3);color:var(--red)}
+.df-box.result{background:rgba(210,153,34,.08);border-color:rgba(210,153,34,.3);color:var(--orange);font-weight:600}
+.df-arrow{display:flex;align-items:center;justify-content:center;width:48px;flex-shrink:0;color:var(--text3);font-size:18px}
+.df-vspace{height:8px}
+.df-label{font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+
+/* Compare cards */
+.compare-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.cmp-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.cmp-card.stab{border-top:3px solid var(--orange)}
+.cmp-card.deter{border-top:3px solid var(--blue)}
+.cmp-title{font-size:15px;font-weight:700;margin-bottom:14px}
+.cmp-title.o{color:var(--orange)}
+.cmp-title.b{color:var(--blue)}
+.cmp-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;gap:8px}
+.cmp-row:last-child{border-bottom:none}
+.cmp-label{color:var(--text2);flex-shrink:0}
+.cmp-val{font-weight:600;text-align:right}
+
+@media(max-width:640px){
+  .compare-wrap{grid-template-columns:1fr}
+  .hero h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html">🏠 BGP</a>
+  <span class="sep">›</span>
+  <span class="current">Oldest eBGP · #10</span>
+</nav>
+
+<div class="hero">
+  <div class="hero-badges">
+    <span class="badge badge-rule">⏱️ Règle de sélection</span>
+    <span class="badge badge-num">Critère #10</span>
+    <span class="badge badge-warn">eBGP uniquement</span>
+    <span class="badge badge-no">Non modifiable</span>
+  </div>
+  <h1>Oldest <span>eBGP</span> Path</h1>
+  <p class="subtitle">Critère #10 — Parmi des chemins eBGP à égalité sur les critères 1–9, préférer le chemin présent depuis le plus longtemps dans la table BGP. S'applique uniquement aux chemins eBGP ; les chemins iBGP sautent directement au critère #11.</p>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(this,'theorie')">① Théorie</button>
+    <button class="tab" onclick="showTab(this,'comportement')">② Comportement</button>
+    <button class="tab" onclick="showTab(this,'comparerouterid')">③ compare-routerid</button>
+    <button class="tab" onclick="showTab(this,'table')">④ Table BGP</button>
+    <button class="tab" onclick="showTab(this,'stabilite')">⑤ Stabilité vs Déterminisme</button>
+    <button class="tab" onclick="showTab(this,'pieges')">⑥ Pièges</button>
+    <button class="tab" onclick="showTab(this,'flashcards')">⑦ Flash Cards</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════ ONGLET 1 : THÉORIE ═══════════════ -->
+<div class="panel active" id="theorie">
+
+  <div class="section">
+    <div class="section-title">Profil complet</div>
+    <div class="profile-grid">
+      <div class="pill"><div class="pill-label">Type code</div><div class="pill-value no">— aucun</div></div>
+      <div class="pill"><div class="pill-label">Catégorie</div><div class="pill-value rule">Règle de sélection</div></div>
+      <div class="pill"><div class="pill-label">Critère</div><div class="pill-value blue">#10</div></div>
+      <div class="pill"><div class="pill-label">S'applique à</div><div class="pill-value orange">eBGP uniquement</div></div>
+      <div class="pill"><div class="pill-label">Vainqueur</div><div class="pill-value green">Chemin le plus ancien</div></div>
+      <div class="pill"><div class="pill-label">Désactivable par</div><div class="pill-value blue">bgp bestpath compare-routerid</div></div>
+    </div>
+
+    <div class="warn-box"><span class="box-icon">⚠️</span>
+      Ce critère s'applique <strong>uniquement si les deux chemins en compétition sont des chemins eBGP</strong>. Si l'un ou les deux chemins sont iBGP, le critère #10 est ignoré et la comparaison passe directement au critère <strong>#11 (Router-ID)</strong>.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Position dans l'algorithme</div>
+    <div class="algo-strip">
+      <div class="algo-step done"><span class="algo-num">1</span>Weight</div>
+      <div class="algo-step done"><span class="algo-num">2</span>LOCAL_PREF</div>
+      <div class="algo-step done"><span class="algo-num">3</span>NH=0.0.0.0</div>
+      <div class="algo-step done"><span class="algo-num">4</span>AS-PATH</div>
+      <div class="algo-step done"><span class="algo-num">5</span>Origin</div>
+      <div class="algo-step done"><span class="algo-num">6</span>MED</div>
+      <div class="algo-step done"><span class="algo-num">7</span>eBGP/iBGP</div>
+      <div class="algo-step done"><span class="algo-num">8</span>IGP metric</div>
+      <div class="algo-step done"><span class="algo-num">9</span>AIGP</div>
+      <div class="algo-step active"><span class="algo-num">10</span>Oldest eBGP ← ici</div>
+      <div class="algo-step"><span class="algo-num">11</span>Router-ID</div>
+      <div class="algo-step"><span class="algo-num">12</span>Cluster-list</div>
+      <div class="algo-step"><span class="algo-num">13</span>Neighbor IP</div>
+    </div>
+    <p style="color:var(--text3);font-size:12px;margin-top:8px">⚠️ Si <code>bgp bestpath compare-routerid</code> est configuré : le critère #10 est sauté, on passe directement au #11.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Logique du critère</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">🕰️</div>
+        <h3>Favoriser la stabilité</h3>
+        <p style="color:var(--text2);font-size:13px">La préférence pour l'ancien chemin évite les <strong>oscillations</strong> : si deux chemins eBGP sont parfaitement égaux sur les critères 1–9, changer de best path sans raison perturberait le trafic inutilement. Le chemin déjà sélectionné est conservé.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Flap = perte d'ancienneté</h3>
+        <p style="color:var(--text2);font-size:13px">Si un chemin eBGP flap (disparaît puis revient), il est considéré comme <strong>nouveau</strong>. Son compteur d'âge repart à zéro. Si l'autre chemin est resté stable, il garde son avantage au critère #10.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔀</div>
+        <h3>Comportement asymétrique</h3>
+        <p style="color:var(--text2);font-size:13px">Deux routeurs recevant les mêmes chemins au <strong>même moment</strong> peuvent sélectionner des best paths différents selon l'ordre d'arrivée des UPDATEs. Ce comportement non-déterministe est l'inconvénient principal du critère #10.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛠️</div>
+        <h3>Rendu déterministe</h3>
+        <p style="color:var(--text2);font-size:13px">La commande <code>bgp bestpath compare-routerid</code> saute le critère #10 et passe directement au critère #11 (Router-ID). La sélection devient alors <strong>déterministe</strong> et identique sur tous les routeurs ayant la même vue BGP.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /theorie -->
+
+<!-- ═══════════════ ONGLET 2 : COMPORTEMENT ═══════════════ -->
+<div class="panel" id="comportement">
+
+  <div class="section">
+    <div class="section-title">Arbre de décision — quand #10 s'applique-t-il ?</div>
+    <div class="decision-flow">
+      <div class="df-row">
+        <div class="df-box question"><div class="df-label">Question</div>Les deux chemins sont-ils des chemins eBGP ?</div>
+      </div>
+      <div style="display:flex;gap:0;margin-top:8px">
+        <div style="flex:1;padding-right:8px">
+          <div style="text-align:center;color:var(--green);font-size:12px;font-weight:700;margin-bottom:6px">✅ OUI — les deux sont eBGP</div>
+          <div class="df-box yes"><code>bgp bestpath compare-routerid</code> configuré ?</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <div style="flex:1">
+              <div style="text-align:center;color:var(--red);font-size:12px;font-weight:700;margin-bottom:4px">OUI</div>
+              <div class="df-box result">⏭️ Sauter #10<br>→ Critère #11<br>Router-ID</div>
+            </div>
+            <div style="flex:1">
+              <div style="text-align:center;color:var(--green);font-size:12px;font-weight:700;margin-bottom:4px">NON</div>
+              <div class="df-box result" style="background:rgba(210,153,34,.1)">⏱️ Appliquer #10<br>→ Chemin le plus<br>ancien gagne</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;padding-left:8px">
+          <div style="text-align:center;color:var(--red);font-size:12px;font-weight:700;margin-bottom:6px">❌ NON — au moins un est iBGP</div>
+          <div class="df-box no">Critère #10 ignoré silencieusement</div>
+          <div style="margin-top:8px">
+          <div class="df-box result">⏭️ Sauter #10<br>→ Critère #11<br>Router-ID</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Scénario — impact d'un flap sur le critère #10</div>
+    <div class="card" style="font-size:13px;color:var(--text2)">
+      <pre style="border:none;padding:0;background:transparent;font-size:12.5px">
+  Topologie :
+  R1 ── eBGP ── ISP-A (65100) ─── 172.16.0.0/16
+  R1 ── eBGP ── ISP-B (65200) ─── 172.16.0.0/16
+
+  T=0h    R1 reçoit chemin ISP-A → installé en best path
+  T=1h    R1 reçoit chemin ISP-B (ISP-B vient d'annoncer)
+          Critères 1-9 identiques → critère #10 :
+          ISP-A âgé de 1h, ISP-B âgé de 0s → ISP-A gagne ✅
+
+  T=2h    Lien vers ISP-A flap (down + up en 30s)
+          ISP-A revient avec âge = 0s
+          ISP-B a maintenant 1h d'ancienneté
+          Critère #10 → ISP-B gagne désormais ✅
+
+  T=3h    Les deux chemins sont stables :
+          ISP-B âgé de 1h, ISP-A âgé de 1h
+          → critère #10 : égalité → critère #11 (Router-ID)</pre>
+    </div>
+    <div class="warn-box"><span class="box-icon">⚠️</span>
+      Un seul flap peut provoquer un <strong>changement de best path</strong> même si le chemin revenu est identique sur tous les attributs. C'est un comportement parfois indésirable en production — <code>bgp bestpath compare-routerid</code> l'élimine.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Résumé des conditions d'application</div>
+    <table>
+      <thead><tr><th>Situation</th><th>Critère #10 appliqué ?</th><th>Suite</th></tr></thead>
+      <tbody>
+        <tr><td>Deux chemins eBGP, compare-routerid absent</td><td class="td-green">✅ Oui — oldest gagne</td><td>Si égalité → #11</td></tr>
+        <tr><td>Deux chemins eBGP, compare-routerid configuré</td><td class="td-red">❌ Non — sauté</td><td>Directement #11</td></tr>
+        <tr><td>Deux chemins iBGP</td><td class="td-red">❌ Non — sauté</td><td>Directement #11</td></tr>
+        <tr><td>Un chemin eBGP + un chemin iBGP</td><td class="td-red">❌ Non (déjà séparé en #7)</td><td>N/A — résolu en #7</td></tr>
+        <tr><td>Chemin eBGP vs chemin de confédération</td><td class="td-orange">⚠️ Non — CONFED eBGP ≠ eBGP réel</td><td>Directement #11</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /comportement -->
+
+<!-- ═══════════════ ONGLET 3 : COMPARE-ROUTERID ═══════════════ -->
+<div class="panel" id="comparerouterid">
+
+  <div class="section">
+    <div class="section-title">Effet de bgp bestpath compare-routerid</div>
+    <div class="info-box"><span class="box-icon">ℹ️</span>
+      La commande <code>bgp bestpath compare-routerid</code> <strong>saute le critère #10</strong> (Oldest eBGP) et passe directement au critère #11 (Router-ID du peer annonçant). Cela rend la sélection BGP <strong>déterministe</strong> : deux routeurs avec la même vue BGP sélectionneront toujours le même best path.
+    </div>
+
+    <pre><span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">bgp bestpath compare-routerid</span>   <span class="c-cmt">! Sauter #10, aller directement à #11</span>
+
+<span class="c-cmt">! Vérification</span>
+R1# <span class="c-cmd">show ip bgp summary</span> | <span class="c-kw">include</span> <span class="c-val">compare</span>
+<span class="c-cmt">! Ou :</span>
+R1# <span class="c-cmd">show running-config</span> | <span class="c-kw">section</span> <span class="c-val">router bgp</span>
+  bgp bestpath compare-routerid   <span class="c-cmt">← confirme que #10 est sauté</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Algorithme modifié avec compare-routerid</div>
+    <div class="algo-strip">
+      <div class="algo-step done"><span class="algo-num">1</span>Weight</div>
+      <div class="algo-step done"><span class="algo-num">2</span>LOCAL_PREF</div>
+      <div class="algo-step done"><span class="algo-num">3</span>NH=0.0.0.0</div>
+      <div class="algo-step done"><span class="algo-num">4</span>AS-PATH</div>
+      <div class="algo-step done"><span class="algo-num">5</span>Origin</div>
+      <div class="algo-step done"><span class="algo-num">6</span>MED</div>
+      <div class="algo-step done"><span class="algo-num">7</span>eBGP/iBGP</div>
+      <div class="algo-step done"><span class="algo-num">8</span>IGP metric</div>
+      <div class="algo-step done"><span class="algo-num">9</span>AIGP</div>
+      <div class="algo-step skip"><span class="algo-num">10</span>Oldest eBGP</div>
+      <div class="algo-step active"><span class="algo-num">11</span>Router-ID ← saute ici</div>
+      <div class="algo-step"><span class="algo-num">12</span>Cluster-list</div>
+      <div class="algo-step"><span class="algo-num">13</span>Neighbor IP</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Impact sur la sélection — exemple concret</div>
+    <div class="card" style="font-size:13px;color:var(--text2)">
+      <pre style="border:none;padding:0;background:transparent;font-size:12.5px">
+  Deux routeurs R1 et R2 (même AS, full mesh iBGP) reçoivent :
+  - Route via ISP-A (Router-ID 10.1.1.1), arrivée à T=0 sur R1, T=5s sur R2
+  - Route via ISP-B (Router-ID 10.2.2.2), arrivée à T=3s sur R1, T=1s sur R2
+
+  ┌──────────────────────────────────────────────────────────┐
+  │               Sans compare-routerid (#10 actif)          │
+  │  R1 : ISP-A arrivé le premier → ISP-A best path         │
+  │  R2 : ISP-B arrivé le premier → ISP-B best path   ⚠️    │
+  │  → R1 et R2 ont des best paths DIFFÉRENTS !              │
+  ├──────────────────────────────────────────────────────────┤
+  │            Avec compare-routerid (#10 sauté)             │
+  │  R1 : critère #11 → Router-ID 10.1.1.1 < 10.2.2.2       │
+  │       → ISP-A best path                                  │
+  │  R2 : critère #11 → Router-ID 10.1.1.1 < 10.2.2.2       │
+  │       → ISP-A best path   ✅                             │
+  │  → R1 et R2 ont le MÊME best path !                      │
+  └──────────────────────────────────────────────────────────┘</pre>
+    </div>
+    <div class="tip-box"><span class="box-icon">💡</span>
+      En déploiement production avec plusieurs border routers, <code>bgp bestpath compare-routerid</code> est <strong>fortement recommandé</strong> pour garantir une sélection cohérente et prévisible sur tous les routeurs du réseau.
+    </div>
+  </div>
+
+</div><!-- /comparerouterid -->
+
+<!-- ═══════════════ ONGLET 4 : TABLE BGP ═══════════════ -->
+<div class="panel" id="table">
+
+  <div class="section">
+    <div class="section-title">show ip bgp — identification du chemin oldest</div>
+    <div class="bgp-table-sim">
+      <pre>R1# <span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/16</span>
+BGP routing table entry for 172.16.0.0/16, version 15
+Paths: (2 available, best #1, table Default-IP-Routing-Table)
+  Advertised to update-groups:
+     1
+  65100                                           <span class="c-cmt">← via ISP-A</span>
+    203.0.113.1 from 203.0.113.1 (10.1.1.1)
+      Origin IGP, metric 0, localpref 100, valid, external, <span class="c-ok">best</span>
+      rx pathid: 0, tx pathid: 0x0
+      <span class="c-orange">age: 02:14:33</span>    <span class="c-cmt">← plus ancien → critère #10 → best ✅</span>
+
+  65200                                           <span class="c-cmt">← via ISP-B</span>
+    203.0.113.2 from 203.0.113.2 (10.2.2.2)
+      Origin IGP, metric 0, localpref 100, valid, external
+      rx pathid: 0, tx pathid: 0
+      <span class="c-orange">age: 00:47:12</span>    <span class="c-cmt">← plus récent → perd en critère #10 ❌</span></pre>
+    </div>
+    <div class="info-box"><span class="box-icon">🔍</span>
+      Le champ <code>age</code> (ou uptime) visible dans <code>show ip bgp detail</code> correspond au temps depuis lequel le chemin est présent dans la table BGP. C'est cette valeur qui est comparée au critère #10.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Avec compare-routerid — différence dans l'output</div>
+    <div class="bgp-table-sim">
+      <pre>R1# <span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/16</span>
+BGP routing table entry for 172.16.0.0/16, version 16
+Paths: (2 available, best #1, table Default-IP-Routing-Table)
+  <span class="c-cmt">! Avec compare-routerid : critère #11 (Router-ID) départage</span>
+  65100
+    203.0.113.1 from 203.0.113.1 (<span class="c-ok">10.1.1.1</span>)   <span class="c-cmt">← Router-ID 10.1.1.1</span>
+      Origin IGP, metric 0, localpref 100, valid, external, <span class="c-ok">best</span>
+      age: 00:47:12    <span class="c-cmt">← âge ignoré, c'est le Router-ID qui compte</span>
+
+  65200
+    203.0.113.2 from 203.0.113.2 (<span class="c-bad">10.2.2.2</span>)   <span class="c-cmt">← Router-ID 10.2.2.2</span>
+      Origin IGP, metric 0, localpref 100, valid, external
+      age: 02:14:33    <span class="c-cmt">← plus ancien mais Router-ID plus grand → perd</span>
+<span class="c-cmt">! 10.1.1.1 &lt; 10.2.2.2 → ISP-A gagne sur critère #11 (Router-ID lowest)</span></pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">show ip bgp summary — uptime des chemins</div>
+    <pre>R1# <span class="c-cmd">show ip bgp summary</span>
+BGP router identifier 1.1.1.1, local AS number 65001
+BGP table version is 16, main routing table version 16
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ <span class="c-orange">Up/Down</span>  State/PfxRcd
+203.0.113.1     4 65100     145     142       16    0    0 <span class="c-ok">02:14:33</span>        1
+203.0.113.2     4 65200      85      82       16    0    0 <span class="c-orange">00:47:12</span>        1
+
+<span class="c-cmt">! Up/Down = durée depuis établissement session ≈ âge des routes reçues
+! Un reset de session = âge des routes remis à 0</span></pre>
+  </div>
+
+</div><!-- /table -->
+
+<!-- ═══════════════ ONGLET 5 : STABILITÉ VS DÉTERMINISME ═══════════════ -->
+<div class="panel" id="stabilite">
+
+  <div class="compare-wrap">
+    <div class="cmp-card stab">
+      <div class="cmp-title o">⏱️ Sans compare-routerid<br><small style="font-weight:400;font-size:12px">(comportement par défaut)</small></div>
+      <div class="cmp-row"><span class="cmp-label">Critère #10</span><span class="cmp-val" style="color:var(--orange)">Actif — oldest gagne</span></div>
+      <div class="cmp-row"><span class="cmp-label">Prédictibilité</span><span class="cmp-val" style="color:var(--red)">Faible (dépend de l'ordre d'arrivée)</span></div>
+      <div class="cmp-row"><span class="cmp-label">Consistance multi-routeur</span><span class="cmp-val" style="color:var(--red)">Non garantie</span></div>
+      <div class="cmp-row"><span class="cmp-label">Stabilité après flap</span><span class="cmp-val" style="color:var(--orange)">Possible changement de best path</span></div>
+      <div class="cmp-row"><span class="cmp-label">Avantage principal</span><span class="cmp-val">Évite oscillations inutiles</span></div>
+      <div class="cmp-row"><span class="cmp-label">Recommandé pour</span><span class="cmp-val">Réseaux simples, single border router</span></div>
+    </div>
+    <div class="cmp-card deter">
+      <div class="cmp-title b">🎯 Avec compare-routerid<br><small style="font-weight:400;font-size:12px">(#10 sauté)</small></div>
+      <div class="cmp-row"><span class="cmp-label">Critère #10</span><span class="cmp-val" style="color:var(--blue)">Sauté — Router-ID décide</span></div>
+      <div class="cmp-row"><span class="cmp-label">Prédictibilité</span><span class="cmp-val" style="color:var(--green)">Forte (basée sur Router-ID fixe)</span></div>
+      <div class="cmp-row"><span class="cmp-label">Consistance multi-routeur</span><span class="cmp-val" style="color:var(--green)">Garantie (même vue = même choix)</span></div>
+      <div class="cmp-row"><span class="cmp-label">Stabilité après flap</span><span class="cmp-val" style="color:var(--green)">Inchangée (Router-ID ne flap pas)</span></div>
+      <div class="cmp-row"><span class="cmp-label">Avantage principal</span><span class="cmp-val">Comportement déterministe</span></div>
+      <div class="cmp-row"><span class="cmp-label">Recommandé pour</span><span class="cmp-val">Multi border routers, RR, production</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Quand utiliser compare-routerid ?</div>
+    <table>
+      <thead><tr><th>Architecture</th><th>Recommandation</th><th>Raison</th></tr></thead>
+      <tbody>
+        <tr><td>Single border router</td><td class="td-orange">Optionnel</td><td>Un seul routeur → pas d'incohérence possible</td></tr>
+        <tr><td>Dual border routers (même AS)</td><td class="td-green">✅ Recommandé</td><td>Garantit same best path sur les deux BRs</td></tr>
+        <tr><td>Route Reflector</td><td class="td-green">✅ Recommandé</td><td>RR et clients voient le même best path</td></tr>
+        <tr><td>Confederation</td><td class="td-green">✅ Recommandé</td><td>Cohérence entre sub-AS</td></tr>
+        <tr><td>Réseau de transit SP</td><td class="td-green">✅ Fortement recommandé</td><td>Prédictibilité critique en production</td></tr>
+        <tr><td>Lab / test</td><td class="td-blue">Selon besoin</td><td>Peut être utile pour reproduire comportement prod</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Impact sur la convergence</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">🔄</div>
+        <h3>Sans compare-routerid — après flap</h3>
+        <p style="color:var(--text2);font-size:13px">Lien ISP-A flap → ISP-A revient avec âge=0 → ISP-B (stable, plus ancien) devient best path → changement de best path sur <strong>tous</strong> les routeurs → reconvergence BGP globale → perturbation trafic.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">✅</div>
+        <h3>Avec compare-routerid — après flap</h3>
+        <p style="color:var(--text2);font-size:13px">Lien ISP-A flap → ISP-A revient → critère #11 (Router-ID) est stable → si Router-ID ISP-A &lt; ISP-B, ISP-A redevient best path → même résultat qu'avant le flap → <strong>convergence prévisible</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /stabilite -->
+
+<!-- ═══════════════ ONGLET 6 : PIÈGES ═══════════════ -->
+<div class="panel" id="pieges">
+
+  <div class="trap-grid">
+
+    <div class="trap">
+      <h4>⚡ Critère #10 silencieusement sauté pour iBGP</h4>
+      <p>Beaucoup de candidats CCIE pensent que le critère #10 s'applique à tous les chemins. Il ne s'applique qu'aux chemins <strong>eBGP</strong>. Pour deux chemins iBGP, on passe directement au critère #11 (Router-ID), sans aucun message ou indication dans les logs.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ Flap = perte d'ancienneté = changement de best path</h4>
+      <p>Un flap de session eBGP (même de quelques secondes) remet l'âge du chemin à zéro. Si l'autre chemin est resté stable, il devient oldest et prend le best path. Ce changement peut créer une perturbation trafic imprévue. Utiliser <code>compare-routerid</code> pour l'éviter.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ Incohérence entre routeurs du même AS</h4>
+      <p>Sans <code>compare-routerid</code>, R1 et R2 dans le même AS peuvent sélectionner des best paths différents pour le même préfixe, uniquement en raison de l'ordre d'arrivée des UPDATEs. Cela peut créer un routage asymétrique et des problèmes difficiles à diagnostiquer.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ CONFED eBGP n'est pas eBGP réel</h4>
+      <p>Les sessions CONFED eBGP (entre sub-AS d'une confédération) ne sont <strong>pas</strong> considérées comme eBGP pour le critère #10. Elles sont traitées comme iBGP → critère #10 sauté, on va directement au critère #11. Même piège que pour le critère #7.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ compare-routerid non symétrique</h4>
+      <p>Si <code>bgp bestpath compare-routerid</code> est configuré sur certains routeurs mais pas tous, la sélection sera incohérente à l'échelle du réseau. Cette commande doit être appliquée de façon <strong>uniforme</strong> sur tous les routeurs BGP du même AS.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ Confusion uptime session vs âge de la route</h4>
+      <p>L'uptime affiché dans <code>show ip bgp summary</code> est l'âge de la <strong>session BGP</strong>, pas nécessairement de la route. Une route peut être réannoncée sans que la session tombe. L'âge réel de la route est visible dans <code>show ip bgp X detail</code>.</p>
+    </div>
+
+    <div class="trap good-practice">
+      <h4>✅ Bonne pratique — compare-routerid en production</h4>
+      <p>Configurer systématiquement <code>bgp bestpath compare-routerid</code> dans tout environnement multi-border-router. Le comportement déterministe basé sur le Router-ID est <strong>prévisible, stable, et cohérent</strong> sur l'ensemble du réseau, indépendamment des flaps ou de l'ordre de démarrage des routeurs.</p>
+    </div>
+
+  </div>
+
+</div><!-- /pieges -->
+
+<!-- ═══════════════ ONGLET 7 : FLASH CARDS ═══════════════ -->
+<div class="panel" id="flashcards">
+
+  <p style="color:var(--text2);font-size:13.5px;margin-bottom:20px">Cliquez sur une carte pour révéler la réponse.</p>
+
+  <div class="fc-grid">
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Le critère #10 (Oldest eBGP) s'applique-t-il aux chemins iBGP ?</div>
+      <div class="fc-a"><strong>Non.</strong> Le critère #10 s'applique <strong>uniquement aux chemins eBGP</strong>. Pour deux chemins iBGP (ou un mix), le critère #10 est silencieusement sauté et la comparaison passe directement au critère <strong>#11 (Router-ID)</strong>.
+        <div class="fc-hint">→ Piège CCIE classique</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quelle commande permet de sauter le critère #10 et d'aller directement au critère #11 ?</div>
+      <div class="fc-a"><code>bgp bestpath compare-routerid</code> dans le processus BGP. Cette commande rend la sélection déterministe en utilisant le Router-ID (critère #11) à la place de l'ancienneté (critère #10) pour départager des chemins eBGP identiques.
+        <div class="fc-hint">→ Fortement recommandé en production multi-BR</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Que se passe-t-il à l'âge d'un chemin BGP si la session eBGP flap ?</div>
+      <div class="fc-a">L'âge est remis à <strong>zéro</strong>. Quand la session eBGP revient après un flap, le chemin est considéré comme nouveau. Si l'autre chemin eBGP est resté stable, il devient oldest et prend le best path — potentiellement un changement de trafic indésirable.
+        <div class="fc-hint">→ Argument pour utiliser compare-routerid</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Pourquoi deux routeurs dans le même AS peuvent-ils sélectionner des best paths différents avec le critère #10 actif ?</div>
+      <div class="fc-a">L'ancienneté dépend de l'<strong>ordre d'arrivée des UPDATEs</strong>, qui peut différer selon la topologie et le timing. R1 peut recevoir ISP-A en premier, R2 peut recevoir ISP-B en premier → deux best paths différents. <code>bgp bestpath compare-routerid</code> élimine ce problème.
+        <div class="fc-hint">→ Incohérence non-déterministe</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quel critère prend la relève si deux chemins eBGP ont exactement le même âge ?</div>
+      <div class="fc-a">Le critère <strong>#11 — Router-ID</strong>. Le chemin dont le peer annonçant a le plus petit Router-ID est préféré. Si les Router-IDs sont identiques (impossible en pratique), on passe au critère #12 (Cluster-list length), puis #13 (Neighbor IP address).
+        <div class="fc-hint">→ Égalité d'âge → #11 Router-ID (lowest)</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Les sessions CONFED eBGP bénéficient-elles du critère #10 ?</div>
+      <div class="fc-a"><strong>Non.</strong> Les sessions CONFED eBGP (entre sub-AS d'une même confédération) sont traitées comme iBGP pour les critères de sélection. Le critère #10 est donc sauté pour ces sessions, exactement comme pour les sessions iBGP ordinaires.
+        <div class="fc-hint">→ Même règle que pour le critère #7</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Dans quel cas de figure le critère #10 est-il vraiment utile (sans compare-routerid) ?</div>
+      <div class="fc-a">Dans un réseau avec un <strong>seul border router</strong> eBGP : si ce routeur reçoit deux chemins eBGP identiques sur les critères 1–9, préférer l'ancien chemin évite une oscillation. Mais dès qu'il y a plusieurs border routers, <code>compare-routerid</code> est préférable.
+        <div class="fc-hint">→ Single BR = OK sans compare-routerid</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Comment vérifier que bgp bestpath compare-routerid est actif sur un routeur ?</div>
+      <div class="fc-a"><code>show running-config | section router bgp</code> — chercher la ligne <code>bgp bestpath compare-routerid</code>. Aussi visible dans <code>show ip bgp summary</code> ou <code>show bgp all summary</code> qui indique les options bestpath actives.
+        <div class="fc-hint">→ Vérifier sur TOUS les routeurs du même AS</div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /flashcards -->
+
+</div><!-- /content -->
+
+<script>
+function showTab(btn, id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>
