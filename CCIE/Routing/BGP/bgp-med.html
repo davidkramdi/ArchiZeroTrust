@@ -302,23 +302,41 @@
     <h3>deterministic-med — résultats cohérents</h3>
     <p>Sans <code>deterministic-med</code>, le résultat du best path peut varier selon l'<strong>ordre d'arrivée</strong> des routes dans la table BGP. Cisco recommande d'activer les deux ensemble.</p>
     <pre>
-<span class="cmt">! Problème sans deterministic-med :</span>
-<span class="cmt">! Route A (AS100, MED=20) arrive avant Route B (AS200, MED=5)</span>
-<span class="cmt">! Route C (AS100, MED=10) arrive après</span>
-<span class="cmt">! Comparaison 1 : A vs B → AS différents → MED ignoré</span>
-<span class="cmt">!   → critères suivants : A plus ancienne (#10 oldest) → A gagne</span>
-<span class="cmt">! Comparaison 2 : A (gagnante) vs C → même AS100 → MED comparé</span>
-<span class="cmt">!   → MED 10 &lt; 20 → C gagne !</span>
-<span class="cmt">! Résultat final selon ordre : C (AS100,MED=10) — mais si B arrive en 1er :</span>
-<span class="cmt">!   B vs A → MED ignoré → B ancienne → B gagne ; B vs C → MED ignoré → B gagne</span>
-<span class="cmt">! → Résultat DIFFÉRENT selon ordre d'arrivée → non déterministe !</span>
+<span class="cmt">! ─── RÈGLE DE BASE (sans always-compare-med) ────────────────────────────────</span>
+<span class="cmt">! Par défaut, MED n'est comparé QU'entre routes reçues du MÊME AS voisin.</span>
+<span class="cmt">! Entre AS différents → MED est sauté, on passe aux critères suivants.</span>
+<span class="cmt">!</span>
+<span class="cmt">! ─── PROBLÈME sans deterministic-med ────────────────────────────────────────</span>
+<span class="cmt">! Trois routes pour le même préfixe :</span>
+<span class="cmt">!   Route A : AS100, MED=20   Route B : AS200, MED=5   Route C : AS100, MED=10</span>
+<span class="cmt">!</span>
+<span class="cmt">! BGP traite les routes en tournoi séquentiel (ordre d'arrivée) :</span>
+<span class="cmt">!</span>
+<span class="cmt">! CAS 1 — A arrive en 1er, puis B, puis C :</span>
+<span class="cmt">!   A vs B : AS100 vs AS200 → AS différents → MED sauté → critère #10 : A plus</span>
+<span class="cmt">!            ancienne → A gagne</span>
+<span class="cmt">!   A vs C : AS100 vs AS100 → même AS → MED comparé → 10 &lt; 20 → C gagne</span>
+<span class="cmt">!   ✅ Résultat CAS 1 : C (AS100, MED=10)</span>
+<span class="cmt">!</span>
+<span class="cmt">! CAS 2 — B arrive en 1er, puis A, puis C :</span>
+<span class="cmt">!   B vs A : AS200 vs AS100 → AS différents → MED sauté → critère #10 : B plus</span>
+<span class="cmt">!            ancienne → B gagne</span>
+<span class="cmt">!   B vs C : AS200 vs AS100 → AS différents → MED sauté → B plus ancienne → B gagne</span>
+<span class="cmt">!   ❌ Résultat CAS 2 : B (AS200, MED=5)  ← résultat DIFFÉRENT du CAS 1 !</span>
+<span class="cmt">!</span>
+<span class="cmt">! → Le résultat change selon l'ordre d'arrivée = non déterministe</span>
 <span class="cmt">!</span>
 <span class="kw">router bgp</span> <span class="val">65001</span>
  <span class="kw">bgp always-compare-med</span>
- <span class="kw">bgp deterministic-med</span>             <span class="cmt">! regroupe d'abord par AS avant de comparer</span>
+ <span class="kw">bgp deterministic-med</span>
 <span class="cmt">!</span>
-<span class="cmt">! Avec deterministic-med : regroupe AS100 ensemble, compare MED, PUIS compare le</span>
-<span class="cmt">! gagnant AS100 avec AS200 → résultat déterministe quel que soit l'ordre d'arrivée</span></pre>
+<span class="cmt">! ─── SOLUTION avec deterministic-med ────────────────────────────────────────</span>
+<span class="cmt">! Avant tout tournoi, BGP regroupe les routes par AS et élit un gagnant par AS :</span>
+<span class="cmt">!   Groupe AS100 : A(MED=20) vs C(MED=10) → C gagne (10 &lt; 20)</span>
+<span class="cmt">!   Groupe AS200 : B(MED=5)  → B gagne par défaut (seul candidat)</span>
+<span class="cmt">! Puis compare les gagnants de chaque groupe :</span>
+<span class="cmt">!   C(AS100,MED=10) vs B(AS200,MED=5) → always-compare-med → 5 &lt; 10 → B gagne</span>
+<span class="cmt">! ✅ Résultat : B (AS200, MED=5) — identique quel que soit l'ordre d'arrivée</span></pre>
   </div>
 
   <div class="card">
