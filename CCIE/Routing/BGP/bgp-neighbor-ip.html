@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP · Neighbor IP · Critère #13</title>
+<style>
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--surface3:#30363d;
+  --border:#30363d;--border2:#484f58;
+  --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+  --blue:#58a6ff;--green:#3fb950;--orange:#d29922;--red:#f85149;
+  --purple:#bc8cff;--teal:#76e4f7;--pink:#f778ba;--yellow:#e3b341;
+  --rule:#bc8cff;--accent:#e3b341;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:8px;height:52px;position:sticky;top:0;z-index:100}
+.topnav a{color:var(--text2);font-size:13px;padding:4px 8px;border-radius:6px}
+.topnav a:hover{background:var(--surface2);color:var(--text);text-decoration:none}
+.topnav .sep{color:var(--border2)}
+.topnav .current{color:var(--text);font-weight:600}
+
+.hero{padding:40px 24px 32px;max-width:960px;margin:0 auto}
+.hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.4px}
+.badge-rule{background:rgba(188,140,255,.15);color:var(--rule);border:1px solid rgba(188,140,255,.3)}
+.badge-num{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
+.badge-final{background:rgba(227,179,65,.15);color:var(--yellow);border:1px solid rgba(227,179,65,.3)}
+.badge-det{background:rgba(63,185,80,.12);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+
+.hero h1{font-size:32px;font-weight:700;margin-bottom:8px}
+.hero h1 span{color:var(--yellow)}
+.hero .subtitle{color:var(--text2);font-size:16px;max-width:680px}
+
+.tabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:99}
+.tabs{display:flex;gap:2px;padding:0 24px;max-width:960px;margin:0 auto;overflow-x:auto}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--text2);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--yellow);border-bottom-color:var(--yellow)}
+
+.content{max-width:960px;margin:0 auto;padding:32px 24px}
+.panel{display:none}
+.panel.active{display:block}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:24px 0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.card-icon{font-size:28px;margin-bottom:10px}
+
+.profile-grid{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+.pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px}
+.pill-label{color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.pill-value{color:var(--text);font-weight:600}
+.pill-value.yellow{color:var(--yellow)}
+.pill-value.blue{color:var(--blue)}
+.pill-value.green{color:var(--green)}
+.pill-value.orange{color:var(--orange)}
+.pill-value.red{color:var(--red)}
+.pill-value.rule{color:var(--rule)}
+.pill-value.teal{color:var(--teal)}
+.pill-value.no{color:var(--text3)}
+
+.section{margin:28px 0}
+.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);color:var(--text2);font-weight:600;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.td-green{color:var(--green);font-weight:600}
+.td-blue{color:var(--blue);font-weight:600}
+.td-orange{color:var(--orange);font-weight:600}
+.td-red{color:var(--red);font-weight:600}
+.td-teal{color:var(--teal);font-weight:600}
+.td-yellow{color:var(--yellow);font-weight:600}
+
+pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px;line-height:1.7}
+code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px}
+.c-kw{color:#ff7b72}
+.c-cmd{color:var(--blue)}
+.c-val{color:var(--green)}
+.c-cmt{color:var(--text3)}
+.c-ok{color:var(--green);font-weight:700}
+.c-bad{color:var(--red);font-weight:700}
+.c-hi{color:var(--yellow);font-weight:700}
+.c-teal{color:var(--teal);font-weight:700}
+.c-pink{color:var(--pink);font-weight:700}
+.c-orange{color:var(--orange);font-weight:700}
+
+.info-box,.warn-box,.tip-box,.danger-box{border-radius:8px;padding:14px 16px;margin:14px 0;font-size:13.5px;display:flex;gap:10px}
+.info-box{background:rgba(88,166,255,.08);border:1px solid rgba(88,166,255,.25);color:#a8d8ff}
+.warn-box{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);color:#f0c060}
+.tip-box{background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.25);color:#7ee787}
+.danger-box{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);color:#ffa198}
+.box-icon{flex-shrink:0;font-size:16px}
+
+.algo-strip{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0}
+.algo-step{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+.algo-step.active{background:rgba(227,179,65,.12);border-color:rgba(227,179,65,.4);color:var(--yellow)}
+.algo-step.done{background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3);color:var(--blue)}
+.algo-num{background:var(--surface3);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.algo-step.active .algo-num{background:rgba(227,179,65,.25)}
+.algo-step.done .algo-num{background:rgba(88,166,255,.2)}
+
+.bgp-table-sim{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0}
+.bgp-table-sim pre{border:none;border-radius:0;margin:0;background:transparent}
+
+.topo{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px;line-height:1.5;white-space:pre;overflow-x:auto;margin:16px 0}
+
+.complete-banner{background:linear-gradient(135deg,rgba(63,185,80,.12),rgba(88,166,255,.08));border:1px solid rgba(63,185,80,.3);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
+.complete-banner h2{font-size:22px;font-weight:700;color:var(--green);margin-bottom:8px}
+.complete-banner p{color:var(--text2);font-size:14px}
+.algo-complete{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:18px 0}
+.asc{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:16px;font-size:11px;font-weight:700;background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);color:var(--blue)}
+
+.ip-compare{display:flex;align-items:center;gap:16px;margin:16px 0;flex-wrap:wrap}
+.ip-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-family:'JetBrains Mono',monospace;font-size:13px;text-align:center}
+.ip-box .ib-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.ip-box .ib-ip{font-weight:700}
+.ip-box.winner{border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.07)}
+.ip-box.winner .ib-ip{color:var(--green)}
+.ip-box.loser .ib-ip{color:var(--red)}
+.ip-vs{color:var(--text3);font-weight:700;font-size:16px}
+
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin:20px 0}
+.fc{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.fc:hover{border-color:var(--yellow)}
+.fc-q{padding:16px;font-size:13.5px;font-weight:500;min-height:72px;display:flex;align-items:center}
+.fc-a{padding:14px 16px;background:rgba(227,179,65,.06);border-top:1px solid var(--border);font-size:13px;color:var(--yellow);display:none}
+.fc.open .fc-a{display:block}
+.fc-hint{font-size:11px;color:var(--text3);margin-top:6px}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ TOPNAV ═══════════════ -->
+<nav class="topnav">
+  <a href="index.html">🏠 BGP</a>
+  <span class="sep">›</span>
+  <a href="index.html#best-path">Best Path</a>
+  <span class="sep">›</span>
+  <span class="current">Neighbor IP · #13</span>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<div class="hero">
+  <div class="hero-badges">
+    <span class="badge badge-num"># 13 / 13</span>
+    <span class="badge badge-rule">Règle de sélection</span>
+    <span class="badge badge-final">Tie-breaker final</span>
+    <span class="badge badge-det">Toujours déterministe</span>
+  </div>
+  <h1>Neighbor IP — <span>Lowest wins</span></h1>
+  <p class="subtitle">Dernier critère de la sélection BGP. L'adresse IP du peer (neighbor address) la plus basse est préférée. Seul critère toujours déterministe : deux sessions BGP ne peuvent avoir la même adresse peer.</p>
+</div>
+
+<!-- ═══════════════ TABS ═══════════════ -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(this,'theorie')">Théorie</button>
+    <button class="tab" onclick="showTab(this,'comparaison')">Comparaison IP</button>
+    <button class="tab" onclick="showTab(this,'multipath')">Multipath &amp; ECMP</button>
+    <button class="tab" onclick="showTab(this,'table-bgp')">Table BGP</button>
+    <button class="tab" onclick="showTab(this,'algo-complet')">Algo complet</button>
+    <button class="tab" onclick="showTab(this,'pieges')">Pièges</button>
+    <button class="tab" onclick="showTab(this,'flashcards')">Flash Cards</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════ ONGLET 1 : THÉORIE ═══════════════ -->
+<div class="panel active" id="theorie">
+
+  <div class="section">
+    <div class="section-title">Position dans l'algorithme</div>
+    <div class="algo-strip">
+      <div class="algo-step done"><span class="algo-num">1</span>Weight</div>
+      <div class="algo-step done"><span class="algo-num">2</span>LOCAL_PREF</div>
+      <div class="algo-step done"><span class="algo-num">3</span>NH=0.0.0.0</div>
+      <div class="algo-step done"><span class="algo-num">4</span>AS-PATH</div>
+      <div class="algo-step done"><span class="algo-num">5</span>Origin</div>
+      <div class="algo-step done"><span class="algo-num">6</span>MED</div>
+      <div class="algo-step done"><span class="algo-num">7</span>eBGP&gt;iBGP</div>
+      <div class="algo-step done"><span class="algo-num">8</span>IGP metric</div>
+      <div class="algo-step done"><span class="algo-num">9</span>AIGP</div>
+      <div class="algo-step done"><span class="algo-num">10</span>Oldest</div>
+      <div class="algo-step done"><span class="algo-num">11</span>Router-ID</div>
+      <div class="algo-step done"><span class="algo-num">12</span>Cluster-list</div>
+      <div class="algo-step active"><span class="algo-num">13</span>Neighbor IP</div>
+    </div>
+    <p style="color:var(--text2);font-size:13.5px">Le critère #13 est le <strong style="color:var(--yellow)">dernier recours</strong> : il n'est atteint que si les 12 critères précédents sont tous égaux. C'est le seul critère <strong>garantissant toujours un résultat unique</strong>, car deux sessions BGP ne peuvent avoir la même adresse peer.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Règle de comparaison</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">🔢</div>
+        <h3>Adresse IP du peer (neighbor address)</h3>
+        <p style="font-size:13px;color:var(--text2)">L'adresse comparée est l'adresse du peer BGP (celle configurée dans <code>neighbor X.X.X.X</code>), pas son Router-ID ni son ORIGINATOR_ID. C'est l'adresse source des messages BGP reçus.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏆</div>
+        <h3>Lowest wins</h3>
+        <p style="font-size:13px;color:var(--text2)">La comparaison est <strong style="color:var(--yellow)">numérique sur 32 bits</strong> (IPv4) : l'adresse la plus faible numériquement est préférée. Pour IPv6, la comparaison se fait également numériquement sur 128 bits.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">✅</div>
+        <h3>Toujours déterministe</h3>
+        <p style="font-size:13px;color:var(--text2)">Contrairement au critère #10 (Oldest eBGP), le critère #13 donne <strong>toujours le même résultat</strong> indépendamment de l'ordre d'arrivée des routes ou du temps de fonctionnement des sessions.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚪</div>
+        <h3>Porte fermée</h3>
+        <p style="font-size:13px;color:var(--text2)">Après le critère #13, <strong>aucun autre critère n'existe</strong>. Un seul chemin est toujours sélectionné. Si multipath est activé, les chemins égaux peuvent être installés ensemble en ECMP (avant le critère #13).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Profil du critère</div>
+    <div class="profile-grid">
+      <div class="pill"><div class="pill-label">Position</div><div class="pill-value yellow">Critère final — #13/13</div></div>
+      <div class="pill"><div class="pill-label">Valeur comparée</div><div class="pill-value blue">Adresse IP du neighbor</div></div>
+      <div class="pill"><div class="pill-label">Résultat</div><div class="pill-value green">Lowest wins</div></div>
+      <div class="pill"><div class="pill-label">Déterministe</div><div class="pill-value green">Oui — toujours</div></div>
+      <div class="pill"><div class="pill-label">Attribut BGP</div><div class="pill-value no">Aucun (local)</div></div>
+      <div class="pill"><div class="pill-label">Configurable</div><div class="pill-value no">Non</div></div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <span class="box-icon">💡</span>
+    <div>En pratique, atteindre le critère #13 est très rare dans un réseau bien conçu. Si deux chemins arrivent jusqu'au critère #13, cela signifie que les critères #1 à #12 ont tous été égaux — ce qui implique généralement une topologie symétrique parfaite ou une mauvaise politique de routage.</div>
+  </div>
+
+</div><!-- /theorie -->
+
+
+<!-- ═══════════════ ONGLET 2 : COMPARAISON IP ═══════════════ -->
+<div class="panel" id="comparaison">
+
+  <div class="section">
+    <div class="section-title">Adresse comparée : neighbor address vs Router-ID</div>
+    <table>
+      <tr><th>Critère</th><th>Valeur comparée</th><th>Source</th><th>Lowest wins</th></tr>
+      <tr>
+        <td>#11 Router-ID</td>
+        <td>Router-ID du peer (ou ORIGINATOR_ID si RR présent)</td>
+        <td>Attribut OPEN / ORIGINATOR_ID</td>
+        <td class="td-green">✓</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--yellow)">#13 Neighbor IP</strong></td>
+        <td><strong>Adresse IP du neighbor</strong> (neighbor statement)</td>
+        <td>Configuration locale</td>
+        <td class="td-green">✓</td>
+      </tr>
+    </table>
+
+    <div class="warn-box" style="margin-top:14px">
+      <span class="box-icon">⚠️</span>
+      <div>Ne pas confondre <strong>Neighbor IP</strong> (adresse peer BGP, critère #13) et <strong>Router-ID</strong> (identifiant BGP du routeur, critère #11). Un routeur peut avoir un Router-ID 1.1.1.1 mais être peered via l'adresse 10.0.0.2 — c'est 10.0.0.2 qui compte pour le critère #13.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Exemples de comparaisons IPv4</div>
+
+    <div class="ip-compare">
+      <div class="ip-box winner">
+        <div class="ib-label">Peer A</div>
+        <div class="ib-ip">10.0.0.1</div>
+      </div>
+      <div class="ip-vs">vs</div>
+      <div class="ip-box loser">
+        <div class="ib-label">Peer B</div>
+        <div class="ib-ip">10.0.0.2</div>
+      </div>
+      <div style="color:var(--green);font-size:13px">→ Peer A gagne (10.0.0.1 &lt; 10.0.0.2)</div>
+    </div>
+
+    <div class="ip-compare">
+      <div class="ip-box loser">
+        <div class="ib-label">Peer A</div>
+        <div class="ib-ip">172.16.1.1</div>
+      </div>
+      <div class="ip-vs">vs</div>
+      <div class="ip-box winner">
+        <div class="ib-label">Peer B</div>
+        <div class="ib-ip">10.255.255.1</div>
+      </div>
+      <div style="color:var(--green);font-size:13px">→ Peer B gagne (10.x.x.x &lt; 172.x.x.x numériquement)</div>
+    </div>
+
+    <div class="ip-compare">
+      <div class="ip-box loser">
+        <div class="ib-label">Peer A</div>
+        <div class="ib-ip">192.168.0.1</div>
+      </div>
+      <div class="ip-vs">vs</div>
+      <div class="ip-box winner">
+        <div class="ib-label">Peer B</div>
+        <div class="ib-ip">1.1.1.1</div>
+      </div>
+      <div style="color:var(--green);font-size:13px">→ Peer B gagne (1.1.1.1 &lt; 192.168.0.1 numériquement)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Comparaison numérique IPv4 — comment ça marche</div>
+    <pre><span class="c-cmt">! ─── Conversion en décimal 32 bits ─────────────────────────────────────
+!
+! 10.0.0.1   → 0x0A 00 00 01 → 167,772,161
+! 10.0.0.2   → 0x0A 00 00 02 → 167,772,162
+! 172.16.1.1 → 0xAC 10 01 01 → 2,886,729,985
+!
+! Règle : l'adresse avec la valeur décimale la plus faible gagne.
+! En pratique : comparer octet par octet de gauche à droite,
+!   s'arrêter au premier octet différent.
+!
+! Exemple :
+!   192.168.10.1  vs  192.168.10.2
+!   1er octet : 192 = 192 → continuer
+!   2ème octet: 168 = 168 → continuer
+!   3ème octet:  10 = 10  → continuer
+!   4ème octet:   1 &lt; 2   → 192.168.10.1 gagne ✅</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Cas IPv6</div>
+    <pre><span class="c-cmt">! ─── Neighbor IP en IPv6 ────────────────────────────────────────────────
+!
+! La même logique s'applique : comparaison numérique sur 128 bits.
+! La plus petite adresse IPv6 numériquement gagne.
+!
+! Exemple :
+!   Peer A : 2001:db8::1   → numériquement plus petite
+!   Peer B : 2001:db8::2   → numériquement plus grande
+!   → Peer A gagne
+!
+! Note : les adresses IPv6 link-local (fe80::/10) peuvent être utilisées
+! comme adresses de peer BGP avec "neighbor fe80::X link-local"</span>
+
+router bgp 65000
+ <span class="c-cmd">neighbor</span> <span class="c-val">2001:db8::1</span> remote-as 65000
+ <span class="c-cmd">neighbor</span> <span class="c-val">2001:db8::1</span> update-source Loopback0</pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Identifier la neighbor address dans show ip bgp</div>
+    <pre><span class="c-cmt">! ─── Lire la neighbor address dans la table BGP ─────────────────────────</span>
+R1# <span class="c-cmd">show ip bgp</span> <span class="c-val">10.10.10.0/24</span>
+
+BGP routing table entry for 10.10.10.0/24, version 8
+Paths: (2 available, <span class="c-ok">best #1</span>, table default)
+  65100
+    10.0.0.1 from <span class="c-hi">10.0.0.1</span> (1.1.1.1)       <span class="c-cmt">← neighbor address = 10.0.0.1</span>
+      Origin IGP, valid, internal, <span class="c-ok">best</span>
+      rx pathid: 0, tx pathid: 0x0
+
+  65100
+    10.0.0.1 from <span class="c-bad">10.0.0.2</span> (2.2.2.2)       <span class="c-cmt">← neighbor address = 10.0.0.2</span>
+      Origin IGP, valid, internal
+      rx pathid: 0, tx pathid: 0
+<span class="c-cmt">!
+! Critère #13 : 10.0.0.1 &lt; 10.0.0.2 → chemin via 10.0.0.1 sélectionné ✅</span></pre>
+  </div>
+
+</div><!-- /comparaison -->
+
+
+<!-- ═══════════════ ONGLET 3 : MULTIPATH & ECMP ═══════════════ -->
+<div class="panel" id="multipath">
+
+  <div class="section">
+    <div class="section-title">Multipath : avant le critère #13</div>
+    <p style="color:var(--text2);font-size:13.5px;margin-bottom:16px">Lorsque <code>maximum-paths</code> est configuré, BGP peut installer plusieurs chemins en ECMP dans la RIB <strong>avant d'atteindre le critère #13</strong>. Si deux chemins sont égaux jusqu'au critère #12, ils sont tous deux installés (ECMP) — le critère #13 sert uniquement à désigner le chemin <em>best</em> pour l'annonce aux peers.</p>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">⚖️</div>
+        <h3>ECMP iBGP</h3>
+        <p style="font-size:13px;color:var(--text2)">Chemins iBGP égaux (même IGP metric, même AS-PATH...). Activé par <code>maximum-paths ibgp N</code>. Les chemins sont installés ensemble. Un seul est désigné "best" (critère #13 si nécessaire) pour l'annonce.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔀</div>
+        <h3>ECMP eBGP</h3>
+        <p style="font-size:13px;color:var(--text2)">Chemins eBGP égaux vers le même préfixe. Activé par <code>maximum-paths N</code>. Peut nécessiter <code>bgp bestpath as-path multipath-relax</code> si les AS-PATHs diffèrent.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>Best path pour l'annonce</h3>
+        <p style="font-size:13px;color:var(--text2)">Même avec ECMP actif, BGP désigne un seul chemin "best" qu'il annonce aux peers. C'est ce chemin best qui est déterminé par les 13 critères (dont #13 en dernier recours).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Interaction multipath / critère #13</div>
+    <pre><span class="c-cmt">! ─── Scénario : 2 chemins iBGP égaux jusqu'au critère #12 ───────────────</span>
+router bgp 65000
+ <span class="c-cmd">maximum-paths ibgp</span> <span class="c-val">2</span>               <span class="c-cmt">! autorise 2 chemins en ECMP</span>
+ <span class="c-cmd">bgp bestpath as-path multipath-relax</span>  <span class="c-cmt">! si AS-PATHs légèrement différents</span>
+
+<span class="c-cmt">! Résultat :
+!   - Les 2 chemins sont installés en ECMP dans la FIB (load-sharing)
+!   - Le chemin avec la plus petite neighbor IP est désigné "best"
+!     et annoncé aux peers BGP
+!
+! Vérification :</span>
+<span class="c-cmd">show ip bgp</span> <span class="c-val">10.10.10.0/24</span>
+<span class="c-cmt">!   Paths: (2 available, best #1, table default)
+!           ↑ 2 chemins installés = ECMP actif</span>
+
+<span class="c-cmd">show ip route</span> <span class="c-val">10.10.10.0</span>
+<span class="c-cmt">!   B     10.10.10.0/24 [200/0]
+!            via 10.0.0.1, ...   ← chemin best (neighbor IP la plus basse)
+!            via 10.0.0.2, ...   ← chemin ECMP (installé mais pas "best")</span></pre>
+  </div>
+
+  <div class="info-box">
+    <span class="box-icon">ℹ️</span>
+    <div>Le critère #13 ne s'applique qu'au moment de désigner le chemin "best" parmi les chemins ECMP. Le load-balancing dans la FIB est indépendant : tous les chemins ECMP sont utilisés pour le forwarding, quel que soit lequel est "best".</div>
+  </div>
+
+</div><!-- /multipath -->
+
+
+<!-- ═══════════════ ONGLET 4 : TABLE BGP ═══════════════ -->
+<div class="panel" id="table-bgp">
+
+  <div class="section">
+    <div class="section-title">Scénario complet — critère #13 comme tie-breaker final</div>
+
+    <div class="topo">  Topologie :
+
+  AS 65000                                AS 65100
+  ┌──────────────────────────────┐        ┌────────────────┐
+  │                              │  eBGP  │                │
+  │  R1 ── RR ──────────────────►│◄──────►│  CE1           │
+  │         │                   │        │  (annonce      │
+  │         └────────────────►  │◄──────►│   10.10.10.0)  │
+  │                    R2        │        │                │
+  └──────────────────────────────┘        └────────────────┘
+
+  R1 reçoit 10.10.10.0/24 via deux sessions iBGP :
+    Chemin A : via RR, neighbor address = 10.0.1.1
+    Chemin B : via R2, neighbor address = 10.0.1.2
+    Critères #1 à #12 : tous identiques</div>
+
+    <div class="bgp-table-sim">
+      <pre>
+R1# <span class="c-cmd">show ip bgp 10.10.10.0/24</span>
+
+BGP routing table entry for 10.10.10.0/24, version 5
+Paths: (2 available, <span class="c-ok">best #1</span>, table default)
+  Not advertised to any peer
+
+  Refresh Epoch 3
+  65100
+    172.16.100.1 from <span class="c-hi">10.0.1.1</span> (1.1.1.1)    <span class="c-cmt">← neighbor addr = 10.0.1.1</span>
+      Origin IGP, metric 0, localpref 100, valid, internal, <span class="c-ok">best</span>
+      rx pathid: 0, tx pathid: 0x0
+      <span class="c-cmt">↑ 10.0.1.1 &lt; 10.0.1.2 → critère #13 → GAGNE ✅</span>
+
+  Refresh Epoch 3
+  65100
+    172.16.100.1 from <span class="c-bad">10.0.1.2</span> (2.2.2.2)    <span class="c-cmt">← neighbor addr = 10.0.1.2</span>
+      Origin IGP, metric 0, localpref 100, valid, internal
+      rx pathid: 0, tx pathid: 0
+      <span class="c-cmt">↑ 10.0.1.2 &gt; 10.0.1.1 → PERD ❌</span>
+</pre>
+    </div>
+
+    <div class="section-title">Récapitulatif de la sélection</div>
+    <table>
+      <tr><th>Critère</th><th>Chemin A (10.0.1.1)</th><th>Chemin B (10.0.1.2)</th><th>Résultat</th></tr>
+      <tr><td>#1 Weight</td><td>0</td><td>0</td><td class="td-orange">Égalité</td></tr>
+      <tr><td>#2 LOCAL_PREF</td><td>100</td><td>100</td><td class="td-orange">Égalité</td></tr>
+      <tr><td>#3–#6</td><td colspan="2" style="text-align:center;color:var(--text2)">Identiques</td><td class="td-orange">Égalité</td></tr>
+      <tr><td>#7 eBGP/iBGP</td><td>iBGP</td><td>iBGP</td><td class="td-orange">Égalité</td></tr>
+      <tr><td>#8 IGP metric</td><td>10</td><td>10</td><td class="td-orange">Égalité</td></tr>
+      <tr><td>#9–#12</td><td colspan="2" style="text-align:center;color:var(--text2)">Identiques</td><td class="td-orange">Égalité</td></tr>
+      <tr><td><strong>#13 Neighbor IP</strong></td><td class="td-green"><strong>10.0.1.1</strong></td><td class="td-red">10.0.1.2</td><td class="td-green"><strong>Chemin A gagne</strong></td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Vérifier quelle neighbor address a été utilisée</div>
+    <pre>R1# <span class="c-cmd">show ip bgp</span> <span class="c-val">10.10.10.0</span> | <span class="c-cmd">include</span> from
+    172.16.100.1 from <span class="c-hi">10.0.1.1</span> (1.1.1.1)   <span class="c-cmt">← format: NEXT_HOP from NEIGHBOR_IP (ROUTER_ID)</span>
+    172.16.100.1 from 10.0.1.2 (2.2.2.2)
+
+<span class="c-cmt">! La valeur entre "from" et "(" est la neighbor IP (critère #13)
+! La valeur entre "(" et ")" est le Router-ID (critère #11)</span></pre>
+  </div>
+
+</div><!-- /table-bgp -->
+
+
+<!-- ═══════════════ ONGLET 5 : ALGO COMPLET ═══════════════ -->
+<div class="panel" id="algo-complet">
+
+  <div class="complete-banner">
+    <h2>🎯 Algorithme BGP Best Path — Complet</h2>
+    <p>Les 13 critères de sélection + le préalable NEXT_HOP reachable</p>
+    <div class="algo-complete">
+      <div class="asc">W · Weight</div>
+      <div class="asc">L · LOCAL_PREF</div>
+      <div class="asc">L · NH=0.0.0.0</div>
+      <div class="asc">A · AS-PATH</div>
+      <div class="asc">O · Origin</div>
+      <div class="asc">M · MED</div>
+      <div class="asc">E · eBGP&gt;iBGP</div>
+      <div class="asc">I · IGP metric</div>
+      <div class="asc">A · AIGP</div>
+      <div class="asc">O · Oldest</div>
+      <div class="asc">R · Router-ID</div>
+      <div class="asc">C · Cluster-list</div>
+      <div class="asc" style="background:rgba(227,179,65,.15);border-color:rgba(227,179,65,.4);color:var(--yellow)">N · Neighbor IP</div>
+    </div>
+    <p style="color:var(--text3);font-size:12px;margin-top:4px">Mnémotechnique : <strong style="color:var(--text2)">W·L·L·A·O·M·E·I·A·O·R·C·N</strong></p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Tableau récapitulatif des 13 critères</div>
+    <table>
+      <tr><th>#</th><th>Critère</th><th>Valeur préférée</th><th>Portée</th><th>Configurable</th></tr>
+      <tr><td class="td-blue">1</td><td>Weight</td><td class="td-green">Highest</td><td>Local (Cisco)</td><td class="td-green">✓</td></tr>
+      <tr><td class="td-blue">2</td><td>LOCAL_PREF</td><td class="td-green">Highest</td><td>iBGP AS</td><td class="td-green">✓</td></tr>
+      <tr><td class="td-blue">3</td><td>Locally Originated (NH=0.0.0.0)</td><td class="td-green">Préféré</td><td>Local</td><td>—</td></tr>
+      <tr><td class="td-blue">4</td><td>AS-PATH length</td><td class="td-green">Shortest</td><td>Universel</td><td class="td-green">✓</td></tr>
+      <tr><td class="td-blue">5</td><td>Origin (IGP &gt; EGP &gt; ?)</td><td class="td-green">IGP</td><td>Universel</td><td class="td-green">✓</td></tr>
+      <tr><td class="td-blue">6</td><td>MED</td><td class="td-green">Lowest</td><td>Entre AS voisins</td><td class="td-green">✓</td></tr>
+      <tr><td class="td-blue">7</td><td>eBGP &gt; iBGP</td><td class="td-green">eBGP</td><td>Local</td><td>—</td></tr>
+      <tr><td class="td-blue">8</td><td>IGP metric vers NEXT_HOP</td><td class="td-green">Lowest</td><td>Local</td><td>—</td></tr>
+      <tr><td class="td-blue">9</td><td>AIGP (RFC 7311)</td><td class="td-green">Lowest</td><td>Inter-AS</td><td class="td-green">✓</td></tr>
+      <tr><td class="td-blue">10</td><td>Oldest eBGP path</td><td class="td-green">Plus ancienne</td><td>Local · eBGP only</td><td>—</td></tr>
+      <tr><td class="td-blue">11</td><td>Router-ID (ou ORIGINATOR_ID)</td><td class="td-green">Lowest</td><td>Local</td><td>—</td></tr>
+      <tr><td class="td-blue">12</td><td>Cluster-list length</td><td class="td-green">Shortest</td><td>Local · RR only</td><td>—</td></tr>
+      <tr><td class="td-yellow">13</td><td><strong>Neighbor IP</strong></td><td class="td-green"><strong>Lowest</strong></td><td>Local</td><td>—</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Commandes qui modifient l'ordre des critères</div>
+    <pre><span class="c-cmt">! ─── bgp bestpath compare-routerid ──────────────────────────────────────
+! Saute le critère #10 (Oldest eBGP) → passe directement au #11 (Router-ID)
+! Rend la sélection déterministe pour les routes eBGP</span>
+router bgp 65000
+ <span class="c-cmd">bgp bestpath compare-routerid</span>
+
+<span class="c-cmt">! ─── bgp bestpath as-path ignore ────────────────────────────────────────
+! Ignore le critère #4 (AS-PATH length)</span>
+router bgp 65000
+ <span class="c-cmd">bgp bestpath as-path ignore</span>
+
+<span class="c-cmt">! ─── bgp bestpath med missing-as-worst ──────────────────────────────────
+! Traite un MED absent comme 4294967295 (pire valeur)</span>
+router bgp 65000
+ <span class="c-cmd">bgp bestpath med missing-as-worst</span>
+
+<span class="c-cmt">! ─── bgp bestpath igp-metric ignore ─────────────────────────────────────
+! Ignore le critère #8 (IGP metric vers NEXT_HOP)</span>
+router bgp 65000
+ <span class="c-cmd">bgp bestpath igp-metric ignore</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Préalable : NEXT_HOP reachable</div>
+    <div class="warn-box">
+      <span class="box-icon">⚠️</span>
+      <div>Avant même d'entrer dans l'algorithme des 13 critères, une route BGP doit avoir son NEXT_HOP <strong>résolvable dans la RIB</strong>. Si le NEXT_HOP est inaccessible, la route est marquée invalide (<code>i</code>) et exclue de la sélection.</div>
+    </div>
+    <pre><span class="c-cmt">! Vérifier les routes invalides (NEXT_HOP non résolvable) :</span>
+<span class="c-cmd">show ip bgp</span> | <span class="c-cmd">include</span> ^<span class="c-bad">i</span>                    <span class="c-cmt">! routes invalides</span>
+<span class="c-cmd">show ip bgp</span> <span class="c-val">X.X.X.X/Y</span> | <span class="c-cmd">include</span> inaccessible   <span class="c-cmt">! NEXT_HOP inaccessible</span></pre>
+  </div>
+
+</div><!-- /algo-complet -->
+
+
+<!-- ═══════════════ ONGLET 6 : PIÈGES ═══════════════ -->
+<div class="panel" id="pieges">
+
+  <div class="section">
+    <div class="section-title">Piège 1 — Confondre Neighbor IP et Router-ID</div>
+    <div class="warn-box">
+      <span class="box-icon">⚠️</span>
+      <div><strong>Erreur fréquente :</strong> croire que le critère #13 compare le Router-ID du peer. Non — il compare l'<strong>adresse IP de la session BGP</strong> (la valeur dans <code>neighbor X remote-as Y</code>). Un routeur peut avoir Router-ID 1.1.1.1 mais être peered via 10.0.0.5. C'est 10.0.0.5 qui est comparé au critère #13.</div>
+    </div>
+    <pre><span class="c-cmt">! show ip bgp format : from NEIGHBOR_IP (ROUTER_ID)
+!                                ↑           ↑
+!                           critère #13  critère #11</span>
+<span class="c-cmd">show ip bgp</span> <span class="c-val">10.10.10.0/24</span>
+<span class="c-cmt">!   from 10.0.0.5 (1.1.1.1)   ← critère #13 = 10.0.0.5
+!                                 critère #11 = 1.1.1.1</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Piège 2 — Croire que le critère #13 est rarement utile</div>
+    <div class="info-box">
+      <span class="box-icon">ℹ️</span>
+      <div>En exam CCIE, des scénarios construisent exprès une égalité sur les critères #1–#12 pour tester si le candidat sait que c'est l'adresse IP du neighbor (et non le Router-ID ou le MED) qui décide en dernier recours. Apprendre la différence entre #11, #12 et #13.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Piège 3 — Après le critère #13, il n'y a pas de critère #14</div>
+    <div class="tip-box">
+      <span class="box-icon">💡</span>
+      <div>Le critère #13 est <strong>toujours déterministe</strong> car deux sessions BGP ne peuvent jamais avoir la même adresse peer. Après ce critère, un et un seul chemin est sélectionné. Il n'existe pas de critère #14 dans l'algorithme BGP standard Cisco IOS.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Piège 4 — Multipath installe avant le critère #13</div>
+    <div class="warn-box">
+      <span class="box-icon">⚠️</span>
+      <div>Si <code>maximum-paths</code> est configuré et que deux chemins sont égaux jusqu'au critère #12, ils sont <strong>tous deux installés en ECMP</strong> avant que le critère #13 ne soit évalué pour désigner le "best". Le critère #13 ne supprime pas les chemins ECMP — il choisit simplement lequel est announcé aux peers.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Piège 5 — Impact du critère #13 sur l'annonce aux peers</div>
+    <pre><span class="c-cmt">! ─── Seul le chemin "best" est annoncé aux peers iBGP ───────────────────
+!
+! Même en ECMP (maximum-paths 2), BGP n'annonce qu'UN seul chemin.
+! C'est le chemin avec la plus petite neighbor IP (critère #13) qui
+! est sélectionné comme "best" et donc annoncé.
+!
+! Conséquence en topologie asymétrique :
+!   Si R1 a neighbor IP 10.0.0.1 (via RR1) et 10.0.0.2 (via RR2),
+!   R1 annonce toujours la route reçue de 10.0.0.1 (RR1).
+!   Les peers de R1 ne voient jamais le chemin via RR2 comme "best".
+!
+! Solution : s'assurer que la politique de routage (LOCAL_PREF, MED,
+! AS-PATH) différencie les chemins AVANT d'atteindre le critère #13.</span></pre>
+  </div>
+
+</div><!-- /pieges -->
+
+
+<!-- ═══════════════ ONGLET 7 : FLASH CARDS ═══════════════ -->
+<div class="panel" id="flashcards">
+
+  <p style="color:var(--text2);font-size:13.5px;margin-bottom:20px">Cliquez sur une carte pour révéler la réponse.</p>
+
+  <div class="fc-grid">
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Que compare le critère #13 de la sélection BGP ?</div>
+      <div class="fc-a">L'<strong>adresse IP du neighbor</strong> (adresse de la session BGP configurée avec <code>neighbor X remote-as Y</code>). La plus petite adresse IP numériquement gagne. Ce n'est <strong>pas</strong> le Router-ID du peer (comparé au critère #11).
+        <div class="fc-hint">→ Neighbor address, pas Router-ID — lowest wins</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Pourquoi le critère #13 est-il toujours déterministe ?</div>
+      <div class="fc-a">Parce que deux sessions BGP ne peuvent jamais avoir la <strong>même adresse peer</strong> sur un même routeur. Contrairement au critère #10 (Oldest eBGP, qui dépend de l'ordre d'arrivée), le critère #13 donne toujours le même résultat indépendamment du temps ou de l'ordre des événements.
+        <div class="fc-hint">→ Adresses IP uniques → résultat toujours identique</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Comment lire la neighbor IP et le Router-ID dans show ip bgp X.X.X.X/Y ?</div>
+      <div class="fc-a">Format : <code>from NEIGHBOR_IP (ROUTER_ID)</code>. La valeur entre <code>from</code> et la parenthèse est la <strong>neighbor IP</strong> (critère #13). La valeur entre parenthèses est le <strong>Router-ID</strong> du peer (critère #11). Exemple : <code>from 10.0.0.5 (1.1.1.1)</code> → critère #13 = 10.0.0.5, critère #11 = 1.1.1.1.
+        <div class="fc-hint">→ from 10.0.0.5 (1.1.1.1) : NIP=10.0.0.5 / RID=1.1.1.1</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Existe-t-il un critère #14 dans l'algorithme BGP ?</div>
+      <div class="fc-a"><strong>Non.</strong> Le critère #13 (Neighbor IP) est le dernier. Après ce critère, un et un seul chemin est nécessairement sélectionné car les adresses IP de session sont uniques. Il n'existe pas de critère au-delà dans l'algorithme BGP standard Cisco IOS.
+        <div class="fc-hint">→ #13 = dernier critère, toujours conclusif</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quelle est la mnémotechnique des 13 critères BGP ?</div>
+      <div class="fc-a"><strong>W·L·L·A·O·M·E·I·A·O·R·C·N</strong> : Weight → LOCAL_PREF → Locally originated → AS-PATH → Origin → MED → eBGP&gt;iBGP → IGP metric → AIGP → Oldest eBGP → Router-ID → Cluster-list → <strong>Neighbor IP</strong>.
+        <div class="fc-hint">→ We Love Local AS Origins, Many Engineers Install At Our Router Clusters Now</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Si maximum-paths 2 est configuré et deux chemins sont égaux jusqu'au critère #12, que se passe-t-il au critère #13 ?</div>
+      <div class="fc-a">Les deux chemins sont déjà installés en <strong>ECMP</strong> dans la FIB (load-balancing actif). Le critère #13 sert uniquement à désigner lequel des deux est le chemin <strong>best</strong> annoncé aux peers BGP. Celui avec la plus petite neighbor IP est "best" — mais les deux restent actifs pour le forwarding.
+        <div class="fc-hint">→ ECMP installé avant #13 · #13 choisit le "best" pour l'annonce</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quelle commande rend la sélection BGP déterministe en sautant le critère #10 ?</div>
+      <div class="fc-a"><code>bgp bestpath compare-routerid</code> sous <code>router bgp</code>. Elle supprime le critère #10 (Oldest eBGP path, non-déterministe) et passe directement au critère #11 (Router-ID, déterministe). Fortement recommandée en environnement multi-homed ou multi-border-router.
+        <div class="fc-hint">→ compare-routerid : saute #10, va à #11 directement</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Deux routeurs reçoivent le même préfixe. R1 compare neighbor IP 10.0.0.1 vs 192.168.1.1. Lequel gagne ?</div>
+      <div class="fc-a"><strong>10.0.0.1</strong> gagne. La comparaison est numérique 32 bits : 10.0.0.1 = 167,772,161 et 192.168.1.1 = 3,232,235,777. La valeur 10.0.0.1 est numériquement inférieure malgré l'adresse visuellement "petite" de 192.168.x.x.
+        <div class="fc-hint">→ Comparaison numérique 32 bits — 10.x.x.x &lt; 192.x.x.x</div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /flashcards -->
+
+</div><!-- /content -->
+
+<script>
+function showTab(btn, id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>
