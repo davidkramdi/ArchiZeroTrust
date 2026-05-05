@@ -122,7 +122,7 @@
   .seg-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
 
   /* PREPEND TOPOLOGY */
-  .topo { background: #0a0f1a; border-radius: 10px; padding: 20px; margin: 14px 0; border: 1px solid var(--border); font-family: 'Courier New', monospace; font-size: 12px; color: var(--text2); line-height: 2; overflow-x: auto; }
+  .topo { background: #0a0f1a; border-radius: 10px; padding: 20px; margin: 14px 0; border: 1px solid var(--border); font-family: 'Courier New', monospace; font-size: 12px; color: var(--text2); line-height: 1.5; white-space: pre; overflow-x: auto; }
 
   /* REGEX TABLE */
   .rx-table td:first-child { font-family: 'Courier New', monospace; color: var(--orange-lt); font-weight: 700; font-size: 13px; }
@@ -310,13 +310,13 @@ R1# <span class="hl">show ip bgp 10.0.0.0/8</span>
                     ┌──────────────────────────────────┐
                     │           AS 65001               │
                     │                                  │
-         eBGP       │  ┌──────────┐   ┌──────────┐   │
-  ISP1 ─────────────┼──│   R1     │───│   R2     │   │
-  (AS 100)          │  │ 10.0.0.1 │   │ 10.0.0.2 │   │
-                    │  └──────────┘   └──────────┘   │
-  ISP2 ─────────────┼──│   R3     │                  │
-  (AS 200)   eBGP   │  │ 10.0.0.3 │                  │
-                    │  └──────────┘                   │
+         eBGP       │  ┌──────────┐   ┌──────────┐     │ 
+  ISP1 ─────────────┼──│   R1     │───│   R2     │     │
+  (AS 100)          │  │ 10.0.0.1 │   │ 10.0.0.2 │     │
+                    │  └──────────┘   └──────────┘     │
+  ISP2 ─────────────┼──│   R3     │                    │
+  (AS 200)   eBGP   │  │ 10.0.0.3 │                    │
+                    │  └──────────┘                    │
                     └──────────────────────────────────┘
 
   <span class="cmt">Objectif : ISP1 = chemin principal, ISP2 = backup</span>
