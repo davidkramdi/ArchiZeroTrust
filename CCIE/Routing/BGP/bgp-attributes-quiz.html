@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP · Arbre des attributs · Quiz interactif</title>
+<style>
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--surface3:#30363d;
+  --border:#30363d;--border2:#484f58;
+  --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+  --blue:#58a6ff;--green:#3fb950;--orange:#d29922;--red:#f85149;
+  --yellow:#e3b341;--teal:#76e4f7;
+  --info-bg:rgba(88,166,255,.1);--info-text:#58a6ff;--info-border:rgba(88,166,255,.35);
+  --warn-bg:rgba(210,153,34,.1);--warn-text:#e3b341;--warn-border:rgba(210,153,34,.35);
+  --ok-bg:rgba(63,185,80,.1);--ok-text:#3fb950;--ok-border:rgba(63,185,80,.35);
+  --bad-bg:rgba(248,81,73,.08);--bad-text:#f85149;--bad-border:rgba(248,81,73,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:8px;height:52px;position:sticky;top:0;z-index:100}
+.topnav a{color:var(--text2);font-size:13px;padding:4px 8px;border-radius:6px}
+.topnav a:hover{background:var(--surface2);color:var(--text);text-decoration:none}
+.topnav .sep{color:var(--border2)}
+.topnav .current{color:var(--text);font-weight:600}
+
+.hero{padding:40px 24px 28px;max-width:900px;margin:0 auto}
+.hero h1{font-size:26px;font-weight:700;margin-bottom:6px}
+.hero p{color:var(--text2);font-size:14px}
+
+.toolbar{max-width:900px;margin:0 auto;padding:0 24px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.err-badge{font-size:13px;color:var(--text2)}
+.err-badge strong{color:var(--red);font-size:15px}
+.reset-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:6px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.3px}
+.reset-btn:hover{border-color:var(--border2);color:var(--text)}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text3)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+.content{max-width:900px;margin:0 auto;padding:0 24px 60px}
+
+.qbtn{border-radius:8px;padding:10px 14px;border:1px dashed var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;font-size:13.5px;display:flex;align-items:baseline;gap:8px;width:100%;text-align:left;transition:border-color .15s,background .15s;font-family:inherit}
+.qbtn:hover:not(.qi):not(.qw):not(.qw-){border-color:var(--blue);background:var(--surface3)}
+.qbtn.qi{border-style:solid;border-color:var(--info-border);background:var(--info-bg);color:var(--info-text);cursor:default}
+.qbtn.qw-{border-style:solid;border-color:var(--warn-border);background:var(--warn-bg);color:var(--warn-text);cursor:default}
+.qbtn.qw{border-style:solid;border-color:var(--bad-border);background:var(--bad-bg);color:var(--bad-text);cursor:default}
+.acard{border-radius:8px;padding:9px 13px;border:1px dashed var(--border2);background:var(--surface2);cursor:pointer;font-size:13px;min-width:120px;transition:border-color .15s,background .15s}
+.acard:hover:not(.aok):not(.abad){border-color:var(--blue);background:var(--surface3)}
+.acard.aok{border-style:solid;border-color:var(--ok-border);background:var(--ok-bg);color:var(--ok-text);cursor:default}
+.acard.abad{border-style:solid;border-color:var(--bad-border);background:var(--bad-bg);color:var(--bad-text);cursor:default}
+.cline{border-left:1px dashed var(--border);padding-left:16px;margin-left:10px;margin-top:5px}
+.nlabel{font-weight:600;white-space:nowrap}
+.nsub{font-size:11px;opacity:.6;white-space:normal}
+.chevron{font-family:monospace;font-size:12px;flex-shrink:0;opacity:.7}
+.mnode{margin:5px 0}
+.attrs-wrap{display:flex;flex-wrap:wrap;gap:8px;padding:8px 0}
+.aname{font-weight:600;font-size:13px}
+.asub{font-size:11px;margin-top:3px;opacity:.75}
+.abad .asub{font-style:italic}
+.cat-done{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid var(--ok-border);background:var(--ok-bg);color:var(--ok-text);font-size:12px;font-weight:600;margin-top:4px}
+.done-banner{padding:24px;border-radius:12px;border:1px solid var(--ok-border);background:var(--ok-bg);color:var(--ok-text);text-align:center;margin-top:2rem}
+.done-banner h2{font-size:22px;font-weight:700;margin-bottom:6px}
+.done-banner p{font-size:14px;opacity:.85}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html">🏠 BGP</a>
+  <span class="sep">›</span>
+  <span class="current">Arbre des attributs · Quiz</span>
+</nav>
+
+<div class="hero">
+  <h1>🧩 Arbre des attributs BGP</h1>
+  <p>Explorez la classification des attributs BGP. Des impostures se cachent à chaque niveau — cliquez pour les identifier.</p>
+</div>
+
+<div class="toolbar">
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:var(--info-text)"></div>Well-known</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--warn-text)"></div>Optional</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--ok-text)"></div>Correct</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--bad-text)"></div>Faux</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <span class="err-badge">Erreurs : <strong id="ec">0</strong></span>
+    <button class="reset-btn" onclick="doReset()">↺ Recommencer</button>
+  </div>
+</div>
+
+<div class="content" id="qt"></div>
+
+<script>
+const T={
+  root:{label:'BGP path attributes',sub:'RFC 4271',col:null,children:['wk','opt'],decoys:[
+    {id:'dx1',label:'Mandatory',r:"Mandatory est une sous-catégorie de Well-known, pas une catégorie principale."},
+    {id:'dx2',label:'Transitive',r:"Transitive est une sous-catégorie d'Optional, pas une catégorie principale."}
+  ]},
+  wk:{label:'Well-known',sub:'Reconnu par toutes les implémentations BGP',col:'i',children:['wkm','wkd'],decoys:[
+    {id:'dx3',label:'Transitive',r:"Transitive appartient à Optional, pas à Well-known."},
+    {id:'dx4',label:'Non-transitive',r:"Non-transitive appartient à Optional, pas à Well-known."}
+  ]},
+  opt:{label:'Optional',sub:"Peut être inconnu de certains routeurs",col:'w',children:['optt','optnt'],decoys:[
+    {id:'dx5',label:'Mandatory',r:"Mandatory appartient à Well-known, pas à Optional."},
+    {id:'dx6',label:'Discretionary',r:"Discretionary appartient à Well-known, pas à Optional."}
+  ]},
+  wkm:{label:'Mandatory',sub:'Présent dans chaque UPDATE',col:'i',attrs:[
+    {id:'a1',label:'AS_PATH',sub:'type 2 · critère #4',ok:true},
+    {id:'a2',label:'NEXT_HOP',sub:'type 3 · préalable joignabilité',ok:true},
+    {id:'a3',label:'ORIGIN',sub:'type 1 · i / e / ? · critère #5',ok:true},
+    {id:'da1',label:'LOCAL_PREF',ok:false,r:'LOCAL_PREF est Well-known Discretionary (type 5).'},
+    {id:'da2',label:'MED',ok:false,r:'MED est Optional Non-transitive (type 4).'},
+    {id:'da3',label:'AGGREGATOR',ok:false,r:'AGGREGATOR est Optional Transitive (type 7).'}
+  ]},
+  wkd:{label:'Discretionary',sub:'Reconnu par tous, présence optionnelle dans UPDATE',col:'i',attrs:[
+    {id:'b1',label:'LOCAL_PREF',sub:'type 5 · critère #2 · highest wins',ok:true},
+    {id:'b2',label:'ATOMIC_AGGREGATE',sub:'type 6 · agrégation avec perte',ok:true},
+    {id:'db1',label:'AS_PATH',ok:false,r:'AS_PATH est Well-known Mandatory (type 2).'},
+    {id:'db2',label:'MED',ok:false,r:'MED est Optional Non-transitive (type 4).'},
+    {id:'db3',label:'COMMUNITY',ok:false,r:'COMMUNITY est Optional Transitive (type 8).'},
+    {id:'db4',label:'NEXT_HOP',ok:false,r:'NEXT_HOP est Well-known Mandatory (type 3).'}
+  ]},
+  optt:{label:'Transitive',sub:'Propagé même si inconnu du peer (bit Partial)',col:'w',attrs:[
+    {id:'c1',label:'AGGREGATOR',sub:'type 7 · AS + Router-ID agrégateur',ok:true},
+    {id:'c2',label:'COMMUNITY',sub:'type 8 · no-export, no-advertise…',ok:true},
+    {id:'c3',label:'EXT. COMMUNITY',sub:'type 16 · Route-Target, VPN',ok:true},
+    {id:'dc1',label:'MED',ok:false,r:'MED est Optional Non-transitive (type 4).'},
+    {id:'dc2',label:'ORIGINATOR_ID',ok:false,r:'ORIGINATOR_ID est Optional Non-transitive (type 9).'},
+    {id:'dc3',label:'LOCAL_PREF',ok:false,r:'LOCAL_PREF est Well-known Discretionary.'}
+  ]},
+  optnt:{label:'Non-transitive',sub:'Supprimé si le peer ne le reconnaît pas',col:'w',attrs:[
+    {id:'e1',label:'MED',sub:'type 4 · critère #6 · lowest wins',ok:true},
+    {id:'e2',label:'ORIGINATOR_ID',sub:'type 9 · Route Reflector · critère #11',ok:true},
+    {id:'e3',label:'CLUSTER_LIST',sub:'type 10 · RR · critère #12',ok:true},
+    {id:'e4',label:'AIGP',sub:'type 26 · RFC 7311 · critère #9',ok:true},
+    {id:'de1',label:'AGGREGATOR',ok:false,r:'AGGREGATOR est Optional Transitive (type 7).'},
+    {id:'de2',label:'COMMUNITY',ok:false,r:'COMMUNITY est Optional Transitive (type 8).'},
+    {id:'de3',label:'LOCAL_PREF',ok:false,r:'LOCAL_PREF est Well-known Discretionary.'}
+  ]}
+};
+
+const REG={};
+Object.values(T).forEach(n=>{
+  (n.decoys||[]).forEach(d=>{REG[d.id]=d;});
+  (n.attrs||[]).forEach(a=>{REG[a.id]=a;});
+});
+
+let S={open:new Set(),wrong:new Set(),amap:{},err:0,sh:{}};
+
+function sfl(k,arr){if(!S.sh[k]){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}S.sh[k]=a;}return S.sh[k];}
+
+function colCls(col){return col==='i'?'qi':col==='w'?'qw-':'';}
+
+function rBtn(n,id,big){
+  const isOpen=S.open.has(id);
+  const cls=isOpen?colCls(n.col||'i'):'';
+  const sz=big?'font-size:15px;border-radius:12px;padding:12px 16px;':'';
+  return `<button class="qbtn ${cls}" style="${sz}" ${isOpen?'':`onclick="doOpen('${id}')"`}>
+    <span class="chevron">${isOpen?'▾':'▸'}</span>
+    <span class="nlabel">${n.label}</span>
+    <span class="nsub">${n.sub}</span>
+  </button>`;
+}
+
+function rDecoy(id){
+  const d=REG[id];
+  const isW=S.wrong.has(id);
+  const body=isW
+    ?`<span class="chevron">✗</span><span class="nlabel">${d.label}</span><span class="nsub"> — FAUX : ${d.r}</span>`
+    :`<span class="chevron" style="opacity:.3">?</span><span class="nlabel">${d.label}</span>`;
+  return `<div class="mnode"><button class="qbtn ${isW?'qw':''}" ${isW?'':`onclick="doDecoy('${id}')"`}>${body}</button></div>`;
+}
+
+function rAttrs(nid,n){
+  const items=sfl('a_'+nid,n.attrs);
+  let h=`<div class="attrs-wrap">`;
+  for(const a of items){
+    const st=S.amap[a.id];
+    const cls=st==='ok'?'aok':st==='bad'?'abad':'';
+    const icon=st==='ok'?'✓ ':st==='bad'?'✗ ':'? ';
+    const sub=st==='ok'?`<div class="asub">${a.sub||''}</div>`
+              :st==='bad'?`<div class="asub">${REG[a.id].r}</div>`
+              :`<div class="asub" style="color:var(--text3)">cliquer pour vérifier</div>`;
+    h+=`<div class="acard ${cls}" ${st?'':`onclick="doAttr('${a.id}')"`}><div class="aname">${icon}${a.label}</div>${sub}</div>`;
+  }
+  h+='</div>';
+  const found=n.attrs.filter(a=>a.ok&&S.amap[a.id]==='ok').length;
+  const tot=n.attrs.filter(a=>a.ok).length;
+  if(found===tot) h+=`<div class="cat-done">✓ ${n.label} — ${tot} attributs identifiés</div>`;
+  return h;
+}
+
+function rNode(id){
+  const n=T[id];
+  const isOpen=S.open.has(id);
+  let h=`<div class="mnode">${rBtn(n,id,false)}`;
+  if(isOpen){
+    h+=`<div class="cline">`;
+    if(n.attrs){
+      h+=rAttrs(id,n);
+    } else {
+      const items=sfl('n_'+id,[...n.children.map(c=>({t:'n',id:c})),...n.decoys.map(d=>({t:'d',id:d.id}))]);
+      for(const it of items) h+=(it.t==='n'?rNode(it.id):rDecoy(it.id));
+    }
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function doOpen(id){if(!S.open.has(id)){S.open.add(id);render();}}
+function doDecoy(id){if(!S.wrong.has(id)){S.wrong.add(id);S.err++;document.getElementById('ec').textContent=S.err;render();}}
+function doAttr(id){
+  if(S.amap[id])return;
+  const a=REG[id];
+  S.amap[id]=a.ok?'ok':'bad';
+  if(!a.ok){S.err++;document.getElementById('ec').textContent=S.err;}
+  render();
+}
+function doReset(){S={open:new Set(),wrong:new Set(),amap:{},err:0,sh:{}};document.getElementById('ec').textContent='0';render();}
+
+function render(){
+  const n=T.root;
+  const isOpen=S.open.has('root');
+  let h=`<div class="mnode">${rBtn({label:'BGP path attributes',sub:'RFC 4271 — cliquez pour explorer',col:'i'},'root',true)}`;
+  if(isOpen){
+    h+=`<div class="cline">`;
+    const items=sfl('n_root',[...n.children.map(c=>({t:'n',id:c})),...n.decoys.map(d=>({t:'d',id:d.id}))]);
+    for(const it of items) h+=(it.t==='n'?rNode(it.id):rDecoy(it.id));
+    h+='</div>';
+  }
+  h+='</div>';
+
+  const leaves=['wkm','wkd','optt','optnt'];
+  const done=leaves.every(id=>S.open.has(id)&&T[id].attrs.filter(a=>a.ok).every(a=>S.amap[a.id]==='ok'));
+  if(done){
+    h+=`<div class="done-banner"><h2>🏆 Arbre complété !</h2><p>Tous les attributs BGP sont correctement classifiés · ${S.err} erreur${S.err!==1?'s':''}</p></div>`;
+  }
+  document.getElementById('qt').innerHTML=h;
+}
+
+render();
+</script>
+</body>
+</html>
