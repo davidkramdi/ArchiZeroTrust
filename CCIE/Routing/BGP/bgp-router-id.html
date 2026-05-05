@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP · Router-ID · Critère #11</title>
+<style>
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--surface3:#30363d;
+  --border:#30363d;--border2:#484f58;
+  --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+  --blue:#58a6ff;--green:#3fb950;--orange:#d29922;--red:#f85149;
+  --purple:#bc8cff;--teal:#76e4f7;--pink:#f778ba;--yellow:#e3b341;
+  --rule:#bc8cff;--accent:#f778ba;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:8px;height:52px;position:sticky;top:0;z-index:100}
+.topnav a{color:var(--text2);font-size:13px;padding:4px 8px;border-radius:6px}
+.topnav a:hover{background:var(--surface2);color:var(--text);text-decoration:none}
+.topnav .sep{color:var(--border2)}
+.topnav .current{color:var(--text);font-weight:600}
+
+.hero{padding:40px 24px 32px;max-width:960px;margin:0 auto}
+.hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.4px}
+.badge-rule{background:rgba(188,140,255,.15);color:var(--rule);border:1px solid rgba(188,140,255,.3)}
+.badge-num{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
+.badge-no{background:rgba(110,118,129,.12);color:var(--text2);border:1px solid var(--border)}
+.badge-pink{background:rgba(247,120,186,.12);color:var(--pink);border:1px solid rgba(247,120,186,.3)}
+
+.hero h1{font-size:32px;font-weight:700;margin-bottom:8px}
+.hero h1 span{color:var(--pink)}
+.hero .subtitle{color:var(--text2);font-size:16px;max-width:680px}
+
+.tabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:99}
+.tabs{display:flex;gap:2px;padding:0 24px;max-width:960px;margin:0 auto;overflow-x:auto}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--text2);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--pink);border-bottom-color:var(--pink)}
+
+.content{max-width:960px;margin:0 auto;padding:32px 24px}
+.panel{display:none}
+.panel.active{display:block}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:24px 0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.card-icon{font-size:28px;margin-bottom:10px}
+
+.profile-grid{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+.pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px}
+.pill-label{color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.pill-value{color:var(--text);font-weight:600}
+.pill-value.pink{color:var(--pink)}
+.pill-value.blue{color:var(--blue)}
+.pill-value.green{color:var(--green)}
+.pill-value.orange{color:var(--orange)}
+.pill-value.red{color:var(--red)}
+.pill-value.rule{color:var(--rule)}
+.pill-value.no{color:var(--text3)}
+
+.section{margin:28px 0}
+.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);color:var(--text2);font-weight:600;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.td-green{color:var(--green);font-weight:600}
+.td-blue{color:var(--blue);font-weight:600}
+.td-orange{color:var(--orange);font-weight:600}
+.td-red{color:var(--red);font-weight:600}
+.td-teal{color:var(--teal);font-weight:600}
+.td-pink{color:var(--pink);font-weight:600}
+
+pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px;line-height:1.7}
+code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px}
+.c-kw{color:#ff7b72}
+.c-cmd{color:var(--blue)}
+.c-val{color:var(--green)}
+.c-cmt{color:var(--text3)}
+.c-ok{color:var(--green);font-weight:700}
+.c-bad{color:var(--red);font-weight:700}
+.c-hi{color:var(--yellow);font-weight:700}
+.c-pink{color:var(--pink);font-weight:700}
+.c-orange{color:var(--orange);font-weight:700}
+
+.info-box,.warn-box,.tip-box,.danger-box{border-radius:8px;padding:14px 16px;margin:14px 0;font-size:13.5px;display:flex;gap:10px}
+.info-box{background:rgba(88,166,255,.08);border:1px solid rgba(88,166,255,.25);color:#a8d8ff}
+.warn-box{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);color:#f0c060}
+.tip-box{background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.25);color:#7ee787}
+.danger-box{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);color:#ffa198}
+.box-icon{flex-shrink:0;font-size:16px}
+
+.algo-strip{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0}
+.algo-step{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+.algo-step.active{background:rgba(247,120,186,.12);border-color:rgba(247,120,186,.4);color:var(--pink)}
+.algo-step.done{background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3);color:var(--blue)}
+.algo-step.skip{background:rgba(248,81,73,.07);border-color:rgba(248,81,73,.2);color:var(--red);text-decoration:line-through;opacity:.6}
+.algo-num{background:var(--surface3);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.algo-step.active .algo-num{background:rgba(247,120,186,.25)}
+.algo-step.done .algo-num{background:rgba(88,166,255,.2)}
+
+.bgp-table-sim{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0}
+.bgp-table-sim pre{border:none;border-radius:0;margin:0;background:transparent}
+
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin:20px 0}
+.fc{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.fc:hover{border-color:var(--pink)}
+.fc-q{padding:16px;font-size:13.5px;font-weight:500;min-height:72px;display:flex;align-items:center}
+.fc-a{padding:14px 16px;background:rgba(247,120,186,.06);border-top:1px solid var(--border);font-size:13px;color:var(--pink);display:none}
+.fc.open .fc-a{display:block}
+.fc-hint{font-size:11px;color:var(--text3);margin-top:6px}
+
+.trap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin:20px 0}
+.trap{background:var(--surface);border:1px solid rgba(248,81,73,.25);border-left:3px solid var(--red);border-radius:8px;padding:16px}
+.trap h4{color:var(--red);font-size:13px;font-weight:700;margin-bottom:8px}
+.trap p{color:var(--text2);font-size:13px;line-height:1.5}
+.trap code{font-size:11.5px}
+.good-practice{border-color:rgba(63,185,80,.25);border-left-color:var(--green)}
+.good-practice h4{color:var(--green)}
+
+/* Priority ladder */
+.priority-ladder{display:flex;flex-direction:column;gap:8px;margin:20px 0}
+.prio-step{display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px}
+.prio-num{flex-shrink:0;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.prio-num.p1{background:rgba(247,120,186,.2);color:var(--pink)}
+.prio-num.p2{background:rgba(88,166,255,.2);color:var(--blue)}
+.prio-num.p3{background:rgba(63,185,80,.2);color:var(--green)}
+.prio-label{font-weight:600;font-size:14px;flex:1}
+.prio-sub{color:var(--text2);font-size:12px;margin-top:2px}
+.prio-cmd{font-family:monospace;font-size:12px;color:var(--teal)}
+
+/* RR diagram */
+.rr-diagram{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:16px 0;font-family:monospace;font-size:12.5px;white-space:pre;overflow-x:auto;line-height:1.5;color:var(--text2)}
+
+/* Compare cards */
+.compare-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.cmp-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.cmp-card.c10{border-top:3px solid var(--orange)}
+.cmp-card.c11{border-top:3px solid var(--pink)}
+.cmp-title{font-size:15px;font-weight:700;margin-bottom:14px}
+.cmp-title.o{color:var(--orange)}
+.cmp-title.p{color:var(--pink)}
+.cmp-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;gap:8px}
+.cmp-row:last-child{border-bottom:none}
+.cmp-label{color:var(--text2);flex-shrink:0}
+.cmp-val{font-weight:600;text-align:right}
+
+@media(max-width:640px){
+  .compare-wrap{grid-template-columns:1fr}
+  .hero h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html">🏠 BGP</a>
+  <span class="sep">›</span>
+  <span class="current">Router-ID · #11</span>
+</nav>
+
+<div class="hero">
+  <div class="hero-badges">
+    <span class="badge badge-rule">🆔 Règle de sélection</span>
+    <span class="badge badge-num">Critère #11</span>
+    <span class="badge badge-pink">Lowest wins</span>
+    <span class="badge badge-no">ORIGINATOR_ID si RR</span>
+  </div>
+  <h1><span>Router-ID</span> du peer</h1>
+  <p class="subtitle">Critère #11 — Préférer le chemin dont le peer annonçant a le plus petit Router-ID. Si une Route Reflector a ajouté ORIGINATOR_ID (type 9), c'est cette valeur qui est utilisée à la place du Router-ID du peer.</p>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(this,'theorie')">① Théorie</button>
+    <button class="tab" onclick="showTab(this,'selection')">② Sélection Router-ID</button>
+    <button class="tab" onclick="showTab(this,'originatorid')">③ ORIGINATOR_ID</button>
+    <button class="tab" onclick="showTab(this,'table')">④ Table BGP</button>
+    <button class="tab" onclick="showTab(this,'comparerouterid')">⑤ compare-routerid</button>
+    <button class="tab" onclick="showTab(this,'pieges')">⑥ Pièges</button>
+    <button class="tab" onclick="showTab(this,'flashcards')">⑦ Flash Cards</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════ ONGLET 1 : THÉORIE ═══════════════ -->
+<div class="panel active" id="theorie">
+
+  <div class="section">
+    <div class="section-title">Profil complet</div>
+    <div class="profile-grid">
+      <div class="pill"><div class="pill-label">Type code</div><div class="pill-value no">— aucun (règle locale)</div></div>
+      <div class="pill"><div class="pill-label">Catégorie</div><div class="pill-value rule">Règle de sélection</div></div>
+      <div class="pill"><div class="pill-label">Critère</div><div class="pill-value blue">#11</div></div>
+      <div class="pill"><div class="pill-label">Comparaison</div><div class="pill-value green">Lowest wins</div></div>
+      <div class="pill"><div class="pill-label">Source (sans RR)</div><div class="pill-value pink">Router-ID du peer BGP</div></div>
+      <div class="pill"><div class="pill-label">Source (avec RR)</div><div class="pill-value orange">ORIGINATOR_ID (type 9)</div></div>
+    </div>
+
+    <div class="info-box"><span class="box-icon">ℹ️</span>
+      Le Router-ID BGP est un identifiant 32 bits (format IPv4) qui identifie de façon unique un routeur dans le domaine BGP. Pour le critère #11, c'est le Router-ID du <strong>peer qui annonce</strong> le chemin qui est comparé — pas le Router-ID du routeur local. Si un Route Reflector a propagé la route, <strong>ORIGINATOR_ID</strong> (l'ID du routeur qui a originellement annoncé la route) remplace le Router-ID du peer.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Position dans l'algorithme</div>
+    <div class="algo-strip">
+      <div class="algo-step done"><span class="algo-num">1</span>Weight</div>
+      <div class="algo-step done"><span class="algo-num">2</span>LOCAL_PREF</div>
+      <div class="algo-step done"><span class="algo-num">3</span>NH=0.0.0.0</div>
+      <div class="algo-step done"><span class="algo-num">4</span>AS-PATH</div>
+      <div class="algo-step done"><span class="algo-num">5</span>Origin</div>
+      <div class="algo-step done"><span class="algo-num">6</span>MED</div>
+      <div class="algo-step done"><span class="algo-num">7</span>eBGP/iBGP</div>
+      <div class="algo-step done"><span class="algo-num">8</span>IGP metric</div>
+      <div class="algo-step done"><span class="algo-num">9</span>AIGP</div>
+      <div class="algo-step done"><span class="algo-num">10</span>Oldest eBGP</div>
+      <div class="algo-step active"><span class="algo-num">11</span>Router-ID ← ici</div>
+      <div class="algo-step"><span class="algo-num">12</span>Cluster-list</div>
+      <div class="algo-step"><span class="algo-num">13</span>Neighbor IP</div>
+    </div>
+    <p style="color:var(--text3);font-size:12px;margin-top:6px">
+      → Critère #11 atteint directement si <code>bgp bestpath compare-routerid</code> est configuré (critère #10 sauté).
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Règle de comparaison</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">🔢</div>
+        <h3>Lowest Router-ID wins</h3>
+        <p style="color:var(--text2);font-size:13px">Le chemin dont le peer annonçant a le <strong>Router-ID le plus bas</strong> est préféré. La comparaison est numérique (32 bits), pas lexicographique. Ex: <code>1.1.1.1</code> (0x01010101) &lt; <code>2.2.2.2</code> (0x02020202).</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔄</div>
+        <h3>ORIGINATOR_ID en contexte RR</h3>
+        <p style="color:var(--text2);font-size:13px">Quand une route est réfléchie par un Route Reflector, l'attribut <strong>ORIGINATOR_ID</strong> (type 9) contient le Router-ID de l'annonceur original. Pour le critère #11, c'est ORIGINATOR_ID qui est comparé, pas le Router-ID du RR ou du peer direct.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>Déterministe par nature</h3>
+        <p style="color:var(--text2);font-size:13px">Contrairement au critère #10 (Oldest eBGP), le Router-ID est <strong>stable</strong> — il ne change pas selon l'ordre d'arrivée des routes. C'est pourquoi <code>bgp bestpath compare-routerid</code> saute #10 pour arriver ici directement.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚠️</div>
+        <h3>Ne s'applique pas toujours</h3>
+        <p style="color:var(--text2);font-size:13px">Si les deux chemins viennent du <strong>même peer</strong> (même Router-ID ou ORIGINATOR_ID), le critère #11 est une égalité et on passe au critère <strong>#12</strong> (longueur Cluster-list). En pratique, deux chemins du même peer sont très rares.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /theorie -->
+
+<!-- ═══════════════ ONGLET 2 : SÉLECTION ROUTER-ID ═══════════════ -->
+<div class="panel" id="selection">
+
+  <div class="section">
+    <div class="section-title">Priorité de sélection du Router-ID sur IOS</div>
+    <div class="priority-ladder">
+      <div class="prio-step">
+        <div class="prio-num p1">1</div>
+        <div>
+          <div class="prio-label">Configuration manuelle</div>
+          <div class="prio-sub">Valeur explicitement définie — priorité absolue, ne change jamais automatiquement</div>
+          <div class="prio-cmd">router bgp 65001 → bgp router-id 10.255.0.1</div>
+        </div>
+      </div>
+      <div class="prio-step">
+        <div class="prio-num p2">2</div>
+        <div>
+          <div class="prio-label">Interface Loopback la plus haute</div>
+          <div class="prio-sub">Si pas de config manuelle, IOS choisit la loopback avec la plus grande adresse IP</div>
+          <div class="prio-cmd">Loopback0: 10.0.0.1 / Loopback1: 192.168.1.1 → Router-ID = 192.168.1.1</div>
+        </div>
+      </div>
+      <div class="prio-step">
+        <div class="prio-num p3">3</div>
+        <div>
+          <div class="prio-label">Interface physique active la plus haute</div>
+          <div class="prio-sub">Si aucune loopback, IP la plus haute parmi les interfaces up/up</div>
+          <div class="prio-cmd">GigE0/0: 10.1.1.2 / GigE0/1: 172.16.0.1 → Router-ID = 172.16.0.1</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="warn-box"><span class="box-icon">⚠️</span>
+      Si le Router-ID change (nouvelle loopback, interface up/down), <strong>toutes les sessions BGP sont réinitialisées</strong> (NOTIFICATION + session reset) pour que les voisins apprennent le nouveau Router-ID. En production, toujours configurer <code>bgp router-id</code> manuellement.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Configuration et vérification</div>
+    <pre><span class="c-cmt">! Configuration manuelle du Router-ID (bonne pratique absolue)</span>
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">bgp router-id</span> <span class="c-val">1.1.1.1</span>          <span class="c-cmt">! Utiliser l'IP de la loopback principale</span>
+
+<span class="c-cmt">! Vérification</span>
+R1# <span class="c-cmd">show ip bgp summary</span>
+BGP router identifier <span class="c-pink">1.1.1.1</span>, local AS number 65001
+...
+
+R1# <span class="c-cmd">show bgp ipv4 unicast summary</span> | <span class="c-kw">include</span> <span class="c-val">router identifier</span>
+BGP router identifier <span class="c-pink">1.1.1.1</span>, local AS number 65001
+
+<span class="c-cmt">! Voir le Router-ID des peers</span>
+R1# <span class="c-cmd">show ip bgp neighbors</span> <span class="c-val">10.0.0.2</span> | <span class="c-kw">include</span> <span class="c-val">router identifier</span>
+  BGP neighbor is 10.0.0.2, remote AS 65001, internal link
+    BGP version 4, remote router ID <span class="c-pink">2.2.2.2</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Impact du Router-ID sur la sélection BGP</div>
+    <table>
+      <thead><tr><th>Scénario</th><th>Router-ID R1</th><th>Router-ID R2</th><th>Résultat critère #11</th></tr></thead>
+      <tbody>
+        <tr><td>R1 loopback 1.1.1.1, R2 loopback 2.2.2.2</td><td class="td-green">1.1.1.1</td><td>2.2.2.2</td><td class="td-green">R1 gagne (1.1.1.1 &lt; 2.2.2.2)</td></tr>
+        <tr><td>R1 loopback 10.0.0.1, R2 loopback 10.0.0.2</td><td class="td-green">10.0.0.1</td><td>10.0.0.2</td><td class="td-green">R1 gagne (10.0.0.1 &lt; 10.0.0.2)</td></tr>
+        <tr><td>R1 loopback 192.168.1.1, R2 loopback 10.0.0.1</td><td>192.168.1.1</td><td class="td-green">10.0.0.1</td><td class="td-green">R2 gagne (10.0.0.1 &lt; 192.168.1.1)</td></tr>
+        <tr><td>Même Router-ID (mauvaise config)</td><td class="td-red">1.1.1.1</td><td class="td-red">1.1.1.1</td><td class="td-orange">Égalité → critère #12</td></tr>
+      </tbody>
+    </table>
+    <div class="info-box" style="margin-top:12px"><span class="box-icon">💡</span>
+      La comparaison est purement <strong>numérique</strong> sur la valeur 32 bits. <code>10.0.0.1</code> = 0x0A000001 = 167772161, <code>192.168.1.1</code> = 0xC0A80101 = 3232235777. Donc <code>10.0.0.1</code> &lt; <code>192.168.1.1</code> — la plage d'adresse n'a aucune importance.
+    </div>
+  </div>
+
+</div><!-- /selection -->
+
+<!-- ═══════════════ ONGLET 3 : ORIGINATOR_ID ═══════════════ -->
+<div class="panel" id="originatorid">
+
+  <div class="section">
+    <div class="section-title">ORIGINATOR_ID — attribut type 9</div>
+    <div class="profile-grid">
+      <div class="pill"><div class="pill-label">Type code</div><div class="pill-value pink">9</div></div>
+      <div class="pill"><div class="pill-label">Catégorie</div><div class="pill-value orange">Optional Non-Transitive</div></div>
+      <div class="pill"><div class="pill-label">Ajouté par</div><div class="pill-value blue">Route Reflector (RR)</div></div>
+      <div class="pill"><div class="pill-label">Contenu</div><div class="pill-value green">Router-ID de l'annonceur original</div></div>
+      <div class="pill"><div class="pill-label">Rôle #11</div><div class="pill-value pink">Remplace Router-ID du peer</div></div>
+      <div class="pill"><div class="pill-label">Rôle anti-boucle</div><div class="pill-value orange">Route rejetée si ORIG_ID = propre RID</div></div>
+    </div>
+
+    <div class="info-box"><span class="box-icon">ℹ️</span>
+      Quand un Route Reflector (RR) reflète une route iBGP vers un client, il <strong>ajoute ORIGINATOR_ID</strong> = Router-ID du PE client qui a originellement annoncé la route. Pour le critère #11, le routeur recevant la route réfléchie compare l'<strong>ORIGINATOR_ID</strong>, pas le Router-ID du RR.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Topologie RR et flux ORIGINATOR_ID</div>
+    <div class="rr-diagram">
+  AS 65001
+  ┌──────────────────────────────────────────────────────────────┐
+  │                                                              │
+  │   PE1 (RID=1.1.1.1) ──iBGP──► RR ──iBGP──► PE3 (RID=3.3.3.3)│
+  │      annonce 172.16.0.0/16      │                           │
+  │                                 │                           │
+  │   PE2 (RID=2.2.2.2) ──iBGP──► RR ──iBGP──► PE3             │
+  │      annonce 172.16.0.0/16                                  │
+  │                                                              │
+  │   RR reflète vers PE3 :                                     │
+  │   - Route de PE1 → ORIGINATOR_ID = 1.1.1.1 (RID de PE1)    │
+  │   - Route de PE2 → ORIGINATOR_ID = 2.2.2.2 (RID de PE2)    │
+  │                                                              │
+  │   PE3 reçoit les deux routes du même peer (RR) :            │
+  │   Critère #11 : ORIGINATOR_ID 1.1.1.1 &lt; 2.2.2.2            │
+  │   → Route de PE1 sélectionnée ✅                            │
+  └──────────────────────────────────────────────────────────────┘</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">ORIGINATOR_ID — comportement détaillé</div>
+    <table>
+      <thead><tr><th>Situation</th><th>Valeur utilisée pour critère #11</th></tr></thead>
+      <tbody>
+        <tr><td>Route eBGP directe (pas de RR)</td><td class="td-pink">Router-ID du peer eBGP (champ "from" dans show ip bgp)</td></tr>
+        <tr><td>Route iBGP directe (pas de RR)</td><td class="td-pink">Router-ID du peer iBGP</td></tr>
+        <tr><td>Route réfléchie par RR (ORIGINATOR_ID présent)</td><td class="td-orange">ORIGINATOR_ID (type 9) — Router-ID de l'annonceur original</td></tr>
+        <tr><td>ORIGINATOR_ID = propre Router-ID du routeur</td><td class="td-red">Route REJETÉE (mécanisme anti-boucle iBGP)</td></tr>
+        <tr><td>Deux routes avec même ORIGINATOR_ID</td><td class="td-teal">Égalité → critère #12 (Cluster-list length)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Vérification ORIGINATOR_ID dans show ip bgp</div>
+    <pre>PE3# <span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/16</span>
+BGP routing table entry for 172.16.0.0/16, version 20
+Paths: (2 available, best #1)
+  Advertised to update-groups: 1
+  65100
+    10.1.1.1 from <span class="c-pink">10.0.0.100</span> (<span class="c-pink">10.0.0.100</span>)   <span class="c-cmt">← from RR (10.0.0.100)</span>
+      Origin IGP, localpref 100, valid, internal, best
+      <span class="c-orange">Originator: 1.1.1.1</span>, Cluster list: 10.0.0.100
+      <span class="c-cmt">↑ ORIGINATOR_ID = 1.1.1.1 (Router-ID de PE1) → utilisé pour critère #11</span>
+  65100
+    10.1.1.2 from <span class="c-pink">10.0.0.100</span> (<span class="c-pink">10.0.0.100</span>)   <span class="c-cmt">← from RR (même peer!)</span>
+      Origin IGP, localpref 100, valid, internal
+      <span class="c-orange">Originator: 2.2.2.2</span>, Cluster list: 10.0.0.100
+      <span class="c-cmt">↑ ORIGINATOR_ID = 2.2.2.2 (Router-ID de PE2) → critère #11 : 1.1.1.1 &lt; 2.2.2.2 → PE1 gagne</span></pre>
+  </div>
+
+</div><!-- /originatorid -->
+
+<!-- ═══════════════ ONGLET 4 : TABLE BGP ═══════════════ -->
+<div class="panel" id="table">
+
+  <div class="section">
+    <div class="section-title">Topologie — dual border router, même préfixe</div>
+    <div class="rr-diagram">
+  AS 65001
+  ┌──────────────────────────────────────────────────────────────┐
+  │                                                              │
+  │  R1 (RID=1.1.1.1) ──eBGP──► ISP-A (65100) ─── 172.16.0.0/16│
+  │  Lo: 1.1.1.1                                                 │
+  │                                                              │
+  │  R2 (RID=2.2.2.2) ──eBGP──► ISP-A (65100) ─── 172.16.0.0/16│
+  │  Lo: 2.2.2.2                                                 │
+  │                                                              │
+  │  R3 reçoit les deux routes via iBGP depuis R1 et R2          │
+  │  Critères 1–10 tous identiques → critère #11 :               │
+  │  ORIGINATOR_ID 1.1.1.1 (R1) &lt; 2.2.2.2 (R2) → R1 gagne      │
+  └──────────────────────────────────────────────────────────────┘</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">show ip bgp sur R3 — critère #11 en action</div>
+    <div class="bgp-table-sim">
+      <pre>R3# <span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/16</span>
+BGP routing table entry for 172.16.0.0/16, version 22
+Paths: (2 available, best #1, table Default-IP-Routing-Table)
+  Advertised to update-groups:
+     1
+  65100
+    203.0.113.1 (metric 10) from <span class="c-ok">1.1.1.1</span> (<span class="c-ok">1.1.1.1</span>)    <span class="c-cmt">← Router-ID 1.1.1.1</span>
+      Origin IGP, metric 0, localpref 100, valid, internal, <span class="c-ok">best</span>
+      <span class="c-cmt">↑ critère #11 : 1.1.1.1 &lt; 2.2.2.2 → BEST ✅</span>
+
+  65100
+    203.0.113.2 (metric 10) from <span class="c-bad">2.2.2.2</span> (<span class="c-bad">2.2.2.2</span>)    <span class="c-cmt">← Router-ID 2.2.2.2</span>
+      Origin IGP, metric 0, localpref 100, valid, internal
+      <span class="c-cmt">↑ critère #11 : 2.2.2.2 &gt; 1.1.1.1 → perd ❌</span></pre>
+    </div>
+    <div class="info-box"><span class="box-icon">🔍</span>
+      Dans <code>show ip bgp</code>, la syntaxe est : <code>from &lt;peer-IP&gt; (&lt;Router-ID&gt;)</code>. Le champ entre parenthèses est le Router-ID du peer — c'est <strong>cette valeur</strong> qui est comparée au critère #11 (ou ORIGINATOR_ID si présent).
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Analyse critère par critère sur R3</div>
+    <table>
+      <thead><tr><th>Critère</th><th>Via R1</th><th>Via R2</th><th>Résultat</th></tr></thead>
+      <tbody>
+        <tr><td>#1–#9</td><td colspan="2" style="text-align:center;color:var(--text3);font-style:italic">Identiques sur tous les critères</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#10 Oldest eBGP</td><td colspan="2" style="text-align:center;color:var(--text3);font-style:italic">iBGP paths → critère #10 sauté</td><td class="td-teal">Sauté → #11</td></tr>
+        <tr><td><strong>#11 Router-ID</strong></td><td class="td-green"><strong>1.1.1.1</strong></td><td class="td-red"><strong>2.2.2.2</strong></td><td class="td-green">✅ R1 gagne (1.1.1.1 &lt; 2.2.2.2)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /table -->
+
+<!-- ═══════════════ ONGLET 5 : COMPARE-ROUTERID ═══════════════ -->
+<div class="panel" id="comparerouterid">
+
+  <div class="section">
+    <div class="section-title">Rappel — critère #10 vs critère #11</div>
+    <div class="compare-wrap">
+      <div class="cmp-card c10">
+        <div class="cmp-title o">⏱️ Critère #10 — Oldest eBGP<br><small style="font-weight:400;font-size:12px">(défaut, sans compare-routerid)</small></div>
+        <div class="cmp-row"><span class="cmp-label">S'applique à</span><span class="cmp-val">Chemins eBGP uniquement</span></div>
+        <div class="cmp-row"><span class="cmp-label">Critère</span><span class="cmp-val" style="color:var(--orange)">Âge du chemin (oldest gagne)</span></div>
+        <div class="cmp-row"><span class="cmp-label">Déterministe ?</span><span class="cmp-val" style="color:var(--red)">Non — dépend ordre d'arrivée</span></div>
+        <div class="cmp-row"><span class="cmp-label">Après flap</span><span class="cmp-val" style="color:var(--red)">Best path peut changer</span></div>
+        <div class="cmp-row"><span class="cmp-label">Multi-routeur cohérent ?</span><span class="cmp-val" style="color:var(--red)">Non garanti</span></div>
+      </div>
+      <div class="cmp-card c11">
+        <div class="cmp-title p">🆔 Critère #11 — Router-ID<br><small style="font-weight:400;font-size:12px">(avec bgp bestpath compare-routerid)</small></div>
+        <div class="cmp-row"><span class="cmp-label">S'applique à</span><span class="cmp-val">eBGP et iBGP</span></div>
+        <div class="cmp-row"><span class="cmp-label">Critère</span><span class="cmp-val" style="color:var(--pink)">Router-ID du peer (lowest gagne)</span></div>
+        <div class="cmp-row"><span class="cmp-label">Déterministe ?</span><span class="cmp-val" style="color:var(--green)">Oui — Router-ID est stable</span></div>
+        <div class="cmp-row"><span class="cmp-label">Après flap</span><span class="cmp-val" style="color:var(--green)">Best path inchangé (si RID stable)</span></div>
+        <div class="cmp-row"><span class="cmp-label">Multi-routeur cohérent ?</span><span class="cmp-val" style="color:var(--green)">Oui (même vue = même choix)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Configuration et vérification</div>
+    <pre><span class="c-cmt">! Sauter le critère #10 pour aller directement au critère #11</span>
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">bgp bestpath compare-routerid</span>
+
+<span class="c-cmt">! IMPORTANT : configurer sur TOUS les routeurs BGP du même AS</span>
+<span class="c-cmt">! Un mix (certains avec, d'autres sans) crée des incohérences</span>
+
+<span class="c-cmt">! Vérification</span>
+R1# <span class="c-cmd">show running-config</span> | <span class="c-kw">section</span> <span class="c-val">router bgp</span>
+router bgp 65001
+ bgp router-id 1.1.1.1
+ bgp bestpath compare-routerid    <span class="c-cmt">← confirme que #10 est sauté</span>
+ ...
+
+<span class="c-cmt">! Si les Router-IDs sont bien configurés (manuellement, bas et stables)</span>
+<span class="c-cmt">! le critère #11 donnera toujours le même résultat sur tous les routeurs</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Bonnes pratiques combinées</div>
+    <pre><span class="c-cmt">! Configuration recommandée en production (dual border router)</span>
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">bgp router-id</span> <span class="c-val">1.1.1.1</span>              <span class="c-cmt">! Router-ID manuel stable et bas</span>
+  <span class="c-cmd">bgp bestpath compare-routerid</span>      <span class="c-cmt">! Sauter #10, aller à #11</span>
+  <span class="c-cmd">bgp log-neighbor-changes</span>           <span class="c-cmt">! Tracer les changements de session</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">2.2.2.2</span> <span class="c-kw">remote-as</span> <span class="c-val">65001</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">2.2.2.2</span> <span class="c-kw">update-source</span> <span class="c-val">Loopback0</span>
+
+<span class="c-cmt">! Sur R2 (border router #2) :</span>
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">bgp router-id</span> <span class="c-val">2.2.2.2</span>              <span class="c-cmt">! Router-ID différent de R1 !</span>
+  <span class="c-cmd">bgp bestpath compare-routerid</span>      <span class="c-cmt">! Même commande que R1</span></pre>
+  </div>
+
+</div><!-- /comparerouterid -->
+
+<!-- ═══════════════ ONGLET 6 : PIÈGES ═══════════════ -->
+<div class="panel" id="pieges">
+
+  <div class="trap-grid">
+
+    <div class="trap">
+      <h4>⚡ Changement de Router-ID = reset de toutes les sessions BGP</h4>
+      <p>Si le Router-ID change (nouvelle loopback, interface up/down), IOS envoie une notification CEASE à tous les peers et réinitialise les sessions. Cela provoque une reconvergence BGP complète et une interruption de trafic. Toujours configurer <code>bgp router-id</code> manuellement pour éviter ce risque.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ Router-ID dupliqué dans le même AS</h4>
+      <p>Si deux routeurs du même AS ont le même Router-ID (ex: copier-coller de config), les sessions iBGP entre eux échouent avec une erreur OPEN message. Symptôme : <code>show ip bgp neighbors</code> montre Idle/Active en boucle. Vérifier avec <code>show ip bgp summary</code> → champ "BGP router identifier".</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ ORIGINATOR_ID ignoré si routeur ne comprend pas les RR</h4>
+      <p>Un vieux routeur ne supportant pas les attributs Route Reflector (ORIGINATOR_ID type 9, CLUSTER_LIST type 10) peut les ignorer. Pour le critère #11, il utilisera alors le Router-ID du peer direct (le RR) au lieu de l'ORIGINATOR_ID — résultat différent de ce qu'on attend.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ Confondre Router-ID BGP et Router-ID OSPF</h4>
+      <p>BGP et OSPF ont chacun leur propre Router-ID, sélectionné indépendamment avec les mêmes règles (loopback, interface). Ils peuvent être différents. Le critère #11 de BGP utilise <strong>uniquement</strong> le Router-ID BGP, pas celui d'OSPF. Toujours vérifier avec <code>show ip bgp summary</code>, pas <code>show ip ospf</code>.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ Anti-boucle RR : route rejetée si ORIGINATOR_ID = propre RID</h4>
+      <p>Un client RR rejette silencieusement toute route réfléchie dont l'ORIGINATOR_ID correspond à son propre Router-ID — c'est le mécanisme anti-boucle iBGP. Si un routeur ne voit pas une route attendue dans un environnement RR, vérifier si ORIGINATOR_ID = propre RID avec <code>show ip bgp X detail</code>.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ compare-routerid non appliqué uniformément</h4>
+      <p>Si <code>bgp bestpath compare-routerid</code> est configuré sur R1 mais pas R2, R1 va au critère #11 directement tandis que R2 passe par le critère #10. Les deux routeurs peuvent sélectionner des best paths différents — exactement le problème qu'on cherchait à éviter.</p>
+    </div>
+
+    <div class="trap good-practice">
+      <h4>✅ Bonne pratique — Router-ID bas = priorité de sélection</h4>
+      <p>Utiliser des Router-IDs bas (ex: 1.1.1.1, 2.2.2.2) pour les border routers principaux garantit qu'ils seront préférés au critère #11. Cela permet de contrôler explicitement quel border router est préféré pour le trafic entrant, sans toucher aux critères 1–10.</p>
+    </div>
+
+    <div class="trap good-practice">
+      <h4>✅ Bonne pratique — toujours bgp router-id manuel en production</h4>
+      <p>Configurer <code>bgp router-id X.X.X.X</code> sur chaque routeur BGP, idéalement égal à l'IP de la loopback principale. Cela garantit que le Router-ID ne changera jamais automatiquement, évite les resets de sessions inattendus, et rend le critère #11 prévisible.</p>
+    </div>
+
+  </div>
+
+</div><!-- /pieges -->
+
+<!-- ═══════════════ ONGLET 7 : FLASH CARDS ═══════════════ -->
+<div class="panel" id="flashcards">
+
+  <p style="color:var(--text2);font-size:13.5px;margin-bottom:20px">Cliquez sur une carte pour révéler la réponse.</p>
+
+  <div class="fc-grid">
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Que compare le critère #11 de la sélection BGP ?</div>
+      <div class="fc-a">Le <strong>Router-ID du peer</strong> qui annonce le chemin. Le plus petit Router-ID gagne. Si ORIGINATOR_ID (type 9) est présent dans la route (ajouté par un Route Reflector), c'est ORIGINATOR_ID qui est utilisé à la place du Router-ID du peer direct.
+        <div class="fc-hint">→ Lowest wins — numérique sur 32 bits</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quelle est la priorité de sélection du Router-ID sur IOS ?</div>
+      <div class="fc-a">① <code>bgp router-id X.X.X.X</code> (manuel — priorité absolue) → ② Loopback avec la plus haute IP → ③ Interface physique active avec la plus haute IP. En production, toujours configurer manuellement pour éviter les resets de sessions.
+        <div class="fc-hint">→ Manuel &gt; Loopback &gt; Interface</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Que se passe-t-il si le Router-ID BGP change ?</div>
+      <div class="fc-a">Toutes les <strong>sessions BGP sont réinitialisées</strong> (NOTIFICATION CEASE envoyée à tous les peers). Cela provoque une reconvergence BGP complète avec interruption de trafic. C'est pourquoi <code>bgp router-id</code> doit toujours être configuré manuellement.
+        <div class="fc-hint">→ Router-ID change = reset toutes sessions</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quel est le rôle de ORIGINATOR_ID (type 9) pour le critère #11 ?</div>
+      <div class="fc-a">Ajouté par un Route Reflector lors de la réflexion d'une route iBGP, ORIGINATOR_ID contient le Router-ID de l'annonceur original. Pour le critère #11, le routeur compare l'ORIGINATOR_ID au lieu du Router-ID du peer (RR) qui lui a transmis la route.
+        <div class="fc-hint">→ Aussi utilisé pour l'anti-boucle : si ORIG_ID = propre RID → route rejetée</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Comment lire le Router-ID d'un peer dans show ip bgp ?</div>
+      <div class="fc-a">Dans <code>show ip bgp X.X.X.X/Y</code>, chaque chemin affiche : <code>from &lt;peer-IP&gt; (&lt;Router-ID&gt;)</code>. La valeur entre parenthèses est le Router-ID du peer — c'est elle qui est comparée au critère #11. Si ORIGINATOR_ID est présent, la ligne <code>Originator: X.X.X.X</code> indique la valeur utilisée.
+        <div class="fc-hint">→ from 10.0.0.1 (1.1.1.1) : Router-ID = 1.1.1.1</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Pourquoi utiliser bgp bestpath compare-routerid rend la sélection plus prévisible ?</div>
+      <div class="fc-a">Sans cette commande, le critère #10 (Oldest eBGP) peut donner des résultats différents selon l'ordre d'arrivée des routes. Avec <code>compare-routerid</code>, on saute #10 et on va directement au critère #11 (Router-ID), qui est <strong>stable et identique</strong> sur tous les routeurs ayant la même vue BGP.
+        <div class="fc-hint">→ Fortement recommandé en multi-border-router</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Deux routeurs ont le même Router-ID BGP dans le même AS. Quel est le symptôme ?</div>
+      <div class="fc-a">Les sessions iBGP entre eux <strong>échouent</strong> : lors de l'échange OPEN, chaque routeur détecte que le Router-ID reçu est identique au sien → NOTIFICATION + session fermée. Dans <code>show ip bgp summary</code>, le peer reste en état Idle ou Active. Corriger avec <code>bgp router-id</code> unique sur chaque routeur.
+        <div class="fc-hint">→ Symptôme : session BGP flapping avec OPEN error</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Si deux chemins ont le même Router-ID (ou ORIGINATOR_ID), quel critère s'applique ensuite ?</div>
+      <div class="fc-a">Le critère <strong>#12 — longueur de la CLUSTER_LIST</strong>. Le chemin avec la Cluster-list la plus courte (moins de Route Reflectors traversés) est préféré. Si égalité, on passe au critère <strong>#13 — adresse IP du neighbor</strong> (lowest wins).
+        <div class="fc-hint">→ #11 égal → #12 Cluster-list → #13 Neighbor IP</div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /flashcards -->
+
+</div><!-- /content -->
+
+<script>
+function showTab(btn, id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>
