@@ -101,7 +101,7 @@
   .algo-step .num   { font-family: 'Courier New', monospace; font-weight: 800; font-size: 12px; }
 
   /* TOPOLOGY */
-  .topo { background: #0a0f1a; border-radius: 10px; padding: 20px; margin: 14px 0; border: 1px solid var(--border); font-family: 'Courier New', monospace; font-size: 12px; color: var(--text2); line-height: 2; overflow-x: auto; }
+  .topo { background: #0a0f1a; border-radius: 10px; padding: 20px; margin: 14px 0; border: 1px solid var(--border); font-family: 'Courier New', monospace; font-size: 12px; color: var(--text2); line-height: 1.5; overflow-x: auto; white-space: pre; }
 
   /* BGP TABLE */
   .bgp-tbl { width: 100%; border-collapse: collapse; font-family: 'Courier New', monospace; font-size: 12px; }
@@ -208,14 +208,14 @@
                     ┌──────────────────────────────────┐
                     │           AS 65001 (vous)        │
                     │                                  │
-         eBGP       │  ┌──────────┐                   │
-  ISP ──────────────┼──│   R1     │  MED=10 → ISP     │  ← ISP préfère entrer via R1
-  (AS 100)   link1  │  │ 10.1.1.1 │                   │
-                    │  └──────────┘                   │
-         eBGP       │  ┌──────────┐                   │
-  ISP ──────────────┼──│   R2     │  MED=100 → ISP    │  ← ISP évite R2 (MED élevé)
-  (AS 100)   link2  │  │ 10.1.1.2 │                   │
-                    │  └──────────┘                   │
+         eBGP       │  ┌──────────┐                    │
+  ISP ──────────────┼──│   R1     │  MED=10 → ISP      │  ← ISP préfère entrer via R1
+  (AS 100)   link1  │  │ 10.1.1.1 │                    │
+                    │  └──────────┘                    │
+         eBGP       │  ┌──────────┐                    │
+  ISP ──────────────┼──│   R2     │  MED=100 → ISP     │  ← ISP évite R2 (MED élevé)
+  (AS 100)   link2  │  │ 10.1.1.2 │                    │
+                    │  └──────────┘                    │
                     └──────────────────────────────────┘
 
   <span class="cmt">MED=10 &lt; MED=100 → ISP préfère envoyer le trafic via le lien R1</span>
