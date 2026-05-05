@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP · Cluster-list · Critère #12</title>
+<style>
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--surface3:#30363d;
+  --border:#30363d;--border2:#484f58;
+  --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+  --blue:#58a6ff;--green:#3fb950;--orange:#d29922;--red:#f85149;
+  --purple:#bc8cff;--teal:#76e4f7;--pink:#f778ba;--yellow:#e3b341;
+  --rule:#bc8cff;--accent:#76e4f7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:8px;height:52px;position:sticky;top:0;z-index:100}
+.topnav a{color:var(--text2);font-size:13px;padding:4px 8px;border-radius:6px}
+.topnav a:hover{background:var(--surface2);color:var(--text);text-decoration:none}
+.topnav .sep{color:var(--border2)}
+.topnav .current{color:var(--text);font-weight:600}
+
+.hero{padding:40px 24px 32px;max-width:960px;margin:0 auto}
+.hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.4px}
+.badge-rule{background:rgba(188,140,255,.15);color:var(--rule);border:1px solid rgba(188,140,255,.3)}
+.badge-num{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
+.badge-opt{background:rgba(118,228,247,.12);color:var(--teal);border:1px solid rgba(118,228,247,.3)}
+.badge-rr{background:rgba(247,120,186,.12);color:var(--pink);border:1px solid rgba(247,120,186,.3)}
+
+.hero h1{font-size:32px;font-weight:700;margin-bottom:8px}
+.hero h1 span{color:var(--teal)}
+.hero .subtitle{color:var(--text2);font-size:16px;max-width:680px}
+
+.tabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:99}
+.tabs{display:flex;gap:2px;padding:0 24px;max-width:960px;margin:0 auto;overflow-x:auto}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--text2);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+
+.content{max-width:960px;margin:0 auto;padding:32px 24px}
+.panel{display:none}
+.panel.active{display:block}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:24px 0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.card-icon{font-size:28px;margin-bottom:10px}
+
+.profile-grid{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+.pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px}
+.pill-label{color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.pill-value{color:var(--text);font-weight:600}
+.pill-value.teal{color:var(--teal)}
+.pill-value.blue{color:var(--blue)}
+.pill-value.green{color:var(--green)}
+.pill-value.orange{color:var(--orange)}
+.pill-value.red{color:var(--red)}
+.pill-value.rule{color:var(--rule)}
+.pill-value.pink{color:var(--pink)}
+.pill-value.no{color:var(--text3)}
+
+.section{margin:28px 0}
+.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);color:var(--text2);font-weight:600;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.td-green{color:var(--green);font-weight:600}
+.td-blue{color:var(--blue);font-weight:600}
+.td-orange{color:var(--orange);font-weight:600}
+.td-red{color:var(--red);font-weight:600}
+.td-teal{color:var(--teal);font-weight:600}
+.td-pink{color:var(--pink);font-weight:600}
+
+pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px;line-height:1.7}
+code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px}
+.c-kw{color:#ff7b72}
+.c-cmd{color:var(--blue)}
+.c-val{color:var(--green)}
+.c-cmt{color:var(--text3)}
+.c-ok{color:var(--green);font-weight:700}
+.c-bad{color:var(--red);font-weight:700}
+.c-hi{color:var(--yellow);font-weight:700}
+.c-teal{color:var(--teal);font-weight:700}
+.c-pink{color:var(--pink);font-weight:700}
+.c-orange{color:var(--orange);font-weight:700}
+
+.info-box,.warn-box,.tip-box,.danger-box{border-radius:8px;padding:14px 16px;margin:14px 0;font-size:13.5px;display:flex;gap:10px}
+.info-box{background:rgba(88,166,255,.08);border:1px solid rgba(88,166,255,.25);color:#a8d8ff}
+.warn-box{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);color:#f0c060}
+.tip-box{background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.25);color:#7ee787}
+.danger-box{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);color:#ffa198}
+.box-icon{flex-shrink:0;font-size:16px}
+
+.algo-strip{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0}
+.algo-step{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+.algo-step.active{background:rgba(118,228,247,.1);border-color:rgba(118,228,247,.4);color:var(--teal)}
+.algo-step.done{background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3);color:var(--blue)}
+.algo-num{background:var(--surface3);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.algo-step.active .algo-num{background:rgba(118,228,247,.2)}
+.algo-step.done .algo-num{background:rgba(88,166,255,.2)}
+
+.bgp-table-sim{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0}
+.bgp-table-sim pre{border:none;border-radius:0;margin:0;background:transparent}
+
+.topo{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px;line-height:1.5;white-space:pre;overflow-x:auto;margin:16px 0}
+
+.hop-chain{display:flex;align-items:center;gap:0;margin:20px 0;overflow-x:auto;padding:4px 0}
+.hop-node{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;text-align:center;min-width:90px}
+.hop-node .hn-role{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.hop-node .hn-id{font-weight:700;color:var(--teal)}
+.hop-node .hn-cid{font-size:10px;color:var(--pink);margin-top:2px}
+.hop-node.rr{border-color:rgba(118,228,247,.4);background:rgba(118,228,247,.06)}
+.hop-node.client{border-color:rgba(88,166,255,.3);background:rgba(88,166,255,.05)}
+.hop-node.orig{border-color:rgba(63,185,80,.3);background:rgba(63,185,80,.05)}
+.hop-arrow{color:var(--text3);font-size:18px;padding:0 6px;flex-shrink:0}
+.hop-label{font-size:10px;color:var(--text3);margin-top:4px}
+
+.cl-grow{display:flex;flex-direction:column;gap:10px;margin:20px 0}
+.cl-row{display:flex;align-items:center;gap:12px;font-size:13px}
+.cl-step{color:var(--text3);font-size:11px;min-width:130px}
+.cl-attr{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--teal)}
+.cl-arrow{color:var(--text3)}
+
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin:20px 0}
+.fc{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.fc:hover{border-color:var(--teal)}
+.fc-q{padding:16px;font-size:13.5px;font-weight:500;min-height:72px;display:flex;align-items:center}
+.fc-a{padding:14px 16px;background:rgba(118,228,247,.06);border-top:1px solid var(--border);font-size:13px;color:var(--teal);display:none}
+.fc.open .fc-a{display:block}
+.fc-hint{font-size:11px;color:var(--text3);margin-top:6px}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ TOPNAV ═══════════════ -->
+<nav class="topnav">
+  <a href="index.html">🏠 BGP</a>
+  <span class="sep">›</span>
+  <a href="index.html#best-path">Best Path</a>
+  <span class="sep">›</span>
+  <span class="current">Cluster-list · #12</span>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<div class="hero">
+  <div class="hero-badges">
+    <span class="badge badge-num"># 12 / 13</span>
+    <span class="badge badge-rule">Règle de sélection</span>
+    <span class="badge badge-opt">Opt. Non-Transitif · Type 10</span>
+    <span class="badge badge-rr">Route Reflector uniquement</span>
+  </div>
+  <h1>CLUSTER_LIST — <span>Shortest wins</span></h1>
+  <p class="subtitle">Longueur de la liste des Cluster-IDs traversés via les Route Reflectors. Le chemin avec la CLUSTER_LIST la plus courte est préféré. Critère anti-boucle iBGP des RR.</p>
+</div>
+
+<!-- ═══════════════ TABS ═══════════════ -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(this,'theorie')">Théorie</button>
+    <button class="tab" onclick="showTab(this,'rr-topology')">Route Reflector</button>
+    <button class="tab" onclick="showTab(this,'attribut')">Attribut</button>
+    <button class="tab" onclick="showTab(this,'configuration')">Configuration</button>
+    <button class="tab" onclick="showTab(this,'table-bgp')">Table BGP</button>
+    <button class="tab" onclick="showTab(this,'pieges')">Pièges</button>
+    <button class="tab" onclick="showTab(this,'flashcards')">Flash Cards</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════ ONGLET 1 : THÉORIE ═══════════════ -->
+<div class="panel active" id="theorie">
+
+  <div class="section">
+    <div class="section-title">Position dans l'algorithme</div>
+    <div class="algo-strip">
+      <div class="algo-step done"><span class="algo-num">1</span>Weight</div>
+      <div class="algo-step done"><span class="algo-num">2</span>LOCAL_PREF</div>
+      <div class="algo-step done"><span class="algo-num">3</span>NH=0.0.0.0</div>
+      <div class="algo-step done"><span class="algo-num">4</span>AS-PATH</div>
+      <div class="algo-step done"><span class="algo-num">5</span>Origin</div>
+      <div class="algo-step done"><span class="algo-num">6</span>MED</div>
+      <div class="algo-step done"><span class="algo-num">7</span>eBGP&gt;iBGP</div>
+      <div class="algo-step done"><span class="algo-num">8</span>IGP metric</div>
+      <div class="algo-step done"><span class="algo-num">9</span>AIGP</div>
+      <div class="algo-step done"><span class="algo-num">10</span>Oldest</div>
+      <div class="algo-step done"><span class="algo-num">11</span>Router-ID</div>
+      <div class="algo-step active"><span class="algo-num">12</span>Cluster-list</div>
+      <div class="algo-step"><span class="algo-num">13</span>Neighbor IP</div>
+    </div>
+    <p style="color:var(--text2);font-size:13.5px">Le critère #12 n'est atteint que si tous les critères précédents (#1–#11) sont égaux entre deux chemins. Il est <strong style="color:var(--pink)">exclusif aux environnements Route Reflector</strong> : si aucun chemin ne porte de CLUSTER_LIST, ce critère ne départage rien.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Règle de comparaison</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">📏</div>
+        <h3>Longueur = nombre de sauts RR</h3>
+        <p style="font-size:13px;color:var(--text2)">La CLUSTER_LIST contient un Cluster-ID (4 octets) par Route Reflector traversé. Le chemin avec le <strong style="color:var(--teal)">moins de Cluster-IDs</strong> est préféré : il a traversé moins de RR, donc est plus proche de l'annonceur.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔄</div>
+        <h3>Anti-boucle avant comparaison</h3>
+        <p style="font-size:13px;color:var(--text2)">Avant même d'arriver au critère #12, un RR qui reçoit une route contenant son propre Cluster-ID dans la CLUSTER_LIST <strong style="color:var(--red)">rejette la route</strong> immédiatement (boucle détectée). La comparaison ne porte que sur les routes acceptées.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚖️</div>
+        <h3>Cas d'égalité</h3>
+        <p style="font-size:13px;color:var(--text2)">Si les deux chemins ont une CLUSTER_LIST de même longueur (ou ni l'un ni l'autre n'en a), le critère #12 ne départage pas → on passe au critère <strong style="color:var(--teal)">#13 : adresse IP du neighbor (lowest wins)</strong>.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚫</div>
+        <h3>Chemin sans CLUSTER_LIST</h3>
+        <p style="font-size:13px;color:var(--text2)">Un chemin sans CLUSTER_LIST est arrivé directement (pas via RR). S'il est comparé à un chemin avec CLUSTER_LIST, le chemin <strong style="color:var(--green)">sans CLUSTER_LIST est préféré</strong> car longueur 0 &lt; longueur &gt; 0.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Profil de l'attribut</div>
+    <div class="profile-grid">
+      <div class="pill"><div class="pill-label">Type code</div><div class="pill-value teal">10</div></div>
+      <div class="pill"><div class="pill-label">Flags</div><div class="pill-value blue">Optional Non-Transitive</div></div>
+      <div class="pill"><div class="pill-label">Qui l'ajoute</div><div class="pill-value">Route Reflector</div></div>
+      <div class="pill"><div class="pill-label">Propagation</div><div class="pill-value orange">iBGP uniquement</div></div>
+      <div class="pill"><div class="pill-label">Stripped vers eBGP</div><div class="pill-value green">Oui — non-transitive</div></div>
+      <div class="pill"><div class="pill-label">Taille unitaire</div><div class="pill-value">4 octets / Cluster-ID</div></div>
+      <div class="pill"><div class="pill-label">Attribut lié</div><div class="pill-value pink">ORIGINATOR_ID (type 9)</div></div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="box-icon">ℹ️</span>
+    <div>La CLUSTER_LIST est supprimée automatiquement avant d'envoyer une route à un peer eBGP (attribut Non-Transitive). Elle ne quitte jamais l'AS. Cela signifie que le critère #12 n'est <strong>jamais actif</strong> pour des routes apprises via eBGP direct.</div>
+  </div>
+
+</div><!-- /theorie -->
+
+
+<!-- ═══════════════ ONGLET 2 : ROUTE REFLECTOR ═══════════════ -->
+<div class="panel" id="rr-topology">
+
+  <div class="section">
+    <div class="section-title">Pourquoi les Route Reflectors ?</div>
+    <p style="color:var(--text2);font-size:13.5px;margin-bottom:16px">Sans Route Reflectors, iBGP exige une full-mesh : chaque routeur doit avoir une session iBGP avec tous les autres. Pour <em>n</em> routeurs : <strong style="color:var(--red)">n(n-1)/2 sessions</strong>. Les RR suppriment cette contrainte en réfléchissant les routes.</p>
+
+    <div class="topo">                    AS 65000
+         ┌────────────────────────────────────────────────┐
+         │                                                │
+         │         ┌─────────────────┐                   │
+         │         │   RR1 (Cluster  │                   │
+         │         │   ID: 1.1.1.1)  │                   │
+         │         │   RID: 1.1.1.1  │                   │
+         │         └────────┬────────┘                   │
+         │        iBGP      │        iBGP                │
+         │    (client)      │      (client)               │
+         │  ┌───────────────┘  ┌────────────┐            │
+         │  │                  │            │             │
+         │  ▼                  ▼            │             │
+         │ ┌─────────┐    ┌─────────┐       │             │
+         │ │  C1     │    │  C2     │       │             │
+         │ │(client) │    │(client) │       │             │
+         │ └─────────┘    └─────────┘       │             │
+         │                                  │             │
+         │         ┌───────────────────┐    │             │
+         │         │   RR2 (Cluster    │◄───┘             │
+         │         │   ID: 2.2.2.2)    │   iBGP peer      │
+         │         │   RID: 2.2.2.2    │   (non-client)   │
+         │         └────────┬──────────┘                  │
+         │              iBGP│(client)                     │
+         │                  ▼                             │
+         │             ┌─────────┐                        │
+         │             │  C3     │                        │
+         │             │(client) │                        │
+         │             └─────────┘                        │
+         └────────────────────────────────────────────────┘</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Règles de réflexion</div>
+    <table>
+      <tr><th>Source de la route</th><th>Reflété vers clients ?</th><th>Reflété vers non-clients ?</th><th>CLUSTER_LIST modifiée ?</th></tr>
+      <tr><td>Peer eBGP</td><td class="td-green">✓ Oui</td><td class="td-green">✓ Oui</td><td class="td-teal">Cluster-ID ajouté</td></tr>
+      <tr><td>Client iBGP</td><td class="td-green">✓ Oui (autres clients)</td><td class="td-green">✓ Oui</td><td class="td-teal">Cluster-ID ajouté</td></tr>
+      <tr><td>Non-client iBGP</td><td class="td-green">✓ Oui</td><td class="td-red">✗ Non (split horizon)</td><td class="td-teal">Cluster-ID ajouté</td></tr>
+    </table>
+
+    <div class="warn-box" style="margin-top:14px">
+      <span class="box-icon">⚠️</span>
+      <div>Un RR n'ajoute son Cluster-ID à la CLUSTER_LIST que lorsqu'il <strong>réfléchit</strong> une route. Si le RR lui-même est le meilleur chemin (route reçue eBGP, installée localement), CLUSTER_LIST reste vide lors de l'annonce initiale.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Croissance de la CLUSTER_LIST selon le chemin</div>
+
+    <div class="cl-grow">
+      <div class="cl-row">
+        <span class="cl-step">Annonceur (C1)</span>
+        <span class="cl-attr">CLUSTER_LIST: (vide)</span>
+        <span class="cl-arrow">→ envoie au RR1</span>
+      </div>
+      <div class="cl-row">
+        <span class="cl-step">RR1 réfléchit →</span>
+        <span class="cl-attr">CLUSTER_LIST: [1.1.1.1]</span>
+        <span class="cl-arrow">→ envoie au RR2</span>
+      </div>
+      <div class="cl-row">
+        <span class="cl-step">RR2 réfléchit →</span>
+        <span class="cl-attr">CLUSTER_LIST: [2.2.2.2, 1.1.1.1]</span>
+        <span class="cl-arrow">→ envoie à C3</span>
+      </div>
+      <div class="cl-row">
+        <span class="cl-step">C3 reçoit</span>
+        <span class="cl-attr" style="color:var(--orange)">longueur = 2 (2 sauts RR)</span>
+        <span class="cl-arrow"></span>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <span class="box-icon">💡</span>
+      <div>Si C3 reçoit la même route via un chemin direct (sans passer par RR2), la CLUSTER_LIST serait <code>[1.1.1.1]</code> (longueur 1) → ce chemin serait préféré au critère #12.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Mécanisme anti-boucle</div>
+    <p style="color:var(--text2);font-size:13.5px;margin-bottom:12px">Avant de réfléchir une route, le RR vérifie si son propre Cluster-ID est déjà présent dans la CLUSTER_LIST reçue :</p>
+    <pre><span class="c-cmt">! ─── Vérification anti-boucle au niveau du RR ──────────────────────────
+! Route reçue par RR1 (Cluster-ID = 1.1.1.1) :
+!
+! Cas 1 — CLUSTER_LIST reçue : [2.2.2.2]
+!   → 1.1.1.1 absent → OK, RR1 ajoute 1.1.1.1 et réfléchit
+!   → CLUSTER_LIST envoyée : [1.1.1.1, 2.2.2.2]
+!
+! Cas 2 — CLUSTER_LIST reçue : [2.2.2.2, 1.1.1.1]
+!   → 1.1.1.1 présent → BOUCLE DÉTECTÉE → route REJETÉE silencieusement
+!   → La route n'est pas installée, pas réfléchie</span></pre>
+  </div>
+
+</div><!-- /rr-topology -->
+
+
+<!-- ═══════════════ ONGLET 3 : ATTRIBUT ═══════════════ -->
+<div class="panel" id="attribut">
+
+  <div class="section">
+    <div class="section-title">Structure de l'attribut CLUSTER_LIST</div>
+    <table>
+      <tr><th>Champ</th><th>Taille</th><th>Valeur</th></tr>
+      <tr><td>Flags</td><td>1 octet</td><td><code>0x80</code> — Optional, Non-Transitive, pas Partial</td></tr>
+      <tr><td>Type code</td><td>1 octet</td><td><code>10</code></td></tr>
+      <tr><td>Length</td><td>1 octet</td><td>4 × nombre de Cluster-IDs (ex: 2 RRs → 8)</td></tr>
+      <tr><td>Value</td><td>4n octets</td><td>Liste de Cluster-IDs (4 octets chacun), du plus récent au plus ancien</td></tr>
+    </table>
+
+    <div class="warn-box" style="margin-top:14px">
+      <span class="box-icon">⚠️</span>
+      <div>Le Cluster-ID le plus récemment ajouté se trouve en <strong>premier</strong> dans la liste (prepend, comme AS-PATH). Pour comparer deux chemins au critère #12, on compare simplement le nombre de Cluster-IDs (length / 4), pas leur contenu.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Relation avec ORIGINATOR_ID (type 9)</div>
+    <table>
+      <tr><th>Attribut</th><th>Type</th><th>Contenu</th><th>Usage critère BGP</th></tr>
+      <tr>
+        <td><code>ORIGINATOR_ID</code></td>
+        <td class="td-pink">9</td>
+        <td>Router-ID de l'annonceur original (ajouté par 1er RR)</td>
+        <td class="td-blue">Critère #11 (remplace Router-ID du peer)</td>
+      </tr>
+      <tr>
+        <td><code>CLUSTER_LIST</code></td>
+        <td class="td-teal">10</td>
+        <td>Liste des Cluster-IDs traversés (1 par RR)</td>
+        <td class="td-blue">Critère #12 (shortest wins)</td>
+      </tr>
+    </table>
+    <p style="color:var(--text2);font-size:13px;margin-top:10px">Ces deux attributs sont toujours créés ensemble par le premier RR qui réfléchit une route. ORIGINATOR_ID n'est ajouté qu'une seule fois (par le 1er RR), alors que CLUSTER_LIST grandit à chaque RR traversé.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Cluster-ID vs Router-ID du RR</div>
+    <pre><span class="c-cmt">! ─── Relation Cluster-ID / Router-ID ────────────────────────────────────
+!
+! Par défaut : Cluster-ID = Router-ID du RR
+!   → Si RR1 a RID = 1.1.1.1, son Cluster-ID = 1.1.1.1
+!
+! Configuration manuelle :
+!   router bgp 65000
+!    bgp cluster-id 10.0.0.1
+!   → Cluster-ID = 10.0.0.1 (indépendant du RID)
+!
+! Pourquoi configurer manuellement ?
+!   Deux RRs dans le MÊME cluster (redondance) doivent avoir
+!   le MÊME Cluster-ID → sinon la route apparaît dans 2 clusters
+!   différents → la CLUSTER_LIST grossit inutilement de 2 entrées
+!   au lieu de 1 → critère #12 défavorisé sans raison.</span>
+
+router bgp 65000
+ <span class="c-cmd">bgp cluster-id</span> <span class="c-val">10.0.0.1</span>          <span class="c-cmt">! même valeur sur RR1 et RR2 du cluster</span>
+ <span class="c-cmd">neighbor</span> <span class="c-val">10.1.1.2</span> route-reflector-client
+ <span class="c-cmd">neighbor</span> <span class="c-val">10.1.1.3</span> route-reflector-client</pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Comparaison numérique (critère #12)</div>
+    <pre><span class="c-cmt">! ─── Exemple : R reçoit deux chemins vers 192.168.1.0/24 ────────────────
+!
+! Chemin A (via RR1 → RR2) :
+!   CLUSTER_LIST : [2.2.2.2, 1.1.1.1]   ← longueur = 2
+!
+! Chemin B (via RR3 directement) :
+!   CLUSTER_LIST : [3.3.3.3]             ← longueur = 1
+!
+! Critères #1 à #11 : tous égaux
+! Critère #12 : longueur(B) = 1 &lt; longueur(A) = 2
+!   → <span class="c-ok">Chemin B préféré</span> (CLUSTER_LIST plus courte)
+!
+! ─── Cas sans CLUSTER_LIST ──────────────────────────────────────────────
+! Chemin C (route eBGP directe, pas de RR) :
+!   CLUSTER_LIST : absente              ← longueur = 0
+!
+! Chemin D (via RR) :
+!   CLUSTER_LIST : [5.5.5.5]            ← longueur = 1
+!
+! Critère #12 : longueur(C) = 0 &lt; longueur(D) = 1
+!   → <span class="c-ok">Chemin C préféré</span></span></pre>
+  </div>
+
+</div><!-- /attribut -->
+
+
+<!-- ═══════════════ ONGLET 4 : CONFIGURATION ═══════════════ -->
+<div class="panel" id="configuration">
+
+  <div class="section">
+    <div class="section-title">Configuration Route Reflector de base</div>
+    <pre><span class="c-cmt">! ─── RR1 — Route Reflector avec clients ─────────────────────────────────</span>
+router bgp 65000
+ <span class="c-cmd">bgp router-id</span> <span class="c-val">1.1.1.1</span>
+ <span class="c-cmd">bgp cluster-id</span> <span class="c-val">1.1.1.1</span>           <span class="c-cmt">! optionnel si RID = Cluster-ID souhaité</span>
+
+ <span class="c-cmt">! Clients du RR (les routes reçues d'eux sont réfléchies)</span>
+ <span class="c-cmd">neighbor</span> <span class="c-val">10.0.1.1</span> remote-as 65000
+ <span class="c-cmd">neighbor</span> <span class="c-val">10.0.1.1</span> update-source Loopback0
+ <span class="c-cmd">neighbor</span> <span class="c-val">10.0.1.1</span> <span class="c-hi">route-reflector-client</span>
+
+ <span class="c-cmd">neighbor</span> <span class="c-val">10.0.1.2</span> remote-as 65000
+ <span class="c-cmd">neighbor</span> <span class="c-val">10.0.1.2</span> update-source Loopback0
+ <span class="c-cmd">neighbor</span> <span class="c-val">10.0.1.2</span> <span class="c-hi">route-reflector-client</span>
+
+ <span class="c-cmt">! Non-clients (autres RRs) — session iBGP normale</span>
+ <span class="c-cmd">neighbor</span> <span class="c-val">2.2.2.2</span> remote-as 65000
+ <span class="c-cmd">neighbor</span> <span class="c-val">2.2.2.2</span> update-source Loopback0</pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Deux RRs redondants dans le même cluster</div>
+    <pre><span class="c-cmt">! ─── Cluster avec 2 RRs (haute disponibilité) ───────────────────────────
+!
+! RR1 et RR2 servent les mêmes clients.
+! Ils doivent avoir le MÊME Cluster-ID pour éviter que
+! la CLUSTER_LIST ne grossisse de 2 entrées à chaque passage.
+!
+! Résultat INCORRECT (Cluster-IDs différents) :
+!   Client → RR1 (ajoute 1.1.1.1) → RR2 (ajoute 2.2.2.2) → autre client
+!   CLUSTER_LIST = [2.2.2.2, 1.1.1.1]  ← 2 entrées pour 1 seul cluster !</span>
+
+<span class="c-cmt">! ── RR1 ──</span>
+router bgp 65000
+ <span class="c-cmd">bgp router-id</span> <span class="c-val">1.1.1.1</span>
+ <span class="c-cmd">bgp cluster-id</span> <span class="c-val">10.0.0.100</span>        <span class="c-cmt">! même cluster-id que RR2</span>
+ <span class="c-cmd">neighbor</span> <span class="c-val">10.0.1.1</span> route-reflector-client
+ <span class="c-cmd">neighbor</span> <span class="c-val">10.0.1.2</span> route-reflector-client
+
+<span class="c-cmt">! ── RR2 ──</span>
+router bgp 65000
+ <span class="c-cmd">bgp router-id</span> <span class="c-val">2.2.2.2</span>
+ <span class="c-cmd">bgp cluster-id</span> <span class="c-val">10.0.0.100</span>        <span class="c-cmt">! même cluster-id que RR1 ← clé</span>
+ <span class="c-cmd">neighbor</span> <span class="c-val">10.0.1.1</span> route-reflector-client
+ <span class="c-cmd">neighbor</span> <span class="c-val">10.0.1.2</span> route-reflector-client</pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Commandes de vérification</div>
+    <pre><span class="c-cmt">! ─── Vérifier la configuration RR ───────────────────────────────────────</span>
+<span class="c-cmd">show ip bgp summary</span>                          <span class="c-cmt">! vue globale des sessions</span>
+<span class="c-cmd">show ip bgp neighbors</span> <span class="c-val">10.0.1.1</span>               <span class="c-cmt">! vérifier "route-reflector-client"</span>
+<span class="c-cmd">show ip bgp</span> <span class="c-val">192.168.1.0/24</span>                 <span class="c-cmt">! voir les chemins et CLUSTER_LIST</span>
+
+<span class="c-cmt">! ─── Chercher les routes avec CLUSTER_LIST ───────────────────────────────</span>
+<span class="c-cmd">show ip bgp regexp</span> _                         <span class="c-cmt">! toutes les routes iBGP</span>
+<span class="c-cmd">show ip bgp</span> <span class="c-val">192.168.1.0</span> <span class="c-val">255.255.255.0</span>        <span class="c-cmt">! chemin détaillé</span>
+
+<span class="c-cmt">! ─── Identifier un RR dans la table ─────────────────────────────────────</span>
+<span class="c-cmd">show ip bgp</span> <span class="c-val">10.10.10.0/24</span>
+<span class="c-cmt">!   BGP routing table entry for 10.10.10.0/24
+!     Paths: (2 available, best #1)
+!       Advertised to update-groups:
+!          1
+!       65100
+!         10.0.1.1 from 2.2.2.2 (2.2.2.2)
+!           Origin IGP, metric 0, localpref 100, valid, internal, best
+!           Originator: 10.0.1.1, Cluster list: 2.2.2.2, 1.1.1.1
+!                       ───────────────────────────────────────────
+!                       ORIGINATOR_ID (type 9)  CLUSTER_LIST (type 10)
+!           rx pathid: 0, tx pathid: 0x0</span></pre>
+  </div>
+
+  <div class="tip-box">
+    <span class="box-icon">💡</span>
+    <div>La ligne <code>Cluster list:</code> dans <code>show ip bgp</code> affiche les Cluster-IDs dans l'ordre de la liste (du plus récent au plus ancien). Le <strong>nombre d'entrées</strong> est ce qui compte pour le critère #12.</div>
+  </div>
+
+</div><!-- /configuration -->
+
+
+<!-- ═══════════════ ONGLET 5 : TABLE BGP ═══════════════ -->
+<div class="panel" id="table-bgp">
+
+  <div class="section">
+    <div class="section-title">Scénario — Deux chemins via RRs différents</div>
+
+    <div class="topo">  Topologie :
+
+  CE1──────────────────────────────────────────CE2
+  (eBGP)                                     (eBGP)
+     │                                          │
+   PE1 (RR client)                          PE2 (RR client)
+     │                                          │
+     └──────► RR1 (Cluster 1.1.1.1) ──────────►│
+     │                                          │
+     └──────► RR2 ──► RR3 (Cluster 3.3.3.3) ──►│
+
+  PE2 reçoit le préfixe 10.10.10.0/24 via deux chemins :
+    Chemin A : PE1 → RR1 → PE2         CLUSTER_LIST : [1.1.1.1]          (1 saut RR)
+    Chemin B : PE1 → RR2 → RR3 → PE2  CLUSTER_LIST : [3.3.3.3, 2.2.2.2] (2 sauts RR)</div>
+
+    <div class="bgp-table-sim">
+      <pre>
+PE2# <span class="c-cmd">show ip bgp 10.10.10.0/24</span>
+
+BGP routing table entry for 10.10.10.0/24, version 12
+Paths: (2 available, <span class="c-ok">best #1</span>, table default)
+  Not advertised to any peer
+
+  Refresh Epoch 1
+  65100
+    <span class="c-val">10.0.1.1</span> from <span class="c-val">1.1.1.1</span> (<span class="c-val">1.1.1.1</span>)       ← via RR1
+      Origin IGP, metric 0, localpref 100, valid, internal, <span class="c-ok">best</span>
+      Originator: <span class="c-pink">10.0.1.1</span>, Cluster list: <span class="c-teal">1.1.1.1</span>
+                                             <span class="c-teal">↑ longueur = 1 ← GAGNE critère #12</span>
+      rx pathid: 0, tx pathid: 0x0
+
+  Refresh Epoch 1
+  65100
+    <span class="c-val">10.0.3.1</span> from <span class="c-val">3.3.3.3</span> (<span class="c-val">3.3.3.3</span>)       ← via RR2→RR3
+      Origin IGP, metric 0, localpref 100, valid, internal
+      Originator: <span class="c-pink">10.0.1.1</span>, Cluster list: <span class="c-orange">3.3.3.3, 2.2.2.2</span>
+                                             <span class="c-orange">↑ longueur = 2 ← PERD critère #12</span>
+      rx pathid: 0, tx pathid: 0
+</pre>
+    </div>
+
+    <div class="section-title">Lecture du résultat</div>
+    <table>
+      <tr><th>Critère</th><th>Chemin A (RR1)</th><th>Chemin B (RR2→RR3)</th><th>Résultat</th></tr>
+      <tr><td>#1 à #10</td><td colspan="2" style="text-align:center;color:var(--text2)">Identiques (même LOCAL_PREF, même AS-PATH, même IGP…)</td><td class="td-orange">Égalité</td></tr>
+      <tr><td>#11 Router-ID</td><td>ORIG_ID = 10.0.1.1</td><td>ORIG_ID = 10.0.1.1</td><td class="td-orange">Égalité</td></tr>
+      <tr><td>#12 Cluster-list</td><td class="td-green">longueur = 1</td><td class="td-red">longueur = 2</td><td class="td-green">Chemin A gagne</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Vérifier le Cluster-ID local</div>
+    <pre>RR1# <span class="c-cmd">show ip bgp neighbors</span> <span class="c-val">10.0.1.2</span>
+BGP neighbor is 10.0.1.2,  remote AS 65000, internal link
+  BGP version 4, remote router ID 10.0.1.2
+  ...
+  <span class="c-hi">Route-Reflector Client</span>
+
+RR1# <span class="c-cmd">show running-config | section router bgp</span>
+router bgp 65000
+ <span class="c-hi">bgp cluster-id 1.1.1.1</span>
+ neighbor 10.0.1.1 route-reflector-client
+ neighbor 10.0.1.2 route-reflector-client</pre>
+  </div>
+
+</div><!-- /table-bgp -->
+
+
+<!-- ═══════════════ ONGLET 6 : PIÈGES ═══════════════ -->
+<div class="panel" id="pieges">
+
+  <div class="section">
+    <div class="section-title">Piège 1 — RRs redondants avec Cluster-IDs différents</div>
+    <div class="danger-box">
+      <span class="box-icon">🔴</span>
+      <div><strong>Problème :</strong> deux RRs dans le même cluster (pour la redondance) ont des Cluster-IDs différents. Chaque RR ajoute son propre Cluster-ID → la CLUSTER_LIST contient 2 entrées inutiles → le critère #12 est faussé et les routes arrivent pénalisées chez les clients.</div>
+    </div>
+    <pre><span class="c-cmt">! ── Symptôme ──
+! Client reçoit la même route via RR1 et RR2 (redondants)
+! CLUSTER_LIST via RR1 : [1.1.1.1]        ← attendu
+! CLUSTER_LIST via RR2 : [2.2.2.2]        ← attendu
+! Mais après réflexion inter-RR :
+!   CLUSTER_LIST : [2.2.2.2, 1.1.1.1]    ← 2 entrées pour 1 cluster !
+!
+! ── Fix ──</span>
+router bgp 65000
+ <span class="c-cmd">bgp cluster-id</span> <span class="c-val">10.0.0.100</span>    <span class="c-cmt">! MÊME valeur sur RR1 et RR2</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Piège 2 — Anti-boucle mal configuré (cluster-id absent)</div>
+    <div class="warn-box">
+      <span class="box-icon">⚠️</span>
+      <div><strong>Problème :</strong> si <code>bgp cluster-id</code> n'est pas configuré, le Cluster-ID = Router-ID du RR. Si deux RRs différents ont accidentellement le même Router-ID (mauvaise config), le mécanisme anti-boucle peut rejeter des routes légitimes.</div>
+    </div>
+    <pre><span class="c-cmt">! Vérification — s'assurer que les Cluster-IDs sont uniques entre clusters</span>
+<span class="c-cmd">show ip bgp neighbors</span> | <span class="c-cmd">include</span> cluster
+<span class="c-cmd">show running-config</span> | <span class="c-cmd">include</span> cluster-id</pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Piège 3 — CLUSTER_LIST non visible sur peer eBGP</div>
+    <div class="info-box">
+      <span class="box-icon">ℹ️</span>
+      <div>La CLUSTER_LIST est Non-Transitive → elle est <strong>retirée</strong> avant d'envoyer la route à un peer eBGP. Si on fait un <code>show ip bgp</code> sur un routeur eBGP voisin, la CLUSTER_LIST n'apparaît pas. Ce comportement est normal.</div>
+    </div>
+    <pre><span class="c-cmt">! Sur un routeur eBGP qui reçoit la route depuis l'AS :
+! → Cluster list: absent   ← normal, attribut stripped avant envoi eBGP
+! → Originator: absent     ← idem, ORIGINATOR_ID aussi stripped</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Piège 4 — Critère #12 jamais atteint en full-mesh iBGP</div>
+    <div class="info-box">
+      <span class="box-icon">ℹ️</span>
+      <div>Dans un réseau iBGP full-mesh (sans Route Reflectors), aucune route ne porte de CLUSTER_LIST. Le critère #12 ne peut donc jamais départager deux chemins : on passe directement du critère #11 au critère #13. C'est un point d'examen CCIE courant.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Piège 5 — Hiérarchie RR multi-niveaux</div>
+    <div class="warn-box">
+      <span class="box-icon">⚠️</span>
+      <div>Dans une hiérarchie RR (RR de 1er niveau → RR de 2ème niveau → clients), chaque niveau ajoute son Cluster-ID. Les routes traversant plus de niveaux accumulent plus d'entrées → critère #12 les pénalise. Il faut concevoir la topologie RR pour minimiser les niveaux.</div>
+    </div>
+    <pre><span class="c-cmt">! Route dans une hiérarchie 3 niveaux :
+!   CLUSTER_LIST : [3.3.3.3, 2.2.2.2, 1.1.1.1]   ← longueur = 3
+!
+! Route dans hiérarchie 2 niveaux :
+!   CLUSTER_LIST : [2.2.2.2, 1.1.1.1]             ← longueur = 2
+!
+! Au critère #12 : la route 2 niveaux gagne (longueur plus courte)</span></pre>
+  </div>
+
+</div><!-- /pieges -->
+
+
+<!-- ═══════════════ ONGLET 7 : FLASH CARDS ═══════════════ -->
+<div class="panel" id="flashcards">
+
+  <p style="color:var(--text2);font-size:13.5px;margin-bottom:20px">Cliquez sur une carte pour révéler la réponse.</p>
+
+  <div class="fc-grid">
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Que compare le critère #12 de la sélection BGP ?</div>
+      <div class="fc-a">La <strong>longueur de la CLUSTER_LIST</strong> (nombre de Cluster-IDs). Le chemin avec le moins de Cluster-IDs est préféré : il a traversé moins de Route Reflectors. Si aucun chemin n'a de CLUSTER_LIST, ce critère ne départage pas.
+        <div class="fc-hint">→ Shortest CLUSTER_LIST wins</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quel est le type code de CLUSTER_LIST ? Et ses flags ?</div>
+      <div class="fc-a">Type code <strong>10</strong>. Flags : <strong>Optional, Non-Transitive</strong> (0x80). Il n'est donc jamais transmis à un peer eBGP et ne quitte jamais l'AS. L'attribut associé ORIGINATOR_ID est type <strong>9</strong>, également Optional Non-Transitive.
+        <div class="fc-hint">→ Type 10 · Optional Non-Transitive · stripé vers eBGP</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Comment fonctionne l'anti-boucle de la CLUSTER_LIST ?</div>
+      <div class="fc-a">Avant de réfléchir une route, le RR vérifie si son propre Cluster-ID figure dans la CLUSTER_LIST reçue. Si oui → la route est <strong>rejetée silencieusement</strong> (boucle de réflexion détectée). Si non → le RR ajoute son Cluster-ID et réfléchit la route.
+        <div class="fc-hint">→ Mon Cluster-ID déjà présent = boucle = route droppée</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Deux RRs couvrent les mêmes clients (redondance). Que configurer pour éviter de gonfler inutilement la CLUSTER_LIST ?</div>
+      <div class="fc-a">Configurer le <strong>même Cluster-ID</strong> sur les deux RRs avec <code>bgp cluster-id X.X.X.X</code>. Ainsi, quand la route passe par les deux RRs, un seul Cluster-ID est ajouté au lieu de deux. Le mécanisme anti-boucle fonctionne toujours car les deux RRs partagent le même ID.
+        <div class="fc-hint">→ Même cluster → même cluster-id sur tous les RRs du cluster</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Un chemin sans CLUSTER_LIST est-il préféré à un chemin avec CLUSTER_LIST au critère #12 ?</div>
+      <div class="fc-a"><strong>Oui</strong>. Un chemin sans CLUSTER_LIST a une longueur effective de 0. Tout chemin avec une CLUSTER_LIST non-vide a une longueur ≥ 1. Le critère #12 préfère la longueur la plus courte → le chemin direct (sans RR) gagne.
+        <div class="fc-hint">→ Longueur 0 (absent) &lt; longueur ≥ 1 (présent)</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Dans quel cas le critère #12 n'est-il jamais actif ?</div>
+      <div class="fc-a">Dans un réseau iBGP en <strong>full-mesh</strong> sans Route Reflectors. Aucune route ne porte de CLUSTER_LIST dans ce cas : l'attribut n'est créé que par les RR lors de la réflexion. Sans RR, on passe directement du critère #11 (Router-ID) au critère #13 (Neighbor IP).
+        <div class="fc-hint">→ Full-mesh iBGP → pas de CLUSTER_LIST → #12 inopérant</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Comment identifier la CLUSTER_LIST dans la sortie de show ip bgp ?</div>
+      <div class="fc-a">Dans <code>show ip bgp X.X.X.X/Y</code>, la ligne <code>Cluster list: A.A.A.A, B.B.B.B</code> affiche les Cluster-IDs du plus récent au plus ancien. Le nombre d'IDs listés = longueur de la CLUSTER_LIST = nombre de sauts RR. La ligne <code>Originator: Z.Z.Z.Z</code> juste avant indique l'ORIGINATOR_ID.
+        <div class="fc-hint">→ "Cluster list: X, Y" → 2 RRs traversés</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Si le critère #12 est également égal (même longueur), quel critère s'applique ?</div>
+      <div class="fc-a">Le critère <strong>#13 — adresse IP du neighbor</strong> (lowest wins). C'est le dernier critère de l'algorithme BGP. Si deux chemins arrivent à égalité sur tous les 13 critères, le routeur Cisco utilise l'adresse IP la plus basse du peer comme tie-breaker final.
+        <div class="fc-hint">→ #12 égal → #13 Lowest Neighbor IP (dernier critère)</div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /flashcards -->
+
+</div><!-- /content -->
+
+<script>
+function showTab(btn, id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>
