@@ -305,8 +305,13 @@
 <span class="cmt">! Problème sans deterministic-med :</span>
 <span class="cmt">! Route A (AS100, MED=20) arrive avant Route B (AS200, MED=5)</span>
 <span class="cmt">! Route C (AS100, MED=10) arrive après</span>
-<span class="cmt">! Comparaison : A vs B → AS différents → MED ignoré → B gagne (critère suivant)</span>
-<span class="cmt">! Comparaison : B vs C → AS différents → MED ignoré → résultat dépend de l'ordre !</span>
+<span class="cmt">! Comparaison 1 : A vs B → AS différents → MED ignoré</span>
+<span class="cmt">!   → critères suivants : A plus ancienne (#10 oldest) → A gagne</span>
+<span class="cmt">! Comparaison 2 : A (gagnante) vs C → même AS100 → MED comparé</span>
+<span class="cmt">!   → MED 10 &lt; 20 → C gagne !</span>
+<span class="cmt">! Résultat final selon ordre : C (AS100,MED=10) — mais si B arrive en 1er :</span>
+<span class="cmt">!   B vs A → MED ignoré → B ancienne → B gagne ; B vs C → MED ignoré → B gagne</span>
+<span class="cmt">! → Résultat DIFFÉRENT selon ordre d'arrivée → non déterministe !</span>
 <span class="cmt">!</span>
 <span class="kw">router bgp</span> <span class="val">65001</span>
  <span class="kw">bgp always-compare-med</span>
