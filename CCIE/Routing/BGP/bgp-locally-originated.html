@@ -180,7 +180,7 @@
 
   <div class="card purple">
     <h3>⚠ Règle de sélection — pas un attribut BGP</h3>
-    <p>Contrairement à <strong>Weight</strong>, <strong>LOCAL_PREF</strong> ou <strong>Origin</strong>, le critère "Locally Originated" <strong>n'est pas un attribut BGP</strong>. Il n'a ni type code, ni RFC dédiée, ni champ transporté dans les messages UPDATE.</p>
+    <p>Contrairement à <strong>Weight!! (Weight, n est pas un Attribut)</strong>, <strong>LOCAL_PREF</strong> ou <strong>Origin</strong>, le critère "Locally Originated" <strong>n'est pas un attribut BGP</strong>. Il n'a ni type code, ni RFC dédiée, ni champ transporté dans les messages UPDATE.</p>
     <p>BGP l'identifie uniquement par le fait que le <strong>NEXT_HOP = 0.0.0.0</strong> dans la table BGP locale. C'est une règle interne au processus de sélection : le routeur préfère toujours une route qu'il a lui-même injectée dans BGP sur une route reçue d'un voisin, à condition que Weight (#1) et LOCAL_PREF (#2) soient identiques.</p>
   </div>
 
