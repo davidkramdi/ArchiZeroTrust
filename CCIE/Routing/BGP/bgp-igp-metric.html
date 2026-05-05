@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP · IGP Metric · Critère #8</title>
+<style>
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--surface3:#30363d;
+  --border:#30363d;--border2:#484f58;
+  --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+  --blue:#58a6ff;--green:#3fb950;--orange:#d29922;--red:#f85149;
+  --purple:#bc8cff;--teal:#76e4f7;--pink:#f778ba;--yellow:#e3b341;
+  --rule:#bc8cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:8px;height:52px;position:sticky;top:0;z-index:100}
+.topnav a{color:var(--text2);font-size:13px;padding:4px 8px;border-radius:6px;transition:background .15s}
+.topnav a:hover{background:var(--surface2);color:var(--text);text-decoration:none}
+.topnav .sep{color:var(--border2)}
+.topnav .current{color:var(--text);font-weight:600}
+
+.hero{padding:40px 24px 32px;max-width:960px;margin:0 auto}
+.hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.4px}
+.badge-rule{background:rgba(188,140,255,.15);color:var(--rule);border:1px solid rgba(188,140,255,.3)}
+.badge-num{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
+.badge-no{background:rgba(110,118,129,.12);color:var(--text2);border:1px solid var(--border)}
+
+.hero h1{font-size:32px;font-weight:700;margin-bottom:8px}
+.hero h1 span{color:var(--rule)}
+.hero .subtitle{color:var(--text2);font-size:16px;max-width:680px}
+
+.tabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:99}
+.tabs{display:flex;gap:2px;padding:0 24px;max-width:960px;margin:0 auto;overflow-x:auto}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--text2);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--rule);border-bottom-color:var(--rule)}
+
+.content{max-width:960px;margin:0 auto;padding:32px 24px}
+.panel{display:none}
+.panel.active{display:block}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:24px 0}
+.grid-2{grid-template-columns:repeat(auto-fill,minmax(380px,1fr))}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.card-icon{font-size:28px;margin-bottom:10px}
+
+.profile-grid{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+.pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px}
+.pill-label{color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.pill-value{color:var(--text);font-weight:600}
+.pill-value.rule{color:var(--rule)}
+.pill-value.blue{color:var(--blue)}
+.pill-value.green{color:var(--green)}
+.pill-value.orange{color:var(--orange)}
+.pill-value.red{color:var(--red)}
+.pill-value.no{color:var(--text3)}
+
+.section{margin:28px 0}
+.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);color:var(--text2);font-weight:600;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.td-green{color:var(--green);font-weight:600}
+.td-blue{color:var(--blue);font-weight:600}
+.td-orange{color:var(--orange);font-weight:600}
+.td-red{color:var(--red);font-weight:600}
+.td-purple{color:var(--purple);font-weight:600}
+.td-teal{color:var(--teal);font-weight:600}
+
+pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px;line-height:1.7}
+code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px}
+.c-kw{color:#ff7b72}
+.c-cmd{color:var(--blue)}
+.c-val{color:var(--green)}
+.c-cmt{color:var(--text3)}
+.c-sel{color:var(--yellow)}
+.c-attr{color:var(--orange)}
+.c-ok{color:var(--green);font-weight:700}
+.c-bad{color:var(--red);font-weight:700}
+.c-hi{color:var(--yellow);font-weight:700}
+
+.info-box,.warn-box,.tip-box,.danger-box{border-radius:8px;padding:14px 16px;margin:14px 0;font-size:13.5px;display:flex;gap:10px}
+.info-box{background:rgba(88,166,255,.08);border:1px solid rgba(88,166,255,.25);color:#a8d8ff}
+.warn-box{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);color:#f0c060}
+.tip-box{background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.25);color:#7ee787}
+.danger-box{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);color:#ffa198}
+.box-icon{flex-shrink:0;font-size:16px}
+
+.algo-strip{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0}
+.algo-step{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+.algo-step.active{background:rgba(188,140,255,.15);border-color:rgba(188,140,255,.4);color:var(--rule)}
+.algo-step.done{background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3);color:var(--blue)}
+.algo-num{background:var(--surface3);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.algo-step.active .algo-num{background:rgba(188,140,255,.3)}
+.algo-step.done .algo-num{background:rgba(88,166,255,.2)}
+
+.compare-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.cmp-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.cmp-card.hot{border-top:3px solid var(--red)}
+.cmp-card.cold{border-top:3px solid var(--blue)}
+.cmp-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.cmp-title.r{color:var(--red)}
+.cmp-title.b{color:var(--blue)}
+.cmp-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.cmp-row:last-child{border-bottom:none}
+.cmp-label{color:var(--text2)}
+.cmp-val{font-weight:600}
+
+.bgp-table-sim{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0}
+.bgp-table-sim pre{border:none;border-radius:0;margin:0;background:transparent}
+
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin:20px 0}
+.fc{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.fc:hover{border-color:var(--rule)}
+.fc-q{padding:16px;font-size:13.5px;font-weight:500;min-height:72px;display:flex;align-items:center}
+.fc-a{padding:14px 16px;background:rgba(188,140,255,.07);border-top:1px solid var(--border);font-size:13px;color:var(--rule);display:none}
+.fc.open .fc-a{display:block}
+.fc-hint{font-size:11px;color:var(--text3);margin-top:6px}
+
+.trap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin:20px 0}
+.trap{background:var(--surface);border:1px solid rgba(248,81,73,.25);border-left:3px solid var(--red);border-radius:8px;padding:16px}
+.trap h4{color:var(--red);font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.trap p{color:var(--text2);font-size:13px;line-height:1.5}
+.trap code{font-size:11.5px}
+.good-practice{border-color:rgba(63,185,80,.25);border-left-color:var(--green)}
+.good-practice h4{color:var(--green)}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:0;margin:20px 0}
+.flow-step{display:flex;align-items:stretch;gap:0}
+.flow-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;flex:1;font-size:13px}
+.flow-box strong{color:var(--text);display:block;margin-bottom:4px}
+.flow-box span{color:var(--text2)}
+.flow-box.highlight{border-color:rgba(188,140,255,.4);background:rgba(188,140,255,.07)}
+.flow-arrow{display:flex;align-items:center;justify-content:center;padding:6px 0;color:var(--text3);font-size:18px}
+
+/* NH lookup visual */
+.nh-lookup{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:16px 0;font-size:13px}
+.nh-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.nh-row:last-child{border-bottom:none}
+.nh-label{width:160px;color:var(--text2);flex-shrink:0}
+.nh-val{color:var(--text);font-family:monospace}
+.nh-arrow{color:var(--text3);margin:0 8px}
+.nh-result{color:var(--green);font-weight:600}
+.nh-metric{background:rgba(88,166,255,.15);color:var(--blue);padding:2px 8px;border-radius:4px;font-weight:700;font-size:12px}
+
+@media(max-width:640px){
+  .compare-wrap{grid-template-columns:1fr}
+  .hero h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html">🏠 BGP</a>
+  <span class="sep">›</span>
+  <span class="current">IGP Metric · #8</span>
+</nav>
+
+<div class="hero">
+  <div class="hero-badges">
+    <span class="badge badge-rule">📐 Règle de sélection</span>
+    <span class="badge badge-num">Critère #8</span>
+    <span class="badge badge-no">Pas d'attribut BGP</span>
+    <span class="badge badge-no">Local au routeur</span>
+  </div>
+  <h1>IGP <span>Metric</span> vers NEXT_HOP</h1>
+  <p class="subtitle">Critère #8 — Parmi les chemins encore en compétition, préférer celui dont le NEXT_HOP est atteignable avec le coût IGP le plus faible.</p>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(this,'theorie')">① Théorie</button>
+    <button class="tab" onclick="showTab(this,'resolution')">② Résolution NH</button>
+    <button class="tab" onclick="showTab(this,'table')">③ Table BGP</button>
+    <button class="tab" onclick="showTab(this,'nht')">④ Next-Hop Tracking</button>
+    <button class="tab" onclick="showTab(this,'multipath')">⑤ Multipath ECMP</button>
+    <button class="tab" onclick="showTab(this,'pieges')">⑥ Pièges</button>
+    <button class="tab" onclick="showTab(this,'flashcards')">⑦ Flash Cards</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════ ONGLET 1 : THÉORIE ═══════════════ -->
+<div class="panel active" id="theorie">
+
+  <div class="section">
+    <div class="section-title">Profil complet</div>
+    <div class="profile-grid">
+      <div class="pill"><div class="pill-label">Type code</div><div class="pill-value no">— aucun</div></div>
+      <div class="pill"><div class="pill-label">Catégorie</div><div class="pill-value rule">Règle de sélection</div></div>
+      <div class="pill"><div class="pill-label">Critère</div><div class="pill-value blue">#8</div></div>
+      <div class="pill"><div class="pill-label">Comparaison</div><div class="pill-value green">Lowest wins</div></div>
+      <div class="pill"><div class="pill-label">Source métrique</div><div class="pill-value orange">IGP (OSPF / EIGRP / IS-IS)</div></div>
+      <div class="pill"><div class="pill-label">Portée</div><div class="pill-value no">Locale (table de routage)</div></div>
+    </div>
+
+    <div class="info-box"><span class="box-icon">ℹ️</span>
+      Le critère #8 n'est pas un attribut transporté dans BGP. Le routeur consulte sa propre <strong>table de routage IGP</strong> pour connaître le coût d'accès au NEXT_HOP de chaque chemin BGP. Le chemin dont le NEXT_HOP est le moins coûteux est préféré.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Position dans l'algorithme</div>
+    <div class="algo-strip">
+      <div class="algo-step done"><span class="algo-num">1</span>Weight</div>
+      <div class="algo-step done"><span class="algo-num">2</span>LOCAL_PREF</div>
+      <div class="algo-step done"><span class="algo-num">3</span>NH=0.0.0.0</div>
+      <div class="algo-step done"><span class="algo-num">4</span>AS-PATH</div>
+      <div class="algo-step done"><span class="algo-num">5</span>Origin</div>
+      <div class="algo-step done"><span class="algo-num">6</span>MED</div>
+      <div class="algo-step done"><span class="algo-num">7</span>eBGP/iBGP</div>
+      <div class="algo-step active"><span class="algo-num">8</span>IGP metric ← ici</div>
+      <div class="algo-step"><span class="algo-num">9</span>AIGP</div>
+      <div class="algo-step"><span class="algo-num">10</span>Oldest</div>
+      <div class="algo-step"><span class="algo-num">11</span>Router-ID</div>
+      <div class="algo-step"><span class="algo-num">12</span>Cluster-list</div>
+      <div class="algo-step"><span class="algo-num">13</span>Neighbor IP</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Concept — Métrique IGP vers NEXT_HOP</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">🗺️</div>
+        <h3>Ce que compare le critère #8</h3>
+        <p style="color:var(--text2);font-size:13px">Pour chaque chemin BGP encore en lice, le routeur regarde le <strong>NEXT_HOP</strong> associé, puis consulte sa table de routage pour connaître le <strong>coût IGP</strong> pour atteindre cette adresse. La route avec le coût le plus bas est sélectionnée.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3>Valeur "metric" dans show ip bgp</h3>
+        <p style="color:var(--text2);font-size:13px">Dans <code>show ip bgp</code>, le champ <strong>metric</strong> affiché pour les routes iBGP correspond à la métrique IGP vers leur NEXT_HOP. Pour les routes eBGP (NEXT_HOP directement connecté), la métrique est typiquement <strong>0</strong>.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔄</div>
+        <h3>Sensibilité aux changements IGP</h3>
+        <p style="color:var(--text2);font-size:13px">Si la topologie IGP change (lien en panne, coût modifié), la métrique vers un NEXT_HOP peut changer. BGP recalcule automatiquement le best path via le mécanisme de <strong>Next-Hop Tracking (NHT)</strong>.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <h3>Désactivation possible</h3>
+        <p style="color:var(--text2);font-size:13px">La commande <code>bgp bestpath igp-metric ignore</code> permet de sauter le critère #8. Les chemins à coût IGP différents sont alors comparés à égalité → possibilité d'ECMP même avec métriques IGP inégales.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Hot Potato vs Cold Potato Routing</div>
+    <div class="compare-wrap">
+      <div class="cmp-card hot">
+        <div class="cmp-title r">🔥 Hot Potato Routing</div>
+        <div class="cmp-row"><span class="cmp-label">Principe</span><span class="cmp-val">Sortir du réseau le plus vite possible</span></div>
+        <div class="cmp-row"><span class="cmp-label">Critère utilisé</span><span class="cmp-val" style="color:var(--rule)">#8 IGP metric (lowest)</span></div>
+        <div class="cmp-row"><span class="cmp-label">Exit choisi</span><span class="cmp-val">Exit le plus proche (IGP metric min)</span></div>
+        <div class="cmp-row"><span class="cmp-label">Avantage</span><span class="cmp-val">Réduit la charge interne</span></div>
+        <div class="cmp-row"><span class="cmp-label">Inconvénient</span><span class="cmp-val">Chemin AS-to-AS potentiellement sous-optimal</span></div>
+        <div class="cmp-row"><span class="cmp-label">Comportement par défaut</span><span class="cmp-val" style="color:var(--green)">✅ Oui (critère #8 actif)</span></div>
+      </div>
+      <div class="cmp-card cold">
+        <div class="cmp-title b">❄️ Cold Potato Routing</div>
+        <div class="cmp-row"><span class="cmp-label">Principe</span><span class="cmp-val">Garder le trafic dans le réseau le plus longtemps</span></div>
+        <div class="cmp-row"><span class="cmp-label">Critère utilisé</span><span class="cmp-val" style="color:var(--blue)">#2 LOCAL_PREF (highest)</span></div>
+        <div class="cmp-row"><span class="cmp-label">Exit choisi</span><span class="cmp-val">Exit le plus proche de la destination</span></div>
+        <div class="cmp-row"><span class="cmp-label">Avantage</span><span class="cmp-val">Meilleur chemin end-to-end</span></div>
+        <div class="cmp-row"><span class="cmp-label">Inconvénient</span><span class="cmp-val">Trafic interne plus long à transiter</span></div>
+        <div class="cmp-row"><span class="cmp-label">Comportement par défaut</span><span class="cmp-val" style="color:var(--orange)">❌ Nécessite policy LP</span></div>
+      </div>
+    </div>
+    <div class="tip-box"><span class="box-icon">💡</span>
+      En pratique, le critère #8 implémente nativement le <strong>hot potato routing</strong>. Pour faire du cold potato, il faut agir sur LOCAL_PREF (critère #2) depuis les border routers, avant que le critère #8 soit atteint.
+    </div>
+  </div>
+
+</div><!-- /theorie -->
+
+<!-- ═══════════════ ONGLET 2 : RÉSOLUTION NEXT_HOP ═══════════════ -->
+<div class="panel" id="resolution">
+
+  <div class="section">
+    <div class="section-title">Processus de résolution du NEXT_HOP</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-box">
+          <strong>① BGP reçoit une route UPDATE</strong>
+          <span>NEXT_HOP = 203.0.113.1 (peer eBGP) ou 10.0.0.2 (peer iBGP)</span>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step">
+        <div class="flow-box">
+          <strong>② Vérification de validité (prérequis)</strong>
+          <span>Le NEXT_HOP est-il atteignable ? (route dans la table de routage). Si non → route invalide, jamais installée ni comparée.</span>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step">
+        <div class="flow-box">
+          <strong>③ Lookup récursif dans la RIB</strong>
+          <span>IOS cherche la route vers le NEXT_HOP → peut être une route directement connectée, statique, ou apprise via IGP (OSPF, EIGRP, IS-IS).</span>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step">
+        <div class="flow-box highlight">
+          <strong>④ Extraction de la métrique IGP → critère #8</strong>
+          <span>La métrique de la route IGP résolvant le NEXT_HOP est utilisée pour le critère #8. Plus cette valeur est basse, plus le chemin est préféré.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Exemples de résolution — topologie dual border router</div>
+    <div class="card" style="font-size:13px;color:var(--text2)">
+      <pre style="border:none;padding:0;background:transparent;font-size:12.5px">
+  AS 65001
+  ┌─────────────────────────────────────────────┐
+  │                                             │
+  │  R3 (RR) ──────── R1 (border-W)             │
+  │   │          cost=10      │ eBGP             │
+  │   │                  203.0.113.1 (ISP-A)    │
+  │   │                                         │
+  │  R4 ──────────── R2 (border-E)              │
+  │          cost=50      │ eBGP                 │
+  │                  203.0.113.2 (ISP-A aussi)   │
+  │                                             │
+  │  R3 reçoit les deux routes via iBGP depuis  │
+  │  R1 (NH=203.0.113.1) et R2 (NH=203.0.113.2) │
+  └─────────────────────────────────────────────┘</pre>
+    </div>
+
+    <div class="nh-lookup">
+      <div class="nh-row">
+        <span class="nh-label">Chemin A (via R1)</span>
+        <span class="nh-val">NH = 203.0.113.1</span>
+        <span class="nh-arrow">→</span>
+        <span>Route IGP vers 203.0.113.1 : cost <span class="nh-metric">10</span></span>
+      </div>
+      <div class="nh-row">
+        <span class="nh-label">Chemin B (via R2)</span>
+        <span class="nh-val">NH = 203.0.113.2</span>
+        <span class="nh-arrow">→</span>
+        <span>Route IGP vers 203.0.113.2 : cost <span class="nh-metric" style="background:rgba(248,81,73,.15);color:var(--red)">50</span></span>
+      </div>
+      <div class="nh-row">
+        <span class="nh-label" style="color:var(--green);font-weight:700">Résultat #8</span>
+        <span class="nh-val" style="color:var(--green)">Chemin A sélectionné (cost 10 &lt; 50)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Types de résolution et leur métrique</div>
+    <table>
+      <thead><tr><th>Type de route résolvant le NH</th><th>Métrique utilisée en #8</th><th>Cas typique</th></tr></thead>
+      <tbody>
+        <tr><td>Directement connectée</td><td class="td-green">0</td><td>eBGP peer sur lien direct</td></tr>
+        <tr><td>Route statique</td><td class="td-green">0 (ou AD statique)</td><td>NH statique vers peer eBGP</td></tr>
+        <tr><td>OSPF (intra-area)</td><td class="td-blue">Coût OSPF cumulé</td><td>iBGP peer loopback via OSPF</td></tr>
+        <tr><td>OSPF (inter-area)</td><td class="td-blue">Coût OSPF total</td><td>Topologie multi-area</td></tr>
+        <tr><td>EIGRP</td><td class="td-orange">Métrique composite EIGRP</td><td>Réseau EIGRP interne</td></tr>
+        <tr><td>IS-IS</td><td class="td-orange">Métrique IS-IS</td><td>Réseau opérateur SP</td></tr>
+        <tr><td>Non résolvable</td><td class="td-red">Route invalide</td><td>NH unreachable → rejetée</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Lookup récursif — cas pratique</div>
+    <pre><span class="c-cmt">! NH iBGP = 10.255.0.2 (loopback R1)
+! Vérification dans la table de routage de R3</span>
+
+R3# <span class="c-cmd">show ip route</span> <span class="c-val">10.255.0.2</span>
+Routing entry for 10.255.0.0/24
+  Known via "<span class="c-attr">ospf 1</span>", distance 110, metric <span class="c-hi">10</span>, type intra area
+  Last update from 10.0.13.1 on GigabitEthernet0/0, 00:05:12 ago
+  Routing Descriptor Blocks:
+  * 10.0.13.1, from 10.255.0.1, 00:05:12 ago, via GigabitEthernet0/0
+      Route metric is <span class="c-hi">10</span>, traffic share count is 1
+
+<span class="c-cmt">! BGP utilisera metric=10 pour le critère #8 sur ce chemin
+! Si un autre chemin a NH résolvable avec metric=5 → ce chemin perd en #8</span>
+
+R3# <span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/24</span>
+  ...
+  10.255.0.2 (metric <span class="c-hi">10</span>) from 10.255.0.2 (10.255.0.2)
+      valid, internal</pre>
+  </div>
+
+</div><!-- /resolution -->
+
+<!-- ═══════════════ ONGLET 3 : TABLE BGP ═══════════════ -->
+<div class="panel" id="table">
+
+  <div class="section">
+    <div class="section-title">Topologie de référence</div>
+    <div class="card" style="font-size:13px;color:var(--text2)">
+      <pre style="border:none;padding:0;background:transparent;font-size:12.5px">
+  AS 65001
+  ┌────────────────────────────────────────────────────────┐
+  │                                                        │
+  │         ┌──── R1 (border-W) ────┐ eBGP → ISP (65100) │
+  │         │    Loopback: 1.1.1.1  │                     │
+  │  OSPF   │    cost W→R3 = 10     │                     │
+  │         │                       │                     │
+  │  R3 ────┤                       │                     │
+  │ (RR)    │    Loopback: 2.2.2.2  │                     │
+  │         └──── R2 (border-E) ────┘ eBGP → ISP (65100) │
+  │              cost E→R3 = 50                           │
+  │                                                        │
+  │  Préfixe : 172.16.0.0/16 annoncé par les 2 ISP        │
+  │  R1 NH = 203.0.113.1, R2 NH = 203.0.113.2             │
+  │  Sur R3 : IGP metric vers 1.1.1.1 = 10                │
+  │           IGP metric vers 2.2.2.2 = 50                │
+  └────────────────────────────────────────────────────────┘</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">show ip bgp sur R3 — critère #8 en action</div>
+    <div class="bgp-table-sim">
+      <pre>R3# <span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/16</span>
+BGP routing table entry for 172.16.0.0/16, version 8
+Paths: (2 available, best #1, table Default-IP-Routing-Table)
+  Advertised to update-groups:
+     1
+  65100
+    203.0.113.1 (metric <span class="c-ok">10</span>) from 1.1.1.1 (1.1.1.1)   <span class="c-cmt">← via R1</span>
+      Origin IGP, metric 0, localpref 100, valid, internal, <span class="c-ok">best</span>
+      <span class="c-cmt">↑ metric=10 (IGP cost vers NH 1.1.1.1) — critère #8 : 10 &lt; 50 → best ✅</span>
+  65100
+    203.0.113.2 (metric <span class="c-bad">50</span>) from 2.2.2.2 (2.2.2.2)   <span class="c-cmt">← via R2</span>
+      Origin IGP, metric 0, localpref 100, valid, internal
+      <span class="c-cmt">↑ metric=50 (IGP cost vers NH 2.2.2.2) — critère #8 : 50 &gt; 10 → perd ❌</span></pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Analyse critère par critère sur R3</div>
+    <table>
+      <thead><tr><th>Critère</th><th>Chemin via R1</th><th>Chemin via R2</th><th>Résultat</th></tr></thead>
+      <tbody>
+        <tr><td>#1 Weight</td><td>0</td><td>0</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#2 LOCAL_PREF</td><td>100</td><td>100</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#3 NH=0.0.0.0</td><td>Non</td><td>Non</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#4 AS-PATH</td><td>1 hop (65100)</td><td>1 hop (65100)</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#5 Origin</td><td>IGP (i)</td><td>IGP (i)</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#6 MED</td><td>0</td><td>0</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#7 eBGP/iBGP</td><td>internal</td><td>internal</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td><strong>#8 IGP metric</strong></td><td class="td-green"><strong>10</strong></td><td class="td-red"><strong>50</strong></td><td class="td-green">✅ R1 gagne (10 &lt; 50)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Avec bgp bestpath igp-metric ignore</div>
+    <div class="bgp-table-sim">
+      <pre>R3(config-router)# <span class="c-cmd">bgp bestpath igp-metric ignore</span>
+
+R3# <span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/16</span>
+BGP routing table entry for 172.16.0.0/16
+Paths: (2 available, <span class="c-hi">best #1</span>, table Default-IP-Routing-Table)
+  65100
+    203.0.113.1 (metric 10) from 1.1.1.1 (1.1.1.1)
+      Origin IGP, localpref 100, valid, internal, <span class="c-hi">best</span>   <span class="c-cmt">← #9+ départage</span>
+  65100
+    203.0.113.2 (metric 50) from 2.2.2.2 (2.2.2.2)
+      Origin IGP, localpref 100, valid, internal
+<span class="c-cmt">! Critère #8 ignoré → les deux chemins sont "égaux" jusqu'à #9+
+! Si maximum-paths ibgp 2 configuré : ECMP possible malgré metric différente</span></pre>
+    </div>
+  </div>
+
+</div><!-- /table -->
+
+<!-- ═══════════════ ONGLET 4 : NEXT-HOP TRACKING ═══════════════ -->
+<div class="panel" id="nht">
+
+  <div class="section">
+    <div class="section-title">BGP Next-Hop Tracking (NHT)</div>
+    <div class="info-box"><span class="box-icon">ℹ️</span>
+      Le <strong>BGP Next-Hop Tracking</strong> surveille en continu la résolvabilité et la métrique IGP de chaque NEXT_HOP BGP. Quand l'IGP signale un changement (lien down, coût modifié), BGP déclenche un recalcul du best path. Ce mécanisme est activé par défaut sur IOS.
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Événements déclencheurs</h3>
+        <ul style="color:var(--text2);font-size:13px;padding-left:16px;line-height:2">
+          <li>NH devient inaccessible (route disparaît)</li>
+          <li>NH redevient accessible (route réapparaît)</li>
+          <li>Métrique IGP vers NH change (→ critère #8)</li>
+          <li>Prochain saut IGP change (next-hop change)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🕐</div>
+        <h3>Délai de réaction (dampening)</h3>
+        <p style="color:var(--text2);font-size:13px">Par défaut, BGP attend <strong>5 secondes</strong> après un événement IGP avant de recalculer le best path. Ce délai évite les oscillations en cas de flapping IGP.</p>
+        <br>
+        <code style="font-size:12px">bgp nexthop trigger delay &lt;0-100&gt;</code>
+        <p style="color:var(--text3);font-size:12px;margin-top:4px">0 = réaction immédiate (non recommandé)</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Configuration et vérification</div>
+    <pre><span class="c-cmt">! NHT est activé par défaut. Personnalisation :</span>
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">bgp nexthop trigger delay</span> <span class="c-val">10</span>      <span class="c-cmt">! Attendre 10s après changement IGP</span>
+  <span class="c-cmd">bgp nexthop trigger enable</span>         <span class="c-cmt">! Activer (par défaut)</span>
+
+<span class="c-cmt">! Désactiver NHT (déconseillé en production) :</span>
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-kw">no</span> <span class="c-cmd">bgp nexthop trigger enable</span>
+
+<span class="c-cmt">! Ignorer le critère #8 (métriques IGP ne comptent plus) :</span>
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">bgp bestpath igp-metric ignore</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Commandes de vérification NHT</div>
+    <pre><span class="c-cmt">! Voir l'état de tous les next-hops BGP</span>
+R3# <span class="c-cmd">show ip bgp nexthops</span>
+
+BGP nexthop path by IGP metric table
+Nexthop      Resolved  Metric  Last RIB Change  Priority
+1.1.1.1      yes       <span class="c-ok">10</span>      00:01:05         0
+2.2.2.2      yes       <span class="c-bad">50</span>      00:01:05         0
+203.0.113.1  yes       0       00:00:30         0
+
+<span class="c-cmt">! Voir les détails d'un next-hop spécifique</span>
+R3# <span class="c-cmd">show ip bgp nexthops</span> <span class="c-val">1.1.1.1</span>
+
+<span class="c-cmt">! Voir la configuration NHT</span>
+R3# <span class="c-cmd">show ip bgp summary</span>
+<span class="c-cmt">! Chercher : "BGP scan interval" et "BGP table version"</span>
+
+<span class="c-cmt">! Debug NHT (attention : très verbeux en production)</span>
+R3# <span class="c-cmd">debug ip bgp nexthop</span>
+R3# <span class="c-cmd">debug ip bgp</span> <span class="c-val">1.1.1.1</span> <span class="c-kw">events</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Interaction NHT et convergence BGP</div>
+    <table>
+      <thead><tr><th>Événement</th><th>Action NHT</th><th>Impact BGP</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Lien IGP tombe (NH inaccessible)</td>
+          <td>NH marqué invalide après délai NHT</td>
+          <td class="td-red">Route BGP invalidée, retirée de la table</td>
+        </tr>
+        <tr>
+          <td>Lien IGP remonte (NH accessible)</td>
+          <td>NH marqué valide après délai NHT</td>
+          <td class="td-green">Route BGP réactivée, best path recalculé</td>
+        </tr>
+        <tr>
+          <td>Coût OSPF modifié (ex: 10→5)</td>
+          <td>Métrique mise à jour après délai NHT</td>
+          <td class="td-orange">Best path peut changer si critère #8 s'applique</td>
+        </tr>
+        <tr>
+          <td>Route IGP remplacée par statique</td>
+          <td>NH toujours résolvable, métrique=0</td>
+          <td class="td-blue">Chemin peut gagner en #8 (metric 0 &lt; OSPF cost)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /nht -->
+
+<!-- ═══════════════ ONGLET 5 : MULTIPATH ECMP ═══════════════ -->
+<div class="panel" id="multipath">
+
+  <div class="section">
+    <div class="section-title">Principe du multipath BGP</div>
+    <div class="info-box"><span class="box-icon">ℹ️</span>
+      Par défaut, BGP installe un seul best path dans la RIB. La commande <code>maximum-paths</code> permet d'installer plusieurs chemins en ECMP. Pour que deux chemins soient éligibles à l'ECMP, ils doivent être identiques sur les critères <strong>1 à 8</strong> (ou les critères différents doivent être explicitement ignorés).
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Commandes maximum-paths</div>
+    <pre><span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmt">! ECMP entre chemins eBGP (max 32 sur la plupart des plateformes)</span>
+  <span class="c-cmd">maximum-paths</span> <span class="c-val">4</span>
+
+  <span class="c-cmt">! ECMP entre chemins iBGP</span>
+  <span class="c-cmd">maximum-paths ibgp</span> <span class="c-val">4</span>
+
+  <span class="c-cmt">! ECMP eBGP + iBGP combinés (contexte VPN/MPLS)</span>
+  <span class="c-cmd">maximum-paths eibgp</span> <span class="c-val">4</span>
+
+  <span class="c-cmt">! Ignorer la métrique IGP pour permettre ECMP même si coûts différents</span>
+  <span class="c-cmd">bgp bestpath igp-metric ignore</span>
+
+  <span class="c-cmt">! Relaxer la contrainte AS-PATH pour ECMP multi-ISP (même préfixe, AS-PATH différents)</span>
+  <span class="c-cmd">bgp bestpath as-path multipath-relax</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Conditions ECMP — récapitulatif</div>
+    <table>
+      <thead><tr><th>Condition</th><th>eBGP ECMP</th><th>iBGP ECMP</th></tr></thead>
+      <tbody>
+        <tr><td>Weight identique</td><td class="td-green">✅ Requis</td><td class="td-green">✅ Requis</td></tr>
+        <tr><td>LOCAL_PREF identique</td><td class="td-green">✅ Requis</td><td class="td-green">✅ Requis</td></tr>
+        <tr><td>AS-PATH identique (longueur)</td><td class="td-green">✅ Requis (ou multipath-relax)</td><td class="td-green">✅ Requis</td></tr>
+        <tr><td>Origin identique</td><td class="td-green">✅ Requis</td><td class="td-green">✅ Requis</td></tr>
+        <tr><td>MED identique</td><td class="td-orange">⚠️ Selon config</td><td class="td-orange">⚠️ Selon config</td></tr>
+        <tr><td>IGP metric identique</td><td class="td-blue">→ ou igp-metric ignore</td><td class="td-blue">→ ou igp-metric ignore</td></tr>
+        <tr><td>maximum-paths configuré</td><td class="td-green">✅ Requis (&gt;1)</td><td class="td-green">✅ Requis (ibgp &gt;1)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Scénario ECMP dual-ISP avec multipath-relax</div>
+    <pre><span class="c-cmt">! Scénario : deux ISP différents (AS-PATH différents mais même longueur)
+! R3 veut faire ECMP vers 172.16.0.0/16 via R1 (ISP-A 65100) et R2 (ISP-B 65200)</span>
+
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">maximum-paths</span> <span class="c-val">2</span>
+  <span class="c-cmd">bgp bestpath as-path multipath-relax</span>    <span class="c-cmt">! AS-PATH différents OK pour ECMP</span>
+  <span class="c-cmd">bgp bestpath igp-metric ignore</span>          <span class="c-cmt">! Ignorer #8 si métriques IGP différentes</span>
+
+<span class="c-cmt">! Vérification ECMP dans la table de routage</span>
+R3# <span class="c-cmd">show ip route</span> <span class="c-val">172.16.0.0</span>
+Routing entry for 172.16.0.0/16
+  Known via "bgp 65001", distance 200, metric 0
+  Tag 65100, type internal
+  Last update from 1.1.1.1 00:00:10 ago
+  Routing Descriptor Blocks:
+  * 203.0.113.1, from 1.1.1.1, 00:00:10 ago
+      Route metric is 0, traffic share count is 1
+    203.0.113.2, from 2.2.2.2, 00:00:08 ago
+      Route metric is 0, traffic share count is 1
+<span class="c-cmt">! Deux next-hops → ECMP ✅</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Vérification multipath dans show ip bgp</div>
+    <pre>R3# <span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/16</span>
+BGP routing table entry for 172.16.0.0/16
+Paths: (2 available, best #1, table Default-IP-Routing-Table)
+  Advertised to update-groups: 1
+  65100
+    203.0.113.1 (metric 10) from 1.1.1.1 (1.1.1.1)
+      Origin IGP, localpref 100, valid, internal, <span class="c-ok">multipath</span>, best
+  65100
+    203.0.113.2 (metric 10) from 2.2.2.2 (2.2.2.2)
+      Origin IGP, localpref 100, valid, internal, <span class="c-ok">multipath</span>
+<span class="c-cmt">! "multipath" indique que les deux chemins sont installés en ECMP</span></pre>
+  </div>
+
+</div><!-- /multipath -->
+
+<!-- ═══════════════ ONGLET 6 : PIÈGES ═══════════════ -->
+<div class="panel" id="pieges">
+
+  <div class="trap-grid">
+
+    <div class="trap">
+      <h4>⚡ NH inaccessible = route invalide (jamais critère #8)</h4>
+      <p>Si le NEXT_HOP d'un chemin BGP n'est pas résolvable dans la table de routage, la route est invalide et ne participe pas à la sélection. Le critère #8 ne s'applique même pas. Le prérequis de résolvabilité du NEXT_HOP est évalué avant tout critère.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ Confusion : metric BGP (MED) vs metric IGP (#8)</h4>
+      <p>Dans <code>show ip bgp</code>, le champ <code>metric</code> affiché peut représenter <strong>deux choses différentes</strong> : la <strong>MED</strong> (critère #6, attribut BGP reçu du voisin) ou la <strong>métrique IGP</strong> vers le NEXT_HOP (critère #8, calculée localement). Ne pas confondre.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ bgp bestpath igp-metric ignore sans maximum-paths</h4>
+      <p>Ignorer la métrique IGP sans configurer <code>maximum-paths</code> ne crée pas d'ECMP. Le critère #9+ départagera toujours les chemins. Pour réellement profiter de l'ECMP, il faut combiner <code>igp-metric ignore</code> + <code>maximum-paths ibgp N</code>.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ ECMP asymétrique et load balancing inégal</h4>
+      <p>En ECMP BGP, la répartition du trafic dépend du mécanisme de CEF (per-destination ou per-packet). Par défaut, IOS utilise le hash CEF per-flow (5-tuple). Si les flux sont asymétriques, la charge ne sera pas parfaitement équilibrée même avec ECMP.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ NHT trigger delay trop bas — instabilité</h4>
+      <p>Configurer <code>bgp nexthop trigger delay 0</code> en production peut causer des oscillations BGP si l'IGP flap. Chaque micro-changement de métrique IGP déclencherait immédiatement un recalcul BGP complet. Garder la valeur par défaut (5s) ou augmenter.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ as-path multipath-relax sans vérification de politique</h4>
+      <p>Activer <code>bgp bestpath as-path multipath-relax</code> peut créer de l'ECMP vers des AS différents avec des politiques de routage différentes. Vérifier que les deux chemins sont vraiment équivalents du point de vue politique avant d'activer.</p>
+    </div>
+
+    <div class="trap good-practice">
+      <h4>✅ Bonne pratique — next-hop-self + NHT</h4>
+      <p>Configurer <code>next-hop-self</code> sur les border routers garantit que les NEXT_HOP iBGP sont des loopbacks internes, toujours résolvables via IGP. Cela rend le critère #8 fiable et prévisible, et évite les routes invalides dues à des NH externes non connus de l'IGP interne.</p>
+    </div>
+
+    <div class="trap good-practice">
+      <h4>✅ Bonne pratique — monitorer show ip bgp nexthops</h4>
+      <p>En production, surveiller régulièrement <code>show ip bgp nexthops</code> pour détecter les NH non résolus ou avec des métriques anormales. Un NH avec <code>Resolved: no</code> signifie que des routes BGP sont invalides et que le trafic peut être impacté.</p>
+    </div>
+
+  </div>
+
+</div><!-- /pieges -->
+
+<!-- ═══════════════ ONGLET 7 : FLASH CARDS ═══════════════ -->
+<div class="panel" id="flashcards">
+
+  <p style="color:var(--text2);font-size:13.5px;margin-bottom:20px">Cliquez sur une carte pour révéler la réponse.</p>
+
+  <div class="fc-grid">
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Que compare le critère #8 de la sélection BGP ?</div>
+      <div class="fc-a">Le critère #8 compare la <strong>métrique IGP pour atteindre le NEXT_HOP</strong> de chaque chemin BGP. Le chemin dont le NEXT_HOP est accessible avec le coût IGP le plus faible (lowest) est préféré.
+        <div class="fc-hint">→ Lookup dans la table de routage locale</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Qu'est-ce que le "hot potato routing" et quel critère BGP le reflète ?</div>
+      <div class="fc-a">Le <strong>hot potato routing</strong> consiste à sortir le trafic de son réseau le plus rapidement possible, en choisissant l'exit point le plus proche. C'est exactement le comportement du <strong>critère #8</strong> : préférer le chemin dont le NEXT_HOP est le moins coûteux en IGP.
+        <div class="fc-hint">→ Opposé : cold potato = LOCAL_PREF (critère #2)</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Comment désactiver le critère #8 dans la sélection BGP ?</div>
+      <div class="fc-a"><code>bgp bestpath igp-metric ignore</code> dans le processus BGP. Les chemins avec des métriques IGP différentes seront alors considérés comme égaux sur ce critère, et le comparateur passera au critère #9 (AIGP).
+        <div class="fc-hint">→ Utile pour activer ECMP malgré des métriques IGP inégales</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quelle commande permet de faire de l'ECMP iBGP ? Quelle condition préalable ?</div>
+      <div class="fc-a"><code>maximum-paths ibgp N</code> dans le processus BGP. Condition : les chemins doivent être identiques sur les critères 1 à 8 (ou les différences doivent être explicitement ignorées avec <code>igp-metric ignore</code> et/ou <code>as-path multipath-relax</code>).
+        <div class="fc-hint">→ maximum-paths = eBGP ECMP, maximum-paths ibgp = iBGP ECMP</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Qu'est-ce que le BGP Next-Hop Tracking (NHT) ?</div>
+      <div class="fc-a">Mécanisme qui surveille en continu la résolvabilité et la métrique IGP des NEXT_HOPs BGP. Quand l'IGP change (lien tombe, coût modifié), BGP recalcule automatiquement le best path après un délai configurable (<code>bgp nexthop trigger delay</code>, défaut = 5s).
+        <div class="fc-hint">→ show ip bgp nexthops pour vérifier</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quelle est la métrique IGP d'un NEXT_HOP directement connecté (eBGP sur lien direct) ?</div>
+      <div class="fc-a"><strong>0</strong>. Un peer eBGP directement connecté a son NEXT_HOP résolvable via une route <em>connected</em> avec coût 0. Cela lui donne l'avantage sur tout chemin iBGP avec un coût OSPF/EIGRP &gt; 0, toutes choses égales par ailleurs sur les critères 1–7.
+        <div class="fc-hint">→ C'est pourquoi eBGP gagne souvent aussi en critère #8</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">À quoi sert bgp bestpath as-path multipath-relax ?</div>
+      <div class="fc-a">Permet de faire de l'ECMP entre chemins dont l'<strong>AS-PATH est différent</strong> (mais de même longueur). Sans cette commande, deux chemins vers le même préfixe mais venant d'AS différents (ex: deux ISP) ne peuvent pas être mis en ECMP même si tous les autres critères sont identiques.
+        <div class="fc-hint">→ Typiquement utilisé en dual-ISP ECMP</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Dans show ip bgp, le champ "metric" représente-t-il toujours la métrique IGP ?</div>
+      <div class="fc-a"><strong>Non.</strong> Le champ <code>metric</code> dans <code>show ip bgp</code> peut représenter deux choses : la <strong>MED</strong> (critère #6, valeur reçue dans l'attribut BGP) ou la <strong>métrique IGP</strong> vers le NEXT_HOP (critère #8, calculée localement). Pour les routes iBGP, c'est généralement la métrique IGP vers le NH.
+        <div class="fc-hint">→ Regarder le contexte : "metric" après le NH = IGP metric</div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /flashcards -->
+
+</div><!-- /content -->
+
+<script>
+function showTab(btn, id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>
