@@ -361,19 +361,19 @@ R1# <span class="c-cmd">show ip bgp neighbors</span> <span class="c-val">10.0.0.
   AS 65001
   ┌──────────────────────────────────────────────────────────────┐
   │                                                              │
-  │   PE1 (RID=1.1.1.1) ──iBGP──► RR ──iBGP──► PE3 (RID=3.3.3.3)│
-  │      annonce 172.16.0.0/16      │                           │
-  │                                 │                           │
-  │   PE2 (RID=2.2.2.2) ──iBGP──► RR ──iBGP──► PE3             │
-  │      annonce 172.16.0.0/16                                  │
+  │   PE1 (RID=1.1.1.1) ──iBGP──► RR ──iBGP──► PE3 (RID=3.3.3.3) │
+  │      annonce 172.16.0.0/16      │                            │
+  │                                 │                            │
+  │   PE2 (RID=2.2.2.2) ──iBGP──► RR ──iBGP──► PE3               │
+  │      annonce 172.16.0.0/16                                   │
   │                                                              │
-  │   RR reflète vers PE3 :                                     │
-  │   - Route de PE1 → ORIGINATOR_ID = 1.1.1.1 (RID de PE1)    │
-  │   - Route de PE2 → ORIGINATOR_ID = 2.2.2.2 (RID de PE2)    │
+  │   RR reflète vers PE3 :                                      │
+  │   - Route de PE1 → ORIGINATOR_ID = 1.1.1.1 (RID de PE1)      │
+  │   - Route de PE2 → ORIGINATOR_ID = 2.2.2.2 (RID de PE2)      │
   │                                                              │
-  │   PE3 reçoit les deux routes du même peer (RR) :            │
-  │   Critère #11 : ORIGINATOR_ID 1.1.1.1 &lt; 2.2.2.2            │
-  │   → Route de PE1 sélectionnée ✅                            │
+  │   PE3 reçoit les deux routes du même peer (RR) :             │
+  │   Critère #11 : ORIGINATOR_ID 1.1.1.1 &lt; 2.2.2.2           │
+  │   → Route de PE1 sélectionnée ✅                             │
   └──────────────────────────────────────────────────────────────┘</div>
   </div>
 
