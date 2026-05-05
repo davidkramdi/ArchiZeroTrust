@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGP · AIGP · Critère #9</title>
+<style>
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--surface3:#30363d;
+  --border:#30363d;--border2:#484f58;
+  --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+  --blue:#58a6ff;--green:#3fb950;--orange:#d29922;--red:#f85149;
+  --purple:#bc8cff;--teal:#76e4f7;--pink:#f778ba;--yellow:#e3b341;
+  --rule:#bc8cff;--optn:#76e4f7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:8px;height:52px;position:sticky;top:0;z-index:100}
+.topnav a{color:var(--text2);font-size:13px;padding:4px 8px;border-radius:6px;transition:background .15s}
+.topnav a:hover{background:var(--surface2);color:var(--text);text-decoration:none}
+.topnav .sep{color:var(--border2)}
+.topnav .current{color:var(--text);font-weight:600}
+
+.hero{padding:40px 24px 32px;max-width:960px;margin:0 auto}
+.hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.4px}
+.badge-optn{background:rgba(118,228,247,.12);color:var(--teal);border:1px solid rgba(118,228,247,.3)}
+.badge-num{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
+.badge-no{background:rgba(110,118,129,.12);color:var(--text2);border:1px solid var(--border)}
+.badge-rfc{background:rgba(63,185,80,.12);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+
+.hero h1{font-size:32px;font-weight:700;margin-bottom:8px}
+.hero h1 span{color:var(--teal)}
+.hero .subtitle{color:var(--text2);font-size:16px;max-width:680px}
+
+.tabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:99}
+.tabs{display:flex;gap:2px;padding:0 24px;max-width:960px;margin:0 auto;overflow-x:auto}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--text2);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+
+.content{max-width:960px;margin:0 auto;padding:32px 24px}
+.panel{display:none}
+.panel.active{display:block}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:24px 0}
+.grid-2{grid-template-columns:repeat(auto-fill,minmax(380px,1fr))}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.card-icon{font-size:28px;margin-bottom:10px}
+
+.profile-grid{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+.pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px}
+.pill-label{color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.pill-value{color:var(--text);font-weight:600}
+.pill-value.teal{color:var(--teal)}
+.pill-value.blue{color:var(--blue)}
+.pill-value.green{color:var(--green)}
+.pill-value.orange{color:var(--orange)}
+.pill-value.red{color:var(--red)}
+.pill-value.no{color:var(--text3)}
+
+.section{margin:28px 0}
+.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);color:var(--text2);font-weight:600;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.td-green{color:var(--green);font-weight:600}
+.td-blue{color:var(--blue);font-weight:600}
+.td-orange{color:var(--orange);font-weight:600}
+.td-red{color:var(--red);font-weight:600}
+.td-teal{color:var(--teal);font-weight:600}
+.td-purple{color:var(--purple);font-weight:600}
+
+pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px;line-height:1.7}
+code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px}
+.c-kw{color:#ff7b72}
+.c-cmd{color:var(--blue)}
+.c-val{color:var(--green)}
+.c-cmt{color:var(--text3)}
+.c-attr{color:var(--orange)}
+.c-ok{color:var(--green);font-weight:700}
+.c-bad{color:var(--red);font-weight:700}
+.c-hi{color:var(--yellow);font-weight:700}
+.c-teal{color:var(--teal);font-weight:700}
+
+.info-box,.warn-box,.tip-box,.danger-box{border-radius:8px;padding:14px 16px;margin:14px 0;font-size:13.5px;display:flex;gap:10px}
+.info-box{background:rgba(88,166,255,.08);border:1px solid rgba(88,166,255,.25);color:#a8d8ff}
+.warn-box{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);color:#f0c060}
+.tip-box{background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.25);color:#7ee787}
+.danger-box{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);color:#ffa198}
+.box-icon{flex-shrink:0;font-size:16px}
+
+.algo-strip{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0}
+.algo-step{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+.algo-step.active{background:rgba(118,228,247,.12);border-color:rgba(118,228,247,.4);color:var(--teal)}
+.algo-step.done{background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3);color:var(--blue)}
+.algo-num{background:var(--surface3);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.algo-step.active .algo-num{background:rgba(118,228,247,.25)}
+.algo-step.done .algo-num{background:rgba(88,166,255,.2)}
+
+.bgp-table-sim{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:16px 0}
+.bgp-table-sim pre{border:none;border-radius:0;margin:0;background:transparent}
+
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin:20px 0}
+.fc{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.fc:hover{border-color:var(--teal)}
+.fc-q{padding:16px;font-size:13.5px;font-weight:500;min-height:72px;display:flex;align-items:center}
+.fc-a{padding:14px 16px;background:rgba(118,228,247,.06);border-top:1px solid var(--border);font-size:13px;color:var(--teal);display:none}
+.fc.open .fc-a{display:block}
+.fc-hint{font-size:11px;color:var(--text3);margin-top:6px}
+
+.trap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin:20px 0}
+.trap{background:var(--surface);border:1px solid rgba(248,81,73,.25);border-left:3px solid var(--red);border-radius:8px;padding:16px}
+.trap h4{color:var(--red);font-size:13px;font-weight:700;margin-bottom:8px}
+.trap p{color:var(--text2);font-size:13px;line-height:1.5}
+.trap code{font-size:11.5px}
+.good-practice{border-color:rgba(63,185,80,.25);border-left-color:var(--green)}
+.good-practice h4{color:var(--green)}
+
+/* TLV format */
+.tlv-box{display:flex;gap:0;margin:16px 0;font-size:12px;font-family:monospace;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.tlv-field{flex:1;padding:10px;text-align:center;border-right:1px solid var(--border)}
+.tlv-field:last-child{border-right:none}
+.tlv-field .tlv-name{font-weight:700;margin-bottom:4px}
+.tlv-field .tlv-size{color:var(--text3);font-size:11px;margin-bottom:4px}
+.tlv-field .tlv-val{color:var(--teal);font-weight:700}
+.tlv-t{background:rgba(88,166,255,.1)}
+.tlv-l{background:rgba(210,153,34,.1)}
+.tlv-v{background:rgba(118,228,247,.1);flex:3}
+
+/* Topology path diagram */
+.path-diagram{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:16px 0;overflow-x:auto}
+.path-row{display:flex;align-items:center;gap:0;margin-bottom:12px;min-width:600px}
+.path-row:last-child{margin-bottom:0}
+.path-node{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;text-align:center;min-width:90px;font-size:12px}
+.path-node .pn-name{font-weight:700;color:var(--text);font-size:13px}
+.path-node .pn-aigp{color:var(--teal);font-weight:700;font-size:12px}
+.path-node .pn-igp{color:var(--text2);font-size:11px}
+.path-node.pe{border-color:rgba(88,166,255,.4);background:rgba(88,166,255,.08)}
+.path-node.p{border-color:rgba(110,118,129,.3);background:rgba(110,118,129,.05)}
+.path-node.dest{border-color:rgba(63,185,80,.4);background:rgba(63,185,80,.08)}
+.path-edge{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 4px}
+.path-edge .pe-line{height:2px;width:100%;background:var(--border2)}
+.path-edge .pe-cost{color:var(--orange);font-size:11px;font-weight:700;margin-bottom:2px}
+.path-label{font-size:11px;color:var(--text3);margin-bottom:6px;font-style:italic}
+
+/* Compare table */
+.compare-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.cmp-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.cmp-card.c8{border-top:3px solid var(--purple)}
+.cmp-card.c9{border-top:3px solid var(--teal)}
+.cmp-title{font-size:15px;font-weight:700;margin-bottom:14px}
+.cmp-title.p{color:var(--purple)}
+.cmp-title.t{color:var(--teal)}
+.cmp-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.cmp-row:last-child{border-bottom:none}
+.cmp-label{color:var(--text2)}
+.cmp-val{font-weight:600;text-align:right;max-width:55%}
+
+@media(max-width:640px){
+  .compare-wrap{grid-template-columns:1fr}
+  .hero h1{font-size:24px}
+  .tlv-box{flex-direction:column}
+  .tlv-field{border-right:none;border-bottom:1px solid var(--border)}
+  .tlv-field:last-child{border-bottom:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html">🏠 BGP</a>
+  <span class="sep">›</span>
+  <span class="current">AIGP · #9</span>
+</nav>
+
+<div class="hero">
+  <div class="hero-badges">
+    <span class="badge badge-optn">Optional Non-Transitive · type 26</span>
+    <span class="badge badge-num">Critère #9</span>
+    <span class="badge badge-rfc">RFC 7311</span>
+    <span class="badge badge-no">Lowest wins</span>
+  </div>
+  <h1>AIGP — <span>Accumulated IGP Metric</span></h1>
+  <p class="subtitle">Critère #9 — Métrique IGP accumulée sur plusieurs sauts BGP. Conçu pour les réseaux SP avec BGP-free core ou Inter-AS MPLS, où le coût IGP total doit traverser plusieurs domaines BGP.</p>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(this,'theorie')">① Théorie</button>
+    <button class="tab" onclick="showTab(this,'usecases')">② Use Cases</button>
+    <button class="tab" onclick="showTab(this,'fonctionnement')">③ Fonctionnement</button>
+    <button class="tab" onclick="showTab(this,'config')">④ Configuration</button>
+    <button class="tab" onclick="showTab(this,'table')">⑤ Table BGP</button>
+    <button class="tab" onclick="showTab(this,'pieges')">⑥ Pièges</button>
+    <button class="tab" onclick="showTab(this,'flashcards')">⑦ Flash Cards</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════ ONGLET 1 : THÉORIE ═══════════════ -->
+<div class="panel active" id="theorie">
+
+  <div class="section">
+    <div class="section-title">Profil complet</div>
+    <div class="profile-grid">
+      <div class="pill"><div class="pill-label">Type code</div><div class="pill-value teal">26</div></div>
+      <div class="pill"><div class="pill-label">Catégorie</div><div class="pill-value teal">Optional Non-Transitive</div></div>
+      <div class="pill"><div class="pill-label">Critère</div><div class="pill-value blue">#9</div></div>
+      <div class="pill"><div class="pill-label">RFC</div><div class="pill-value green">7311</div></div>
+      <div class="pill"><div class="pill-label">Comparaison</div><div class="pill-value green">Lowest wins</div></div>
+      <div class="pill"><div class="pill-label">Portée par défaut</div><div class="pill-value orange">iBGP uniquement</div></div>
+      <div class="pill"><div class="pill-label">Transitivité</div><div class="pill-value red">Non transitive (supprimé aux frontières AS)</div></div>
+    </div>
+
+    <div class="info-box"><span class="box-icon">ℹ️</span>
+      AIGP est un attribut BGP qui transporte la <strong>somme cumulée des métriques IGP</strong> accumulées le long du chemin BGP. Il permet à un routeur BGP de connaître le coût total bout-en-bout vers une destination, même quand ce chemin traverse des nœuds qui ne participent pas à l'IGP (routeurs BGP-free dans le cœur MPLS).
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Position dans l'algorithme</div>
+    <div class="algo-strip">
+      <div class="algo-step done"><span class="algo-num">1</span>Weight</div>
+      <div class="algo-step done"><span class="algo-num">2</span>LOCAL_PREF</div>
+      <div class="algo-step done"><span class="algo-num">3</span>NH=0.0.0.0</div>
+      <div class="algo-step done"><span class="algo-num">4</span>AS-PATH</div>
+      <div class="algo-step done"><span class="algo-num">5</span>Origin</div>
+      <div class="algo-step done"><span class="algo-num">6</span>MED</div>
+      <div class="algo-step done"><span class="algo-num">7</span>eBGP/iBGP</div>
+      <div class="algo-step done"><span class="algo-num">8</span>IGP metric</div>
+      <div class="algo-step active"><span class="algo-num">9</span>AIGP ← ici</div>
+      <div class="algo-step"><span class="algo-num">10</span>Oldest</div>
+      <div class="algo-step"><span class="algo-num">11</span>Router-ID</div>
+      <div class="algo-step"><span class="algo-num">12</span>Cluster-list</div>
+      <div class="algo-step"><span class="algo-num">13</span>Neighbor IP</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Différence fondamentale — critère #8 vs critère #9</div>
+    <div class="compare-wrap">
+      <div class="cmp-card c8">
+        <div class="cmp-title p">📐 Critère #8 — IGP metric locale</div>
+        <div class="cmp-row"><span class="cmp-label">Scope</span><span class="cmp-val">Un seul saut (local)</span></div>
+        <div class="cmp-row"><span class="cmp-label">Source</span><span class="cmp-val">Table de routage IGP locale</span></div>
+        <div class="cmp-row"><span class="cmp-label">Transporté dans BGP ?</span><span class="cmp-val" style="color:var(--red)">Non</span></div>
+        <div class="cmp-row"><span class="cmp-label">Question posée</span><span class="cmp-val">Combien coûte le NEXT_HOP ici ?</span></div>
+        <div class="cmp-row"><span class="cmp-label">Cas d'usage</span><span class="cmp-val">Réseau classique avec IGP end-to-end</span></div>
+      </div>
+      <div class="cmp-card c9">
+        <div class="cmp-title t">📊 Critère #9 — AIGP accumulé</div>
+        <div class="cmp-row"><span class="cmp-label">Scope</span><span class="cmp-val">Bout-en-bout (multi-sauts BGP)</span></div>
+        <div class="cmp-row"><span class="cmp-label">Source</span><span class="cmp-val">Attribut BGP type 26 (reçu + ajout local)</span></div>
+        <div class="cmp-row"><span class="cmp-label">Transporté dans BGP ?</span><span class="cmp-val" style="color:var(--green)">Oui (Optional Non-Trans.)</span></div>
+        <div class="cmp-row"><span class="cmp-label">Question posée</span><span class="cmp-val">Combien coûte le chemin total ?</span></div>
+        <div class="cmp-row"><span class="cmp-label">Cas d'usage</span><span class="cmp-val">BGP-free core, Inter-AS MPLS</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Caractéristiques Optional Non-Transitive</div>
+    <table>
+      <thead><tr><th>Propriété</th><th>Comportement AIGP</th></tr></thead>
+      <tbody>
+        <tr><td>Optional</td><td class="td-teal">Routeurs ne supportant pas AIGP l'ignorent sans erreur</td></tr>
+        <tr><td>Non-Transitive</td><td class="td-orange">Supprimé par défaut aux frontières eBGP (sauf config explicite)</td></tr>
+        <tr><td>Supporté non configuré</td><td>Reçu et stocké mais pas utilisé pour la sélection</td></tr>
+        <tr><td>Envoi vers eBGP</td><td class="td-red">Désactivé par défaut — nécessite <code>neighbor X aigp</code></td></tr>
+        <tr><td>Envoi vers iBGP</td><td class="td-green">Activé quand AIGP est configuré sur le processus BGP</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /theorie -->
+
+<!-- ═══════════════ ONGLET 2 : USE CASES ═══════════════ -->
+<div class="panel" id="usecases">
+
+  <div class="section">
+    <div class="section-title">Use Case #1 — BGP-free Core (MPLS)</div>
+    <div class="path-diagram">
+      <div class="path-label">Chemin A : PE1 → P1 → P2 → PE3 (cost total : 30)</div>
+      <div class="path-row">
+        <div class="path-node pe"><div class="pn-name">PE1</div><div class="pn-igp">BGP origin</div><div class="pn-aigp">AIGP=0</div></div>
+        <div class="path-edge"><div class="pe-cost">+10</div><div class="pe-line"></div></div>
+        <div class="path-node p"><div class="pn-name">P1</div><div class="pn-igp">No BGP</div><div class="pn-aigp">MPLS fwd</div></div>
+        <div class="path-edge"><div class="pe-cost">+10</div><div class="pe-line"></div></div>
+        <div class="path-node p"><div class="pn-name">P2</div><div class="pn-igp">No BGP</div><div class="pn-aigp">MPLS fwd</div></div>
+        <div class="path-edge"><div class="pe-cost">+10</div><div class="pe-line"></div></div>
+        <div class="path-node pe"><div class="pn-name">PE3</div><div class="pn-igp">iBGP peer</div><div class="pn-aigp">AIGP=30</div></div>
+        <div class="path-edge"><div class="pe-cost">eBGP</div><div class="pe-line"></div></div>
+        <div class="path-node dest"><div class="pn-name">CE/Dest</div><div class="pn-igp">172.16.0.0</div></div>
+      </div>
+      <div class="path-label" style="margin-top:16px">Chemin B : PE1 → P3 → PE4 (cost total : 60)</div>
+      <div class="path-row">
+        <div class="path-node pe"><div class="pn-name">PE1</div><div class="pn-igp">BGP origin</div><div class="pn-aigp">AIGP=0</div></div>
+        <div class="path-edge"><div class="pe-cost">+30</div><div class="pe-line"></div></div>
+        <div class="path-node p"><div class="pn-name">P3</div><div class="pn-igp">No BGP</div><div class="pn-aigp">MPLS fwd</div></div>
+        <div class="path-edge"><div class="pe-cost">+30</div><div class="pe-line"></div></div>
+        <div class="path-node pe"><div class="pn-name">PE4</div><div class="pn-igp">iBGP peer</div><div class="pn-aigp">AIGP=60</div></div>
+        <div class="path-edge"><div class="pe-cost">eBGP</div><div class="pe-line"></div></div>
+        <div class="path-node dest"><div class="pn-name">CE/Dest</div><div class="pn-igp">172.16.0.0</div></div>
+      </div>
+    </div>
+    <div class="tip-box"><span class="box-icon">💡</span>
+      Sans AIGP, les routeurs P (BGP-free) ne participent pas à BGP. PE1 ne peut pas comparer les chemins via PE3 ou PE4 sur la base du coût IGP total — les deux chemins semblent identiques sur les critères 1–8. <strong>AIGP résout ce problème</strong> en transportant le coût cumulé dans l'attribut BGP.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Use Case #2 — Inter-AS MPLS Option B/C</div>
+    <div class="card" style="font-size:13px;color:var(--text2)">
+      <pre style="border:none;padding:0;background:transparent;font-size:12.5px">
+  AS 65001 (SP-A)                    AS 65002 (SP-B)
+  ┌────────────────────────┐         ┌────────────────────────┐
+  │  PE1 ── P1 ── ASBR-A  │─eBGP ──►│  ASBR-B ── P2 ── PE2  │
+  │  AIGP=0    AIGP=20     │         │  AIGP=20    AIGP=50    │
+  └────────────────────────┘         └────────────────────────┘
+
+  Option C : ASBR-A envoie AIGP=20 vers ASBR-B (avec neighbor aigp)
+  ASBR-B ajoute son IGP cost (+30) → PE2 voit AIGP=50
+  PE2 peut comparer les chemins bout-en-bout via AIGP</pre>
+    </div>
+    <div class="warn-box"><span class="box-icon">⚠️</span>
+      Pour propager AIGP vers un peer eBGP, il faut configurer explicitement <code>neighbor X.X.X.X aigp</code>. Sans cette commande, AIGP est supprimé aux frontières AS (comportement Non-Transitive par défaut).
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Use Case #3 — Seamless MPLS (réseau SP hiérarchique)</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">🏢</div>
+        <h3>Architecture Seamless MPLS</h3>
+        <p style="color:var(--text2);font-size:13px">Dans un réseau SP avec plusieurs niveaux de BGP (access, aggregation, core), AIGP permet de propager le coût IGP cumulé à travers tous les niveaux de hiérarchie BGP, sans que chaque niveau ait à redistribuer ses routes IGP dans le niveau supérieur.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📡</div>
+        <h3>BGP-LU (Labeled Unicast)</h3>
+        <p style="color:var(--text2);font-size:13px">AIGP est particulièrement utile avec BGP Labeled Unicast (RFC 3107). Les routes de loopback PE sont annoncées avec des labels et un AIGP, permettant la sélection du meilleur chemin bout-en-bout dans les réseaux MPLS hiérarchiques.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔄</div>
+        <h3>Route Reflector hiérarchique</h3>
+        <p style="color:var(--text2);font-size:13px">Dans une topologie RR à plusieurs niveaux, AIGP est propagé entre RR clients et RR supérieurs. Chaque niveau de RR préserve et transmet l'attribut AIGP, permettant une sélection optimale bout-en-bout.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Résumé des use cases</div>
+    <table>
+      <thead><tr><th>Use Case</th><th>Problème résolu</th><th>Condition requise</th></tr></thead>
+      <tbody>
+        <tr><td>BGP-free core</td><td>Coût IGP non visible à travers les P routers</td><td>AIGP activé sur PE iBGP peers</td></tr>
+        <tr><td>Inter-AS Option B</td><td>Coût total inconnu entre ASes</td><td><code>neighbor asbr aigp</code> des deux côtés</td></tr>
+        <tr><td>Inter-AS Option C</td><td>Même problème, sur plusieurs AS</td><td>AIGP propagé end-to-end sur tous les peerings</td></tr>
+        <tr><td>Seamless MPLS</td><td>Hiérarchie BGP sans redistribution IGP</td><td>AIGP sur toute la hiérarchie RR</td></tr>
+        <tr><td>BGP-LU multipath</td><td>Choix du meilleur label path</td><td>AIGP + maximum-paths</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /usecases -->
+
+<!-- ═══════════════ ONGLET 3 : FONCTIONNEMENT ═══════════════ -->
+<div class="panel" id="fonctionnement">
+
+  <div class="section">
+    <div class="section-title">Format de l'attribut AIGP — TLV</div>
+    <p style="color:var(--text2);font-size:13.5px;margin-bottom:12px">L'attribut AIGP est encodé sous forme de TLV (Type-Length-Value). Un seul type de TLV est défini : <strong>AIGP TLV type 1</strong>.</p>
+
+    <div class="tlv-box">
+      <div class="tlv-field tlv-t">
+        <div class="tlv-name">Type</div>
+        <div class="tlv-size">1 octet</div>
+        <div class="tlv-val">0x01</div>
+      </div>
+      <div class="tlv-field tlv-l">
+        <div class="tlv-name">Length</div>
+        <div class="tlv-size">2 octets</div>
+        <div class="tlv-val">0x000B (11)</div>
+      </div>
+      <div class="tlv-field tlv-v">
+        <div class="tlv-name">Value — AIGP metric</div>
+        <div class="tlv-size">8 octets (uint64)</div>
+        <div class="tlv-val">Valeur accumulée (0 à 2^64-1)</div>
+      </div>
+    </div>
+
+    <div class="info-box" style="margin-top:12px"><span class="box-icon">ℹ️</span>
+      La valeur AIGP est un entier non signé de 64 bits. La taille totale de l'attribut AIGP dans un message UPDATE est : 3 octets (flags+type+length attribut) + 1+2+8 = <strong>14 octets</strong> au total.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Algorithme d'accumulation</div>
+    <table>
+      <thead><tr><th>Étape</th><th>Action</th><th>Valeur AIGP résultante</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>① Origine (PE1 injecte la route)</td>
+          <td>Pas d'AIGP reçu → initialise AIGP = IGP cost vers NH (ou 0 si NH = 0.0.0.0)</td>
+          <td class="td-teal">AIGP = 0 (loopback locale)</td>
+        </tr>
+        <tr>
+          <td>② PE1 → PE3 (iBGP, via MPLS core)</td>
+          <td>PE3 reçoit AIGP=0, ajoute son IGP cost vers NH (PE1 loopback) = 30</td>
+          <td class="td-teal">AIGP = 0 + 30 = 30</td>
+        </tr>
+        <tr>
+          <td>③ PE3 re-annonce vers un RR</td>
+          <td>RR reçoit AIGP=30, ajoute son IGP cost vers PE3 loopback = 5</td>
+          <td class="td-teal">AIGP = 30 + 5 = 35</td>
+        </tr>
+        <tr>
+          <td>④ RR reflète vers PE5</td>
+          <td>PE5 reçoit AIGP=35, compare avec autre chemin AIGP=60 → choisit AIGP=35</td>
+          <td class="td-green">AIGP = 35 → best path #9</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="warn-box"><span class="box-icon">⚠️</span>
+      L'ajout de la métrique IGP locale se fait au moment de la <strong>réception</strong> de la route, pas à l'envoi. Chaque routeur ajoute le coût pour atteindre le NEXT_HOP annoncé dans la route reçue.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Règles de manipulation AIGP</div>
+    <table>
+      <thead><tr><th>Situation</th><th>Comportement</th></tr></thead>
+      <tbody>
+        <tr><td>Route reçue sans AIGP, AIGP activé</td><td>Le routeur crée un AIGP = IGP metric vers NH</td></tr>
+        <tr><td>Route reçue avec AIGP, AIGP activé</td><td>Le routeur ajoute IGP metric vers NH à la valeur reçue</td></tr>
+        <tr><td>Route locale (NH=0.0.0.0)</td><td>AIGP = 0 (pas de coût IGP)</td></tr>
+        <tr><td>Envoi vers eBGP peer sans <code>neighbor aigp</code></td><td class="td-red">AIGP supprimé (Non-Transitive)</td></tr>
+        <tr><td>Envoi vers eBGP peer avec <code>neighbor aigp</code></td><td class="td-green">AIGP propagé (comportement explicite)</td></tr>
+        <tr><td>Routeur ne comprend pas AIGP (type 26 inconnu)</td><td class="td-orange">Attribut ignoré silencieusement (Optional)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /fonctionnement -->
+
+<!-- ═══════════════ ONGLET 4 : CONFIGURATION ═══════════════ -->
+<div class="panel" id="config">
+
+  <div class="section">
+    <div class="section-title">Activation AIGP — iBGP (BGP-free core)</div>
+    <pre><span class="c-cmt">! Topologie : PE1 et PE2 sont peers iBGP, cœur MPLS BGP-free
+! Activer AIGP sur les peers iBGP PE-to-PE</span>
+
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">2.2.2.2</span> <span class="c-kw">remote-as</span> <span class="c-val">65001</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">2.2.2.2</span> <span class="c-kw">aigp</span>              <span class="c-cmt">! Activer AIGP pour ce peer iBGP</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">2.2.2.2</span> <span class="c-kw">update-source</span> <span class="c-val">Loopback0</span>
+
+  <span class="c-cmd">neighbor</span> <span class="c-val">3.3.3.3</span> <span class="c-kw">remote-as</span> <span class="c-val">65001</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">3.3.3.3</span> <span class="c-kw">aigp</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">3.3.3.3</span> <span class="c-kw">update-source</span> <span class="c-val">Loopback0</span>
+
+  <span class="c-cmt">! Optionnel : envoyer AIGP vers un peer eBGP (Inter-AS)</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">10.0.0.1</span> <span class="c-kw">remote-as</span> <span class="c-val">65002</span>
+  <span class="c-cmd">neighbor</span> <span class="c-val">10.0.0.1</span> <span class="c-kw">aigp</span>              <span class="c-cmt">! Propager AIGP vers AS voisin (Inter-AS MPLS)</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Désactiver le critère #9 AIGP</div>
+    <pre><span class="c-cmt">! Ignorer AIGP dans la sélection du best path (critère #9 sauté)</span>
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">bgp bestpath aigp ignore</span>
+
+<span class="c-cmt">! L'attribut AIGP est toujours reçu et stocké, mais pas utilisé
+! pour comparer les chemins. La sélection passe directement au critère #10.</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Manipulation AIGP via route-map</div>
+    <pre><span class="c-cmt">! Forcer une valeur AIGP spécifique à l'injection d'une route</span>
+<span class="c-kw">route-map</span> <span class="c-val">RM-SET-AIGP</span> <span class="c-kw">permit</span> <span class="c-val">10</span>
+  <span class="c-cmd">set aigp-metric</span> <span class="c-val">100</span>           <span class="c-cmt">! Forcer AIGP=100 pour cette route</span>
+
+<span class="c-cmd">router bgp</span> <span class="c-val">65001</span>
+  <span class="c-cmd">network</span> <span class="c-val">172.16.0.0</span> <span class="c-kw">mask</span> <span class="c-val">255.255.0.0</span> <span class="c-kw">route-map</span> <span class="c-val">RM-SET-AIGP</span>
+
+<span class="c-cmt">! Modifier AIGP sur une route reçue (inbound)</span>
+<span class="c-kw">route-map</span> <span class="c-val">RM-AIGP-IN</span> <span class="c-kw">permit</span> <span class="c-val">10</span>
+  <span class="c-cmd">set aigp-metric</span> <span class="c-val">igp-metric</span>    <span class="c-cmt">! Utiliser la métrique IGP locale (défaut)</span>
+
+<span class="c-kw">route-map</span> <span class="c-val">RM-AIGP-IN</span> <span class="c-kw">permit</span> <span class="c-val">20</span>
+  <span class="c-cmd">set aigp-metric</span> <span class="c-val">200</span>           <span class="c-cmt">! Valeur fixe pour les autres routes</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Commandes de vérification</div>
+    <pre><span class="c-cmt">! Voir l'attribut AIGP dans la table BGP</span>
+PE1# <span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/16</span>
+BGP routing table entry for 172.16.0.0/16
+Paths: (2 available, best #1)
+  65100
+    2.2.2.2 (metric 30) from 2.2.2.2 (2.2.2.2)
+      Origin IGP, metric 0, localpref 100, valid, internal, best
+      <span class="c-teal">AIGP: 30</span>               <span class="c-cmt">← valeur AIGP affichée</span>
+  65100
+    3.3.3.3 (metric 60) from 3.3.3.3 (3.3.3.3)
+      Origin IGP, metric 0, localpref 100, valid, internal
+      <span class="c-teal">AIGP: 60</span>               <span class="c-cmt">← AIGP plus élevé = perd en critère #9</span>
+
+<span class="c-cmt">! Voir les détails AIGP</span>
+PE1# <span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/16</span> <span class="c-kw">detail</span>
+
+<span class="c-cmt">! Vérifier la configuration AIGP par neighbor</span>
+PE1# <span class="c-cmd">show bgp neighbors</span> <span class="c-val">2.2.2.2</span> | <span class="c-kw">include</span> <span class="c-val">AIGP</span>
+  AIGP is enabled</pre>
+  </div>
+
+</div><!-- /config -->
+
+<!-- ═══════════════ ONGLET 5 : TABLE BGP ═══════════════ -->
+<div class="panel" id="table">
+
+  <div class="section">
+    <div class="section-title">Topologie — BGP-free core dual-path</div>
+    <div class="card" style="font-size:13px;color:var(--text2)">
+      <pre style="border:none;padding:0;background:transparent;font-size:12.5px">
+  AS 65001 — BGP-free core MPLS
+  ┌──────────────────────────────────────────────────────────────┐
+  │                                                              │
+  │  PE1 ───(cost 10)─── P1 ───(cost 10)─── P2 ─(cost 10)─ PE3 │
+  │  Lo: 1.1.1.1                                   Lo: 3.3.3.3  │
+  │  AIGP=0                                        AIGP=30      │
+  │     │                                               │        │
+  │     └──────────(cost 50)─── P3 ──(cost 10)── PE4   │        │
+  │                                  Lo: 4.4.4.4        │        │
+  │                                  AIGP=60            │        │
+  │                                                     │        │
+  │  PE1 reçoit via iBGP :                              │        │
+  │  - Route 172.16.0.0/16 depuis PE3 : AIGP=30         │        │
+  │  - Route 172.16.0.0/16 depuis PE4 : AIGP=60         │        │
+  └──────────────────────────────────────────────────────────────┘</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">show ip bgp sur PE1 — critère #9 en action</div>
+    <div class="bgp-table-sim">
+      <pre>PE1# <span class="c-cmd">show ip bgp</span> <span class="c-val">172.16.0.0/16</span>
+BGP routing table entry for 172.16.0.0/16, version 12
+Paths: (2 available, best #1, table Default-IP-Routing-Table)
+  Advertised to update-groups:
+     1
+  65100
+    3.3.3.3 (metric 30) from 3.3.3.3 (3.3.3.3)  <span class="c-cmt">← via PE3</span>
+      Origin IGP, metric 0, localpref 100, valid, internal, <span class="c-ok">best</span>
+      <span class="c-teal">AIGP: 30</span>    <span class="c-cmt">← AIGP=30 → critère #9 : 30 &lt; 60 → best ✅</span>
+  65100
+    4.4.4.4 (metric 60) from 4.4.4.4 (4.4.4.4)  <span class="c-cmt">← via PE4</span>
+      Origin IGP, metric 0, localpref 100, valid, internal
+      <span class="c-teal">AIGP: 60</span>    <span class="c-cmt">← AIGP=60 → critère #9 : 60 &gt; 30 → perd ❌</span></pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Analyse critère par critère sur PE1</div>
+    <table>
+      <thead><tr><th>Critère</th><th>Via PE3</th><th>Via PE4</th><th>Résultat</th></tr></thead>
+      <tbody>
+        <tr><td>#1 Weight</td><td>0</td><td>0</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#2 LOCAL_PREF</td><td>100</td><td>100</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#3 NH=0.0.0.0</td><td>Non</td><td>Non</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#4 AS-PATH</td><td>1 hop</td><td>1 hop</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#5 Origin</td><td>IGP (i)</td><td>IGP (i)</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#6 MED</td><td>0</td><td>0</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#7 eBGP/iBGP</td><td>internal</td><td>internal</td><td class="td-teal">Égal — suivant</td></tr>
+        <tr><td>#8 IGP metric</td><td>30 (vers 3.3.3.3)</td><td>60 (vers 4.4.4.4)</td><td class="td-orange">⚠️ Différent mais…</td></tr>
+        <tr><td></td><td colspan="3" style="color:var(--text3);font-size:12px;font-style:italic">Si bgp bestpath igp-metric ignore est configuré → critère #8 sauté → on arrive au critère #9</td></tr>
+        <tr><td><strong>#9 AIGP</strong></td><td class="td-green"><strong>30</strong></td><td class="td-red"><strong>60</strong></td><td class="td-green">✅ PE3 gagne (30 &lt; 60)</td></tr>
+      </tbody>
+    </table>
+    <div class="info-box" style="margin-top:12px"><span class="box-icon">ℹ️</span>
+      Dans cet exemple, le critère #8 aurait déjà départagé (IGP metric 30 vs 60). Le critère #9 AIGP devient vraiment décisif quand <code>bgp bestpath igp-metric ignore</code> est configuré, ou quand les métriques IGP sont identiques mais les AIGP accumulés différents.
+    </div>
+  </div>
+
+</div><!-- /table -->
+
+<!-- ═══════════════ ONGLET 6 : PIÈGES ═══════════════ -->
+<div class="panel" id="pieges">
+
+  <div class="trap-grid">
+
+    <div class="trap">
+      <h4>⚡ AIGP supprimé aux frontières eBGP sans config</h4>
+      <p>Par défaut, AIGP est Optional Non-Transitive : il est <strong>supprimé</strong> quand la route traverse une frontière eBGP. Pour propager AIGP vers un AS voisin (Inter-AS MPLS), il faut configurer <code>neighbor X.X.X.X aigp</code> explicitement des deux côtés.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ Confusion critère #8 et critère #9</h4>
+      <p>Le critère #8 mesure le coût IGP <strong>local</strong> vers le NEXT_HOP (un seul saut). Le critère #9 mesure le coût <strong>total accumulé</strong> sur tout le chemin BGP. En pratique, si le critère #8 fait déjà la différence, le critère #9 n'est jamais atteint — sauf si <code>igp-metric ignore</code> est configuré.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ AIGP ignoré si peer ne supporte pas type 26</h4>
+      <p>Un routeur ne reconnaissant pas l'attribut de type 26 l'ignore silencieusement (comportement Optional). La route est quand même acceptée, mais AIGP est perdu. En topologie mixte (anciens IOS), vérifier la compatibilité avant de déployer AIGP.</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ Valeur AIGP non initialisée = 0 par défaut</h4>
+      <p>Si une route est injectée sans AIGP et que le routeur a AIGP activé, il crée un AIGP avec la valeur IGP locale vers le NH. Si le NH est local (loopback, réseau directement connecté), AIGP est initialisé à 0. Ne pas confondre AIGP=0 avec "AIGP absent".</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ bgp bestpath aigp ignore sans raison</h4>
+      <p>Désactiver le critère #9 avec <code>bgp bestpath aigp ignore</code> dans un réseau BGP-free core supprime l'intérêt principal d'AIGP. Cette commande ne doit être utilisée que dans des cas spécifiques où le coût AIGP n'est pas représentatif (ex: migration, dépannage).</p>
+    </div>
+
+    <div class="trap">
+      <h4>⚡ Boucle de comptage AIGP en Inter-AS</h4>
+      <p>Dans une topologie Inter-AS en anneau, si AIGP est mal configuré (propagé des deux côtés sans contrôle), la valeur AIGP peut s'incrémenter indéfiniment à chaque cycle. Utiliser des route-maps pour limiter l'envoi AIGP aux seuls peers légitimes.</p>
+    </div>
+
+    <div class="trap good-practice">
+      <h4>✅ Bonne pratique — AIGP + igp-metric ignore</h4>
+      <p>En BGP-free core, combiner <code>neighbor X aigp</code> + <code>bgp bestpath igp-metric ignore</code> : on ignore la métrique IGP locale (critère #8, souvent 0 car PE peer via loopback MPLS) et on laisse AIGP (critère #9) faire la sélection sur le coût total réel du chemin.</p>
+    </div>
+
+    <div class="trap good-practice">
+      <h4>✅ Bonne pratique — Vérifier AIGP dans show ip bgp detail</h4>
+      <p>Toujours vérifier la présence et la valeur AIGP avec <code>show ip bgp X detail</code> après activation. L'absence d'AIGP sur certains chemins (affichage sans la ligne "AIGP:") indique que le peer source ne l'a pas envoyé, ou qu'il a été supprimé en transit.</p>
+    </div>
+
+  </div>
+
+</div><!-- /pieges -->
+
+<!-- ═══════════════ ONGLET 7 : FLASH CARDS ═══════════════ -->
+<div class="panel" id="flashcards">
+
+  <p style="color:var(--text2);font-size:13.5px;margin-bottom:20px">Cliquez sur une carte pour révéler la réponse.</p>
+
+  <div class="fc-grid">
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quel est le type code BGP de l'attribut AIGP et sa RFC ?</div>
+      <div class="fc-a">Type code <strong>26</strong>, défini dans la <strong>RFC 7311</strong>. Catégorie : Optional Non-Transitive. Critère #9 dans la sélection BGP (lowest wins).
+        <div class="fc-hint">→ À retenir pour l'exam : 26 / RFC 7311</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quelle est la différence entre le critère #8 (IGP metric) et le critère #9 (AIGP) ?</div>
+      <div class="fc-a">Critère #8 = coût IGP <strong>local</strong> pour atteindre le NEXT_HOP (un seul routeur, non transporté dans BGP). Critère #9 = coût IGP <strong>accumulé</strong> sur tout le chemin BGP (transporté dans l'attribut AIGP, multi-sauts).
+        <div class="fc-hint">→ #8 = local, #9 = bout-en-bout</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Pourquoi AIGP est-il utile dans un réseau BGP-free core ?</div>
+      <div class="fc-a">Dans un réseau MPLS BGP-free, les routeurs P ne participent pas à BGP. Sans AIGP, les PE ne peuvent pas connaître le coût IGP total à travers le cœur. <strong>AIGP accumule ce coût</strong> dans l'attribut BGP, permettant une sélection de chemin basée sur le coût réel bout-en-bout.
+        <div class="fc-hint">→ Cas classique SP : PE-to-PE via cœur MPLS</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Que se passe-t-il par défaut quand AIGP traverse une frontière eBGP ?</div>
+      <div class="fc-a">AIGP est <strong>supprimé</strong> (Non-Transitive). Pour propager AIGP vers un peer eBGP, il faut configurer explicitement <code>neighbor X.X.X.X aigp</code>. Sans cette commande, le peer eBGP reçoit la route sans l'attribut AIGP.
+        <div class="fc-hint">→ Typique pour Inter-AS MPLS Option B/C</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quelle commande active AIGP pour un peer BGP spécifique ?</div>
+      <div class="fc-a"><code>neighbor X.X.X.X aigp</code> dans le processus BGP. Cette commande active à la fois l'envoi et la réception d'AIGP pour ce peer. Pour désactiver le critère #9 dans la sélection : <code>bgp bestpath aigp ignore</code>.
+        <div class="fc-hint">→ Configurer sur tous les PE dans un BGP-free core</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Quelle est la taille du TLV AIGP type 1 et son encodage ?</div>
+      <div class="fc-a">TLV type 1 : Type (1 octet = 0x01) + Length (2 octets = 0x000B) + Value (8 octets, uint64). Total TLV = 11 octets. La valeur est un entier non signé 64 bits représentant la métrique accumulée.
+        <div class="fc-hint">→ AIGP total dans UPDATE = 14 octets (avec 3 octets header attribut)</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Dans quel ordre AIGP et IGP metric interviennent-ils dans la sélection BGP ?</div>
+      <div class="fc-a">Le critère <strong>#8 (IGP metric locale)</strong> est évalué en premier. Si les métriques IGP locales sont identiques (ou si <code>bgp bestpath igp-metric ignore</code> est configuré), alors le critère <strong>#9 (AIGP)</strong> est comparé. AIGP ne peut jamais "court-circuiter" IGP metric.
+        <div class="fc-hint">→ Ordre : #8 IGP metric → #9 AIGP</div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('open')">
+      <div class="fc-q">Comment vérifier la valeur AIGP d'un chemin BGP dans show ip bgp ?</div>
+      <div class="fc-a"><code>show ip bgp X.X.X.X/Y</code> affiche la ligne <code>AIGP: &lt;valeur&gt;</code> pour chaque chemin si l'attribut est présent. Utiliser <code>show ip bgp X detail</code> pour plus d'informations. L'absence de la ligne "AIGP:" signifie que l'attribut n'a pas été reçu.
+        <div class="fc-hint">→ Aussi : show bgp neighbors X | include AIGP</div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /flashcards -->
+
+</div><!-- /content -->
+
+<script>
+function showTab(btn, id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>
